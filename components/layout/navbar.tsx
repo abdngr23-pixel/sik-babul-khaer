@@ -1,0 +1,172 @@
+'use client';
+
+import React, { useState } from 'react';
+import {
+  Calendar,
+  Plus,
+  ArrowRightLeft,
+  ShieldCheck,
+  Eye,
+  Shield,
+  Search,
+  Bell,
+} from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
+import { UserRole } from '@/types/auth';
+import PrayerWidget from './prayer-widget';
+
+interface NavbarProps {
+  onOpenCreate: () => void;
+  createButtonLabel?: string;
+  onOpenSwitchRole?: () => void;
+  onOpenAuditLogs?: () => void;
+  hideCreateButton?: boolean;
+  pendingApprovalsCount?: number;
+  globalSearchQuery?: string;
+  onGlobalSearchChange?: (q: string) => void;
+}
+
+export default function Navbar({
+  onOpenCreate,
+  createButtonLabel = 'Buat Baru',
+  onOpenSwitchRole,
+  onOpenAuditLogs,
+  hideCreateButton = false,
+  pendingApprovalsCount = 0,
+  globalSearchQuery = '',
+  onGlobalSearchChange,
+}: NavbarProps) {
+  const { currentUser } = useAuth();
+
+  // Lazy initializer to format date
+  const [currentDateStr] = useState(() => {
+    try {
+      const today = new Date();
+      return today.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    } catch {
+      return 'Sabtu, 5 September 2026';
+    }
+  });
+
+  const getRoleBadgeStyle = (role: UserRole) => {
+    switch (role) {
+      case 'KETUA_UMUM':
+        return 'bg-indigo-50 text-indigo-900 border-indigo-200/80';
+      case 'SEKRETARIS':
+        return 'bg-emerald-50 text-emerald-900 border-emerald-200/80';
+      case 'BENDAHARA':
+        return 'bg-amber-50 text-amber-900 border-amber-200/80';
+      case 'SARPRAS':
+        return 'bg-orange-50 text-orange-900 border-orange-200/80';
+      case 'KEMASJIDAN':
+        return 'bg-teal-50 text-teal-900 border-teal-200/80';
+      case 'DEWAN_PENGAWAS':
+        return 'bg-purple-50 text-purple-900 border-purple-300';
+    }
+  };
+
+  const getRoleIcon = (role: UserRole) => {
+    if (role === 'DEWAN_PENGAWAS') return <Eye className="w-3.5 h-3.5 text-purple-600" />;
+    return <Shield className="w-3.5 h-3.5 text-emerald-600" />;
+  };
+
+  return (
+    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-5 md:px-7 flex items-center justify-between sticky top-0 z-20 shadow-soft-sm">
+      {/* Left: Islamic Greeting & Title */}
+      <div className="flex items-center gap-4 min-w-0">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-500 font-medium">Assalamu&apos;alaikum,</span>
+            <span className="text-xs font-bold text-slate-900 truncate max-w-[180px] sm:max-w-xs">
+              {currentUser.name}
+            </span>
+          </div>
+          <p className="text-[11px] text-emerald-700 font-semibold truncate hidden sm:block">
+            SIK-MBH • Kompleks BTP Blok AE Makassar
+          </p>
+        </div>
+
+        {/* Global Smart Search Capsule (ui-style.md Section 5.B) */}
+        <div className="relative hidden md:block w-48 lg:w-64 ml-2">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={globalSearchQuery}
+            onChange={(e) => onGlobalSearchChange?.(e.target.value)}
+            placeholder="Cari surat, jamaah, kas..."
+            className="w-full pl-8 pr-3 py-1.5 rounded-full bg-[#F1F5F9] text-xs text-slate-800 placeholder-slate-400 border border-transparent focus:border-[#059669] focus:bg-white focus:outline-none transition-all shadow-2xs"
+          />
+        </div>
+      </div>
+
+      {/* Middle & Right: Prayer Schedule & Control Actions */}
+      <div className="flex items-center gap-2.5">
+        {/* Dynamic Prayer Schedule Widget (Makassar WITA) */}
+        <PrayerWidget />
+
+        {/* Date Display */}
+        <div className="hidden lg:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/70 shadow-2xs">
+          <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="text-[11px] font-semibold">{currentDateStr}</span>
+        </div>
+
+        {/* Notification Bell (Pemberitahuan Disposisi Pending) */}
+        {pendingApprovalsCount > 0 && (
+          <button
+            onClick={onOpenAuditLogs}
+            title={`${pendingApprovalsCount} pengajuan menunggu disposisi Ketua Umum`}
+            className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-colors cursor-pointer"
+          >
+            <Bell className="w-4 h-4 text-slate-600" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
+          </button>
+        )}
+
+        {/* Audit Log button for Pengawas & Ketua */}
+        {onOpenAuditLogs && (currentUser.role === 'DEWAN_PENGAWAS' || currentUser.role === 'KETUA_UMUM') && (
+          <button
+            onClick={onOpenAuditLogs}
+            title="Buka Log Audit Aktivitas Sistem"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold transition-all cursor-pointer shadow-soft-sm"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+            <span className="hidden sm:inline">Log Audit</span>
+          </button>
+        )}
+
+        {/* Active Role Card & Switch Button */}
+        <div
+          onClick={onOpenSwitchRole}
+          title="Klik untuk beralih akun pengurus"
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs cursor-pointer hover:shadow-soft-sm transition-all ${getRoleBadgeStyle(
+            currentUser.role
+          )}`}
+        >
+          {getRoleIcon(currentUser.role)}
+          <div className="flex flex-col text-left">
+            <span className="font-bold text-[11px] leading-tight">
+              {currentUser.roleLabel}
+            </span>
+          </div>
+          <ArrowRightLeft className="w-3 h-3 text-slate-400 hover:text-slate-600 ml-1" />
+        </div>
+
+        {/* Action Button (Dynamic per module) */}
+        {!hideCreateButton && (
+          <button
+            onClick={onOpenCreate}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-semibold shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{createButtonLabel}</span>
+          </button>
+        )}
+      </div>
+    </header>
+  );
+}

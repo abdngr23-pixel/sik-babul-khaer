@@ -1,0 +1,295 @@
+'use client';
+
+import React, { useState } from 'react';
+import { OfficialLetter, LetterCategory, LetterStatus, LETTER_CATEGORIES } from '@/types/letter';
+import { formatIndonesianDate } from '@/lib/letter-numbering';
+import {
+  Search,
+  Filter,
+  Eye,
+  Copy,
+  Check,
+  FileText,
+  Clock,
+  Send,
+  Archive,
+  CheckCircle2,
+  FolderArchive,
+} from 'lucide-react';
+
+interface LetterArchiveTableProps {
+  letters: OfficialLetter[];
+  onPreviewLetter: (letter: OfficialLetter) => void;
+  onUpdateStatus: (id: string, newStatus: LetterStatus) => void;
+  onOpenArchiveModal?: () => void;
+  isReadOnly?: boolean;
+  externalSearchTerm?: string;
+}
+
+export default function LetterArchiveTable({
+  letters,
+  onPreviewLetter,
+  onUpdateStatus,
+  onOpenArchiveModal,
+  isReadOnly = false,
+  externalSearchTerm = '',
+}: LetterArchiveTableProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Filter letters
+  const effectiveSearch = (externalSearchTerm || searchTerm).toLowerCase().trim();
+  const filteredLetters = letters.filter((letter) => {
+    const matchesSearch =
+      !effectiveSearch ||
+      letter.letterNumber.toLowerCase().includes(effectiveSearch) ||
+      letter.subject.toLowerCase().includes(effectiveSearch) ||
+      letter.recipientName.toLowerCase().includes(effectiveSearch);
+
+    const matchesCategory =
+      selectedCategory === 'ALL' || letter.category === selectedCategory;
+
+    const matchesStatus =
+      selectedStatus === 'ALL' || letter.status === selectedStatus;
+
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const handleCopyNumber = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const getStatusBadge = (status: LetterStatus) => {
+    switch (status) {
+      case 'DRAFT':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+            <Clock className="w-3 h-3 text-amber-600" />
+            <span>Draf</span>
+          </span>
+        );
+      case 'APPROVED':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <span>Disetujui</span>
+          </span>
+        );
+      case 'SENT':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+            <Send className="w-3 h-3 text-blue-600" />
+            <span>Terkirim</span>
+          </span>
+        );
+      case 'ARCHIVED':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
+            <Archive className="w-3 h-3 text-slate-600" />
+            <span>Diarsipkan</span>
+          </span>
+        );
+    }
+  };
+
+  const getCategoryBadge = (category: LetterCategory) => {
+    const info = LETTER_CATEGORIES[category];
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+        {info?.code || category}
+      </span>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Search and Filters Toolbar */}
+      <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Cari nomor surat, perihal, atau nama penerima..."
+            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden transition-all text-slate-800"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="flex items-center gap-2.5">
+          {/* Category Filter */}
+          <div className="flex items-center gap-1 text-xs">
+            <Filter className="w-3.5 h-3.5 text-slate-400" />
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-white text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+            >
+              <option value="ALL">Semua Kategori</option>
+              {Object.values(LETTER_CATEGORIES).map((c) => (
+                <option key={c.code} value={c.code}>
+                  [{c.code}] {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-white text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+          >
+            <option value="ALL">Semua Status</option>
+            <option value="DRAFT">Draf</option>
+            <option value="APPROVED">Disetujui</option>
+            <option value="SENT">Terkirim</option>
+            <option value="ARCHIVED">Diarsipkan</option>
+          </select>
+
+          {/* Catat Arsip Surat Lampau */}
+          {onOpenArchiveModal && !isReadOnly && (
+            <button
+              onClick={onOpenArchiveModal}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-xs border border-amber-300 transition-colors cursor-pointer shrink-0"
+              title="Catat arsip surat fisik yang telah keluar sebelum tercatat di sistem"
+            >
+              <FolderArchive className="w-3.5 h-3.5 text-amber-600" />
+              <span>Catat Arsip Keluar</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Table Container */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                <th className="py-3 px-4">Nomor Surat</th>
+                <th className="py-3 px-4">Perihal & Kategori</th>
+                <th className="py-3 px-4">Penerima</th>
+                <th className="py-3 px-4">Tanggal</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+              {filteredLetters.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-10 text-center text-slate-400">
+                    <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                    <p className="font-medium text-sm text-slate-600">Tidak ada surat ditemukan</p>
+                    <p className="text-xs text-slate-400">
+                      Coba sesuaikan kata kunci pencarian atau filter kategori di atas.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredLetters.map((letter) => (
+                  <tr
+                    key={letter.id}
+                    className="hover:bg-slate-50/80 transition-colors group"
+                  >
+                    {/* Nomor Surat */}
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <span>{letter.letterNumber}</span>
+                        <button
+                          onClick={() => handleCopyNumber(letter.id, letter.letterNumber)}
+                          title="Salin Nomor Surat"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-200 rounded text-slate-500 cursor-pointer"
+                        >
+                          {copiedId === letter.id ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* Perihal */}
+                    <td className="py-3 px-4 max-w-xs">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        {getCategoryBadge(letter.category)}
+                      </div>
+                      <p className="font-semibold text-slate-900 line-clamp-1">
+                        {letter.subject}
+                      </p>
+                    </td>
+
+                    {/* Penerima */}
+                    <td className="py-3 px-4 max-w-[200px]">
+                      <p className="font-medium text-slate-900 line-clamp-1">
+                        {letter.recipientName}
+                      </p>
+                      {letter.recipientAddress && (
+                        <p className="text-[11px] text-slate-500 line-clamp-1">
+                          {letter.recipientAddress}
+                        </p>
+                      )}
+                    </td>
+
+                    {/* Tanggal */}
+                    <td className="py-3 px-4 whitespace-nowrap text-slate-600">
+                      {formatIndonesianDate(letter.letterDate)}
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(letter.status)}
+                        {!isReadOnly && (
+                          <select
+                            value={letter.status}
+                            onChange={(e) => onUpdateStatus(letter.id, e.target.value as LetterStatus)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] border border-slate-200 rounded px-1 py-0.5 bg-white text-slate-600 cursor-pointer"
+                            title="Ubah Status Surat"
+                          >
+                            <option value="DRAFT">Draf</option>
+                            <option value="APPROVED">Disetujui</option>
+                            <option value="SENT">Terkirim</option>
+                            <option value="ARCHIVED">Diarsipkan</option>
+                          </select>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <button
+                        onClick={() => onPreviewLetter(letter)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs transition-colors cursor-pointer border border-emerald-200/80"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Lihat Dokumen</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer Summary */}
+        <div className="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+          <span>
+            Menampilkan <strong>{filteredLetters.length}</strong> dari total <strong>{letters.length}</strong> surat dalam E-Arsip
+          </span>
+          <span className="text-[11px] text-slate-400">
+            Katalog Dokumen DKM Masjid Babul Khaer
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,392 @@
+'use client';
+
+import React, { useState } from 'react';
+import { LetterCategory, LETTER_CATEGORIES, OfficialLetter, LetterStatus } from '@/types/letter';
+import { DKM_INFO } from '@/lib/letter-numbering';
+import {
+  Archive,
+  X,
+  Calendar,
+  AlertCircle,
+  Loader2,
+  FolderArchive,
+  CheckCircle2,
+} from 'lucide-react';
+
+interface ArchiveLetterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onLetterArchived: (letter: OfficialLetter) => void;
+}
+
+export default function ArchiveLetterModal({
+  isOpen,
+  onClose,
+  onLetterArchived,
+}: ArchiveLetterModalProps) {
+  const [customNumber, setCustomNumber] = useState('');
+  const [category, setCategory] = useState<LetterCategory>('UND');
+  const [letterDate, setLetterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [subject, setSubject] = useState('');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientTitle, setRecipientTitle] = useState('');
+  const [recipientAddress, setRecipientAddress] = useState('Kompleks BTP Blok AE, Makassar');
+  const [attachmentCount, setAttachmentCount] = useState('-');
+  const [content, setContent] = useState('');
+  const [status, setStatus] = useState<LetterStatus>('ARCHIVED');
+  const [physicalLocation, setPhysicalLocation] = useState('Map Arsip Sekretariat DKM Babul Khaer (Lemari A)');
+  const [signatory1Name, setSignatory1Name] = useState(DKM_INFO.defaultChairman);
+  const [signatory2Name, setSignatory2Name] = useState(DKM_INFO.defaultSecretary);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    if (!customNumber.trim()) {
+      setErrorMessage('Nomor surat fisik wajib diisi sesuai dokumen asli.');
+      return;
+    }
+    if (!subject.trim()) {
+      setErrorMessage('Perihal surat wajib diisi.');
+      return;
+    }
+    if (!recipientName.trim()) {
+      setErrorMessage('Nama pihak/instansi penerima wajib diisi.');
+      return;
+    }
+    if (!content.trim()) {
+      setErrorMessage('Ringkasan isi / naskah surat fisik wajib diisi.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    const payload = {
+      category,
+      recipientName: recipientName.trim(),
+      recipientTitle: recipientTitle.trim() || undefined,
+      recipientAddress: recipientAddress.trim() || undefined,
+      subject: subject.trim(),
+      letterDate,
+      attachmentCount: attachmentCount.trim() || '-',
+      content: `${content.trim()}\n\n[Catatan Lokasi Berkas Fisik: ${physicalLocation.trim() || 'Sekretariat DKM'}]`,
+      status,
+      signatory1: {
+        name: signatory1Name.trim() || DKM_INFO.defaultChairman,
+        role: 'Ketua Umum DKM',
+      },
+      signatory2: {
+        name: signatory2Name.trim() || DKM_INFO.defaultSecretary,
+        role: 'Sekretaris Umum',
+      },
+      customNumber: customNumber.trim(),
+    };
+
+    try {
+      const res = await fetch('/api/letters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.success && data.data) {
+        onLetterArchived(data.data);
+        onClose();
+      } else {
+        setErrorMessage(data.error || 'Gagal menyimpan arsip surat');
+      }
+    } catch {
+      setErrorMessage('Terjadi kendala jaringan saat menghubungkan ke server.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto">
+        {/* Header Modal */}
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white px-6 py-4 flex items-center justify-between border-b border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
+              <FolderArchive className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base flex items-center gap-2">
+                <span>Catat Arsip Surat Keluar (Fisik / Lampau)</span>
+                <span className="text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded">
+                  Dokumen Riwayat
+                </span>
+              </h3>
+              <p className="text-xs text-slate-300">
+                Pencatatan surat fisik yang telah terbit sebelumnya ke dalam E-Arsip SIK-MBH
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-700/60 transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 flex-1 text-slate-800 text-xs">
+          {errorMessage && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {/* Banner Penjelasan */}
+          <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3 text-amber-900">
+            <Archive className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              Gunakan formulir ini untuk merekam surat resmi DKM Babul Khaer yang <strong>sudah dicetak, ditandatangani, atau dikeluarkan sebelumnya</strong> namun belum tercatat di sistem digital. Nomor surat dapat diketik bebas sesuai dengan nomor fisik aslinya.
+            </p>
+          </div>
+
+          {/* Row 1: Nomor Surat Fisik & Kategori */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+            <div className="md:col-span-7">
+              <label className="block font-semibold text-slate-700 mb-1">
+                Nomor Surat Fisik Asli <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={customNumber}
+                onChange={(e) => setCustomNumber(e.target.value)}
+                placeholder="Contoh: 004/DKM-MBH/UND/VII/2026 atau 012/PHBI/2026"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-900 font-mono font-bold focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                required
+              />
+              <span className="text-[11px] text-slate-500 mt-0.5 block">
+                Ketik nomor persis seperti yang tertera pada berkas fisik.
+              </span>
+            </div>
+
+            <div className="md:col-span-5">
+              <label className="block font-semibold text-slate-700 mb-1">
+                Kategori Jenis Surat
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as LetterCategory)}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800 font-semibold"
+              >
+                {Object.values(LETTER_CATEGORIES).map((cat) => (
+                  <option key={cat.code} value={cat.code}>
+                    [{cat.code}] {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Row 2: Tanggal Terbit & Status Arsip */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">
+                Tanggal Surat Keluar <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="date"
+                  value={letterDate}
+                  onChange={(e) => setLetterDate(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-800 font-medium"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">
+                Status Dokumen
+              </label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as LetterStatus)}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800 font-semibold"
+              >
+                <option value="ARCHIVED">Diarsipkan (Dokumen Tersimpan)</option>
+                <option value="SENT">Telah Dikirim / Didistribusikan</option>
+                <option value="APPROVED">Disetujui</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">
+                Jumlah Lampiran Berkas
+              </label>
+              <input
+                type="text"
+                value={attachmentCount}
+                onChange={(e) => setAttachmentCount(e.target.value)}
+                placeholder="Contoh: 1 Berkas / -"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800"
+              />
+            </div>
+          </div>
+
+          {/* Perihal Surat */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1">
+              Perihal / Hal Surat <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Contoh: Undangan Musyawarah Warga Penetapan Idul Fitri 1447 H"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-900 font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+              required
+            />
+          </div>
+
+          {/* Row 3: Penerima & Alamat Tujuan */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">
+                Pihak / Instansi Penerima <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder="Contoh: Bapak Lurah Tamalanrea / Warga RT 02"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800 font-semibold"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">
+                Sebutan / Jabatan Penerima (Opsional)
+              </label>
+              <input
+                type="text"
+                value={recipientTitle}
+                onChange={(e) => setRecipientTitle(e.target.value)}
+                placeholder="Contoh: Kepala Kelurahan Tamalanrea"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block font-semibold text-slate-700 mb-1">
+                Alamat / Kota Tujuan
+              </label>
+              <input
+                type="text"
+                value={recipientAddress}
+                onChange={(e) => setRecipientAddress(e.target.value)}
+                placeholder="Contoh: Kantor Kelurahan Tamalanrea, Makassar"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800"
+              />
+            </div>
+          </div>
+
+          {/* Ringkasan Isi Surat Fisik */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1">
+              Ringkasan Isi / Naskah Surat Fisik <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              rows={4}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Tuliskan intisari surat, poin-poin keputusan, atau salinan naskah dokumen yang telah dikeluarkan..."
+              className="w-full border border-slate-300 rounded-lg p-3 bg-white text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden leading-relaxed"
+              required
+            />
+          </div>
+
+          {/* Lokasi Arsip Fisik & Penandatangan */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+            <h4 className="font-bold text-slate-800 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+              <Archive className="w-3.5 h-3.5 text-amber-600" />
+              <span>Lokasi Penyimpanan Fisik & Penandatangan Dokumen</span>
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="md:col-span-1">
+                <label className="block font-semibold text-slate-700 mb-1">
+                  Lokasi Map / Lemari Arsip
+                </label>
+                <input
+                  type="text"
+                  value={physicalLocation}
+                  onChange={(e) => setPhysicalLocation(e.target.value)}
+                  placeholder="Map Hijau Lemari B-02"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">
+                  Penandatangan 1 (Ketua)
+                </label>
+                <input
+                  type="text"
+                  value={signatory1Name}
+                  onChange={(e) => setSignatory1Name(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">
+                  Penandatangan 2 (Sekretaris)
+                </label>
+                <input
+                  type="text"
+                  value={signatory2Name}
+                  onChange={(e) => setSignatory2Name(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Actions */}
+          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Menyimpan Arsip...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Simpan ke E-Arsip</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
