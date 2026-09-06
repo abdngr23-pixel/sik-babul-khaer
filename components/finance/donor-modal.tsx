@@ -137,7 +137,7 @@ export default function DonorModal({
                 type="text"
                 value={donorName}
                 onChange={(e) => setDonorName(e.target.value)}
-                placeholder="Contoh: H. Abdul Rahman, S.E."
+                placeholder="Contoh: H. Sahali"
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-900 font-semibold focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
                 required
               />

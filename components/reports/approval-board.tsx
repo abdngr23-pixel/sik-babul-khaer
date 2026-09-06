@@ -46,7 +46,7 @@ export default function ApprovalBoard({
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<ApprovalType>('PENCAIRAN_DANA');
   const [newCategory, setNewCategory] = useState('Swadaya PHBI');
-  const [newSubmittedBy, setNewSubmittedBy] = useState('M. Yusuf, S.Ag.');
+  const [newSubmittedBy, setNewSubmittedBy] = useState('Ir. Muhammad Natsir, S.T.');
   const [newSubmittedRole, setNewSubmittedRole] = useState('Sekretaris Umum');
   const [newAmount, setNewAmount] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -244,7 +244,7 @@ export default function ApprovalBoard({
         </div>
 
         <div className="text-xs text-slate-500 text-right">
-          Otoritas Pengesah: <span className="font-bold text-slate-800">Drs. H. M. Said, M.Pd.</span>
+          Otoritas Pengesah: <span className="font-bold text-slate-800">Drs. Muhammad Hasri, M. Hum.</span>
         </div>
       </div>
 

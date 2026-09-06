@@ -775,7 +775,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
                       type="text"
                       value={applicantName}
                       onChange={(e) => setApplicantName(e.target.value)}
-                      placeholder="Drs. H. M. Said, M.Pd."
+                      placeholder="Drs. Muhammad Hasri, M. Hum."
                       className="w-full text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-800 font-medium"
                     />
                   </div>

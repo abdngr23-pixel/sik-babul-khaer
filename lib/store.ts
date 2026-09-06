@@ -1199,7 +1199,7 @@ class DataStore {
     id: string,
     status: ApprovalStatus,
     dispositionNotes?: string,
-    verifiedBy: string = 'Drs. H. M. Said, M.Pd. (Ketua Umum)'
+    verifiedBy: string = 'Drs. Muhammad Hasri, M. Hum. (Ketua Umum)'
   ): Promise<ApprovalItem | null> {
     await this.sync();
     const item = this.approvals.find((a) => a.id === id);
@@ -1327,9 +1327,9 @@ class DataStore {
         'Mempertahankan rasio cadangan kas operasional minimal 3 bulan ke depan untuk menjamin kelancaran honorarium marbot dan operasional masjid.',
       ],
       signatories: {
-        ketuaUmum: { name: 'Drs. H. M. Said, M.Pd.', title: 'Ketua Umum DKM Babul Khaer' },
-        sekretarisUmum: { name: 'M. Yusuf, S.Ag.', title: 'Sekretaris Umum' },
-        bendaharaUmum: { name: 'H. Abdul Rahman, S.E.', title: 'Bendahara Umum' },
+        ketuaUmum: { name: 'Drs. Muhammad Hasri, M. Hum.', title: 'Ketua Umum DKM Babul Khaer' },
+        sekretarisUmum: { name: 'Ir. Muhammad Natsir, S.T.', title: 'Sekretaris Umum' },
+        bendaharaUmum: { name: 'H. Sahali', title: 'Bendahara Umum' },
       },
     };
   }

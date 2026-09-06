@@ -98,7 +98,7 @@ export async function PATCH(request: NextRequest) {
       id,
       status as ApprovalStatus,
       dispositionNotes,
-      verifiedBy || 'Drs. H. M. Said, M.Pd. (Ketua Umum)'
+      verifiedBy || 'Drs. Muhammad Hasri, M. Hum. (Ketua Umum)'
     );
 
     if (!updated) {

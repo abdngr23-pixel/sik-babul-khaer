@@ -239,8 +239,8 @@ export default function FridayReportModal({
                   <div className="h-20 flex items-center justify-center">
                     <span className="text-[10px] text-slate-400 italic">Disahkan Digital</span>
                   </div>
-                  <p className="font-bold text-slate-900 underline">Drs. H. M. Said, M.Pd.</p>
-                  <p className="text-[10px] text-slate-500">NIP / ID: 19680512-DKM-001</p>
+                  <p className="font-bold text-slate-900 underline">Drs. Muhammad Hasri, M. Hum.</p>
+                  <p className="text-[10px] text-slate-500">ID Pengurus: DKM-MBH-KETUA</p>
                 </div>
                 <div>
                   <p className="text-slate-600">Makassar, 5 September 2026</p>
@@ -248,7 +248,7 @@ export default function FridayReportModal({
                   <div className="h-20 flex items-center justify-center">
                     <span className="text-[10px] text-slate-400 italic">Penanggung Jawab Kas</span>
                   </div>
-                  <p className="font-bold text-slate-900 underline">H. Abdul Rahman, S.E.</p>
+                  <p className="font-bold text-slate-900 underline">H. Sahali</p>
                   <p className="text-[10px] text-slate-500">ID Pengurus: DKM-MBH-BENDAHARA</p>
                 </div>
               </div>

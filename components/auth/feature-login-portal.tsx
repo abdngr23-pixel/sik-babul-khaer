@@ -48,7 +48,7 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
     roleId: 'usr-bendahara',
     title: 'Perbendaharaan & Kas',
     roleTitle: 'Bendahara Umum DKM',
-    officerName: 'H. Abdul Rahman, S.E.',
+    officerName: 'H. Sahali',
     icon: Wallet,
     themeColor: {
       bg: 'hover:bg-emerald-50/40',
@@ -61,7 +61,7 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
       btnHover: 'hover:bg-emerald-700',
     },
     badge: 'Buku Kas & Donatur',
-    description: 'Pengelolaan kas operasional masjid, penerimaan ZISWAF, pos dana swadaya, dan donatur rutin.',
+    description: 'Pengelolaan kas operasional masjid, rekening satu pintu dana swadaya PHBI hasil Raker 2026, penerimaan ZISWAF, dan donatur rutin (ART Bagian Keenam Pasal 7).',
     features: [
       'Buku Kas Masuk & Kas Keluar',
       'Manajemen Donatur Rutin Bulanan',
@@ -74,7 +74,7 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
     roleId: 'usr-sekretaris',
     title: 'Kesekretariatan & Surat',
     roleTitle: 'Sekretaris Umum DKM',
-    officerName: 'M. Yusuf, S.Ag.',
+    officerName: 'Ir. Muhammad Natsir, S.T.',
     icon: FileText,
     themeColor: {
       bg: 'hover:bg-indigo-50/40',
@@ -87,7 +87,7 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
       btnHover: 'hover:bg-indigo-700',
     },
     badge: 'Persuratan & Notulensi',
-    description: 'Tata kelola persuratan dinas resmi, e-arsip digital, dan ekstraksi notulensi rapat cerdas.',
+    description: 'Tata kelola persuratan dinas resmi, e-arsip digital, ekstraksi notulensi rapat pleno AI, dan paraf SK sebelum diteken Ketua Umum (ART Bagian Kelima Pasal 6).',
     features: [
       'E-Arsip Surat Keluar & Lampau',
       'Generator Draf Surat Resmi AI (Gemini)',
@@ -99,8 +99,8 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
     id: 'sarpras-portal',
     roleId: 'usr-sarpras',
     title: 'Sarana & Prasarana',
-    roleTitle: 'Koordinator Sarpras',
-    officerName: 'Bpk. Irwan Syarifuddin',
+    roleTitle: 'Koordinator Sarpras (Bidang Ketua II)',
+    officerName: 'Faisal T. Parussengi, S.S.',
     icon: Wrench,
     themeColor: {
       bg: 'hover:bg-amber-50/40',
@@ -113,7 +113,7 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
       btnHover: 'hover:bg-amber-700',
     },
     badge: 'Inventaris Sarpras',
-    description: 'Inventarisasi fisik fasilitas masjid, pemantauan kelayakan aset, dan jadwal servis berkala.',
+    description: 'Inventarisasi fisik fasilitas masjid, pemeliharaan AC Daikin, relokasi modul otomatis genset hasil Raker 2026, dan sarana ibadah (ART Bagian Ketujuh Pasal 9).',
     features: [
       'Katalog Aset (AC, Sound, Genset, Karpet)',
       'Labelisasi Kodefikasi & Lokasi Aset',
@@ -124,9 +124,9 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
   {
     id: 'jamaah-portal',
     roleId: 'usr-kemasjidan',
-    title: 'Dakwah & Kemasjidan',
-    roleTitle: 'Bidang Kemasjidan & Jamaah',
-    officerName: 'Ust. H. Syamsuddin, Lc.',
+    title: 'Peribadatan & Dakwah',
+    roleTitle: 'Koordinator Peribadatan & Dakwah (Bidang Ketua I)',
+    officerName: 'Drs. Manai, M.M.',
     icon: Users,
     themeColor: {
       bg: 'hover:bg-teal-50/40',
@@ -138,8 +138,8 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
       btnBg: 'bg-teal-600 hover:bg-teal-700',
       btnHover: 'hover:bg-teal-700',
     },
-    badge: 'Database Jamaah',
-    description: 'Sensus kependudukan jamaah Blok AE, pendataan mustahiq zakat, dan penyaluran bantuan sosial.',
+    badge: 'Jadwal Sholat & Sensus',
+    description: 'Pengelolaan jadwal sholat fardhu/Jumat, imam rawatib Rp1.5jt hasil Raker 2026, sensus kependudukan jamaah Blok AE RT 01-05, dan dakwah (ART Bagian Ketujuh Pasal 8).',
     features: [
       'Basis Data Sensus Warga RT 01 - RT 05',
       'Kategori Mustahiq, Lansia & Anak Yatim',
@@ -152,7 +152,7 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
     roleId: 'usr-ketua',
     title: 'Pusat Kendali & Pimpinan',
     roleTitle: 'Ketua Umum DKM',
-    officerName: 'Drs. H. M. Said, M.Pd.',
+    officerName: 'Drs. Muhammad Hasri, M. Hum.',
     icon: ShieldCheck,
     themeColor: {
       bg: 'hover:bg-blue-50/40',
@@ -165,7 +165,7 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
       btnHover: 'hover:bg-blue-800',
     },
     badge: 'Pimpinan & Disposisi',
-    description: 'Pusat komando eksekutif, disposisi dan verifikasi surat dinas satu pintu, serta laporan pertanggungjawaban.',
+    description: 'Pusat pimpinan eksekutif, penanggung jawab umum, otorisasi pengesahan surat dinas, disposisi kas satu pintu, dan LPJ tahunan (ART Bagian Ketiga Pasal 3).',
     features: [
       'Disposisi & Pengesahan Surat Satu Pintu',
       'Supervisi Kendali Seluruh Divisi',
@@ -176,9 +176,9 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
   {
     id: 'audit-portal',
     roleId: 'usr-pengawas',
-    title: 'Pengawasan & Syariah',
-    roleTitle: 'Dewan Penasehat & Pengawas',
-    officerName: 'H. M. Arsyad',
+    title: 'Pengawasan & Pemeriksa',
+    roleTitle: 'Koordinator Dewan Pengawas & Pemeriksa',
+    officerName: 'Dr. Andi Fiptar Abdi Alam, M. Si.',
     icon: BarChart3,
     themeColor: {
       bg: 'hover:bg-purple-50/40',
@@ -191,7 +191,7 @@ const FEATURE_PORTALS: FeaturePortalConfig[] = [
       btnHover: 'hover:bg-purple-800',
     },
     badge: 'Pengawasan & Audit',
-    description: 'Pengawasan kepatuhan syariah dan AD/ART 2020 dengan hak inspeksi evaluasi dan log audit aktivitas.',
+    description: 'Pengawasan dan pemeriksaan independen atas penggunaan dana keuangan kas masjid, evaluasi capaian KPI 4 pilar, dan audit AD/ART (ART Bagian Kedua Pasal 2 ayat 3, Read-Only).',
     features: [
       'Evaluasi Kinerja 4 Pilar (KPI Scorecard)',
       'Pratinjau Dokumen LPJ Resmi Cetak A4',

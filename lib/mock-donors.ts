@@ -3,7 +3,7 @@ import { DonorItem } from '@/types/donor';
 export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-001',
-    donorName: 'H. Abdul Rahman, S.E.',
+    donorName: 'H. Sahali',
     phone: '0812-0002-0001',
     rt: 'RT 01',
     address: 'Kompleks BTP Blok AE No. 04',
