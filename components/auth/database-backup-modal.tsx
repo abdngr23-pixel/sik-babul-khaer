@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   HardDrive,
   Cloud,
+  Activity,
+  ShieldCheck,
 } from 'lucide-react';
 import { useConfirm } from '@/lib/confirm-context';
 
@@ -29,6 +31,40 @@ interface DatabaseStats {
   totalAssets: number;
   totalApprovals: number;
   totalAuditLogs: number;
+  totalKhatib?: number;
+  totalFridaySchedules?: number;
+  totalRamadhanSchedules?: number;
+  totalKajianSchedules?: number;
+  totalPhysicalProjects?: number;
+  totalSssCans?: number;
+  totalSssRecords?: number;
+  totalZiswafAids?: number;
+  totalUsers?: number;
+  managedTablesCount?: number;
+}
+
+interface HealthTableReport {
+  table: string;
+  label: string;
+  tursoCount: number | null;
+  localCount: number | null;
+  drift: number;
+  status: 'SYNCED' | 'DRIFT_DETECTED' | 'SINGLE_ENGINE' | 'UNAVAILABLE';
+}
+
+interface HealthCheckResult {
+  overallStatus: 'HEALTHY' | 'DRIFT_DETECTED' | 'SINGLE_ENGINE';
+  healthScore: number;
+  checkedAt: string;
+  tursoConnected: boolean;
+  dualEngineActive: boolean;
+  summary: {
+    totalTables: number;
+    syncedTables: number;
+    singleEngineTables: number;
+    driftTables: number;
+  };
+  tables: HealthTableReport[];
 }
 
 interface DatabaseBackupModalProps {
@@ -49,6 +85,8 @@ export default function DatabaseBackupModal({
   const [restoreSuccess, setRestoreSuccess] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [healthData, setHealthData] = useState<HealthCheckResult | null>(null);
+  const [isHealthLoading, setIsHealthLoading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -86,6 +124,21 @@ export default function DatabaseBackupModal({
       isMounted = false;
     };
   }, [isOpen]);
+
+  const fetchHealth = useCallback(async () => {
+    setIsHealthLoading(true);
+    try {
+      const res = await fetch('/api/database/health');
+      const json = await res.json();
+      if (json.success) {
+        setHealthData(json.health);
+      }
+    } catch (err) {
+      console.error('Failed to fetch health check:', err);
+    } finally {
+      setIsHealthLoading(false);
+    }
+  }, []);
 
   if (!isOpen) return null;
 
@@ -393,6 +446,161 @@ export default function DatabaseBackupModal({
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Health Check Dual-Engine */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center border border-violet-200">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800">
+                    Health Check Dual-Engine
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Perbandingan jumlah baris per tabel antara Turso Cloud vs SQLite
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={fetchHealth}
+                disabled={isHealthLoading}
+                className="px-3 py-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-lg transition-colors flex items-center space-x-1.5"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isHealthLoading ? 'animate-spin' : ''}`} />
+                <span>{isHealthLoading ? 'Memeriksa...' : 'Jalankan Health Check'}</span>
+              </button>
+            </div>
+
+            {healthData ? (
+              <div className="space-y-4">
+                {/* Overall Status Badge */}
+                <div className={`p-3 rounded-xl border flex items-center justify-between ${
+                  healthData.overallStatus === 'HEALTHY'
+                    ? 'bg-emerald-50 border-emerald-200'
+                    : healthData.overallStatus === 'DRIFT_DETECTED'
+                    ? 'bg-amber-50 border-amber-200'
+                    : 'bg-blue-50 border-blue-200'
+                }`}>
+                  <div className="flex items-center space-x-2">
+                    <ShieldCheck className={`w-5 h-5 ${
+                      healthData.overallStatus === 'HEALTHY'
+                        ? 'text-emerald-600'
+                        : healthData.overallStatus === 'DRIFT_DETECTED'
+                        ? 'text-amber-600'
+                        : 'text-blue-600'
+                    }`} />
+                    <div>
+                      <span className={`text-sm font-bold ${
+                        healthData.overallStatus === 'HEALTHY'
+                          ? 'text-emerald-800'
+                          : healthData.overallStatus === 'DRIFT_DETECTED'
+                          ? 'text-amber-800'
+                          : 'text-blue-800'
+                      }`}>
+                        {healthData.overallStatus === 'HEALTHY'
+                          ? 'Sistem Sehat — Semua Tabel Tersinkronisasi'
+                          : healthData.overallStatus === 'DRIFT_DETECTED'
+                          ? `Drift Terdeteksi — ${healthData.summary.driftTables} Tabel Tidak Sinkron`
+                          : 'Single Engine — Hanya Satu Engine Aktif'}
+                      </span>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
+                        Diperiksa: {new Date(healthData.checkedAt).toLocaleString('id-ID')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`text-2xl font-black ${
+                    healthData.healthScore >= 90
+                      ? 'text-emerald-700'
+                      : healthData.healthScore >= 70
+                      ? 'text-amber-700'
+                      : 'text-rose-700'
+                  }`}>
+                    {healthData.healthScore}%
+                  </div>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-center">
+                    <span className="text-lg font-bold text-slate-800">{healthData.summary.totalTables}</span>
+                    <span className="block text-[10px] text-slate-500 font-medium">Total Tabel</span>
+                  </div>
+                  <div className="bg-emerald-50 p-2.5 rounded-lg border border-emerald-100 text-center">
+                    <span className="text-lg font-bold text-emerald-700">{healthData.summary.syncedTables}</span>
+                    <span className="block text-[10px] text-emerald-600 font-medium">Sinkron</span>
+                  </div>
+                  <div className="bg-blue-50 p-2.5 rounded-lg border border-blue-100 text-center">
+                    <span className="text-lg font-bold text-blue-700">{healthData.summary.singleEngineTables}</span>
+                    <span className="block text-[10px] text-blue-600 font-medium">Single Engine</span>
+                  </div>
+                  <div className="bg-amber-50 p-2.5 rounded-lg border border-amber-100 text-center">
+                    <span className="text-lg font-bold text-amber-700">{healthData.summary.driftTables}</span>
+                    <span className="block text-[10px] text-amber-600 font-medium">Drift</span>
+                  </div>
+                </div>
+
+                {/* Per-Table Detail */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-600">
+                        <th className="text-left py-2 px-3 font-semibold">Tabel</th>
+                        <th className="text-center py-2 px-3 font-semibold">Turso Cloud</th>
+                        <th className="text-center py-2 px-3 font-semibold">SQLite Lokal</th>
+                        <th className="text-center py-2 px-3 font-semibold">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {healthData.tables.map((row, idx) => (
+                        <tr key={row.table} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
+                          <td className="py-1.5 px-3">
+                            <span className="font-semibold text-slate-700">{row.label}</span>
+                            <span className="block text-[10px] text-slate-400 font-mono">{row.table}</span>
+                          </td>
+                          <td className="text-center py-1.5 px-3 font-mono font-bold text-slate-700">
+                            {row.tursoCount !== null ? row.tursoCount : '—'}
+                          </td>
+                          <td className="text-center py-1.5 px-3 font-mono font-bold text-slate-700">
+                            {row.localCount !== null ? row.localCount : '—'}
+                          </td>
+                          <td className="text-center py-1.5 px-3">
+                            {row.status === 'SYNCED' && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                ✅ Sinkron
+                              </span>
+                            )}
+                            {row.status === 'DRIFT_DETECTED' && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                                ⚠️ Drift {row.drift}
+                              </span>
+                            )}
+                            {row.status === 'SINGLE_ENGINE' && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                ℹ️ Single
+                              </span>
+                            )}
+                            {row.status === 'UNAVAILABLE' && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                                — N/A
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-400">
+                <Activity className="w-10 h-10 mx-auto mb-2 opacity-40" />
+                <p className="text-sm font-medium">Tekan &quot;Jalankan Health Check&quot; untuk memeriksa kondisi sinkronisasi dual-engine</p>
+                <p className="text-[11px] mt-1">Membandingkan 19 tabel antara Turso Cloud dan SQLite Lokal</p>
+              </div>
+            )}
           </div>
         </div>
 
