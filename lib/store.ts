@@ -3,7 +3,7 @@ import { Jamaah, JamaahFilterParams, JamaahStats } from '@/types/jamaah';
 import { FinanceTransaction, FinanceSummary, FinanceCategory, PaymentMethod } from '@/types/finance';
 import { AssetItem, AssetStats } from '@/types/asset';
 import { ApprovalItem, ApprovalStatus, FieldKPI, LPJReport } from '@/types/reports';
-import { AuditLogEntry } from '@/types/auth';
+import { User, AuditLogEntry } from '@/types/auth';
 import { DonorItem, DonorStats } from '@/types/donor';
 import {
   KhatibItem,
@@ -18,7 +18,7 @@ import { INITIAL_JAMAAH } from './mock-jamaah';
 import { INITIAL_TRANSACTIONS } from './mock-finance';
 import { INITIAL_ASSETS } from './mock-assets';
 import { INITIAL_APPROVALS, INITIAL_FIELD_KPIS } from './mock-reports';
-import { INITIAL_AUDIT_LOGS } from './mock-auth';
+import { INITIAL_AUDIT_LOGS, OFFICIAL_USERS } from './mock-auth';
 import { INITIAL_DONORS } from './mock-donors';
 import {
   INITIAL_KHATIB_DATABASE,
@@ -69,6 +69,9 @@ import {
   dbInsertSSSRecord,
   dbInsertZiswafAid,
   dbUpdateZiswafAid,
+  dbInsertUser,
+  dbUpdateUserPin,
+  dbUpdateUserStatus,
 } from './db';
 import {
   isTursoConfigured,
@@ -112,6 +115,9 @@ import {
   tursoInsertSSSRecord,
   tursoInsertZiswafAid,
   tursoUpdateZiswafAid,
+  tursoInsertUser,
+  tursoUpdateUserPin,
+  tursoUpdateUserStatus,
 } from './turso';
 
 // Dual-Engine Persistent Store:
@@ -136,6 +142,7 @@ class DataStore {
   private sssCans: SSSCanItem[] = [...INITIAL_SSS_CANS];
   private sssRecords: SSSCollectionRecord[] = [...INITIAL_SSS_RECORDS];
   private ziswafAids: ZiswafAidItem[] = [...INITIAL_ZISWAF_AIDS];
+  private users: User[] = [...OFFICIAL_USERS];
 
   private lastSyncedAt = 0;
   private syncPromise: Promise<void> | null = null;
@@ -167,6 +174,7 @@ class DataStore {
       if (data.sssCans && data.sssCans.length > 0) this.sssCans = data.sssCans;
       if (data.sssRecords && data.sssRecords.length > 0) this.sssRecords = data.sssRecords;
       if (data.ziswafAids && data.ziswafAids.length > 0) this.ziswafAids = data.ziswafAids;
+      if (data.users && data.users.length > 0) this.users = data.users;
     } catch (err) {
       console.warn('DataStore: Fallback to initial seed (local SQLite not yet ready):', err);
     }
@@ -212,6 +220,7 @@ class DataStore {
           if (data.sssCans) this.sssCans = data.sssCans;
           if (data.sssRecords) this.sssRecords = data.sssRecords;
           if (data.ziswafAids) this.ziswafAids = data.ziswafAids;
+          if (data.users) this.users = data.users;
           this.lastSyncedAt = Date.now();
         }
       } catch (err) {
@@ -2189,6 +2198,102 @@ class DataStore {
     }
 
     return updated;
+  }
+
+  // ---------------- USER MANAGEMENT ----------------
+  public async getUsers(): Promise<User[]> {
+    await this.sync();
+    return [...this.users];
+  }
+
+  public async getUserById(id: string): Promise<User | null> {
+    await this.sync();
+    const found = this.users.find((u) => u.id === id);
+    return found ? { ...found } : null;
+  }
+
+  public async createUser(newUser: User): Promise<User> {
+    this.users.push(newUser);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertUser(client, newUser);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist new user to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertUser(newUser);
+      } catch (err) {
+        console.error('Failed to persist new user to SQLite:', err);
+      }
+    }
+
+    return newUser;
+  }
+
+  public async updateUserPin(userId: string, pinHash: string): Promise<boolean> {
+    const idx = this.users.findIndex((u) => u.id === userId);
+    if (idx !== -1) {
+      this.users[idx] = { ...this.users[idx], pinHash };
+    }
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          const ok = await tursoUpdateUserPin(client, userId, pinHash);
+          this.lastSyncedAt = Date.now();
+          return ok;
+        } catch (err) {
+          console.error('Failed to update user PIN in Turso Cloud:', err);
+          return false;
+        }
+      }
+    } else {
+      try {
+        return dbUpdateUserPin(userId, pinHash);
+      } catch (err) {
+        console.error('Failed to update user PIN in SQLite:', err);
+        return false;
+      }
+    }
+
+    return idx !== -1;
+  }
+
+  public async updateUserStatus(userId: string, status: 'AKTIF' | 'NON_AKTIF'): Promise<boolean> {
+    const idx = this.users.findIndex((u) => u.id === userId);
+    if (idx !== -1) {
+      this.users[idx] = { ...this.users[idx], status };
+    }
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          const ok = await tursoUpdateUserStatus(client, userId, status);
+          this.lastSyncedAt = Date.now();
+          return ok;
+        } catch (err) {
+          console.error('Failed to update user status in Turso Cloud:', err);
+          return false;
+        }
+      }
+    } else {
+      try {
+        return dbUpdateUserStatus(userId, status);
+      } catch (err) {
+        console.error('Failed to update user status in SQLite:', err);
+        return false;
+      }
+    }
+
+    return idx !== -1;
   }
 }
 

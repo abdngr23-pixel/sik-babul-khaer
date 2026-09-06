@@ -6,10 +6,21 @@ import { OFFICIAL_USERS } from '@/lib/mock-auth';
 export const SESSION_COOKIE_NAME = 'sik_session';
 const SESSION_DURATION_SECONDS = 7 * 24 * 60 * 60; // 7 hari
 
-const SECRET_KEY =
-  process.env.AUTH_SECRET ||
-  process.env.NEXTAUTH_SECRET ||
-  'sik-babul-khaer-secure-hmac-key-2026-btp-ae-makassar';
+/**
+ * Mendapatkan kunci rahasia HMAC session dari environment.
+ * Menolak berjalan dan melempar error fatal jika AUTH_SECRET tidak disetel,
+ * demi mencegah kerentanan pemalsuan token (session forgery).
+ */
+export function getAuthSecret(): string {
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error(
+      '[CRITICAL SECURITY CONFIGURATION ERROR] Variabel environment AUTH_SECRET atau NEXTAUTH_SECRET tidak ditemukan! ' +
+      'Sistem menolak berjalan tanpa kunci rahasia kriptografi yang terkonfigurasi demi keamanan sesi DKM.'
+    );
+  }
+  return secret;
+}
 
 /**
  * Membuat token sesi bertanda tangan cryptographic (HMAC-SHA256).
@@ -18,6 +29,7 @@ export function createSessionToken(
   user: Pick<User, 'id' | 'role' | 'name' | 'roleLabel'>,
   expiresInSeconds = SESSION_DURATION_SECONDS
 ): string {
+  const secretKey = getAuthSecret();
   const now = Math.floor(Date.now() / 1000);
   const payload: AuthSessionPayload = {
     userId: user.id,
@@ -30,7 +42,7 @@ export function createSessionToken(
 
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const signature = crypto
-    .createHmac('sha256', SECRET_KEY)
+    .createHmac('sha256', secretKey)
     .update(payloadBase64)
     .digest('base64url');
 
@@ -47,8 +59,9 @@ export function verifySessionToken(token: string): AuthSessionPayload | null {
     const [payloadBase64, signature] = token.split('.');
     if (!payloadBase64 || !signature) return null;
 
+    const secretKey = getAuthSecret();
     const expectedSignature = crypto
-      .createHmac('sha256', SECRET_KEY)
+      .createHmac('sha256', secretKey)
       .update(payloadBase64)
       .digest('base64url');
 

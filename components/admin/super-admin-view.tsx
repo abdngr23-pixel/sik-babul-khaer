@@ -711,13 +711,14 @@ export default function SuperAdminView({
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-soft-sm space-y-3">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Tabel Basis Data Yang Dikelola (18 Tabel)
+                Tabel Basis Data Yang Dikelola (19 Tabel)
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs max-h-[220px] overflow-y-auto pr-1">
                 {[
                   'letters', 'minutes', 'jamaah', 'transactions', 'donors', 'assets',
                   'approvals', 'field_kpis', 'audit_logs', 'meta_kv', 'khatib_database', 'friday_schedules',
-                  'ramadhan_schedules', 'kajian_schedules', 'physical_projects', 'sss_cans', 'sss_records', 'ziswaf_aids'
+                  'ramadhan_schedules', 'kajian_schedules', 'physical_projects', 'sss_cans', 'sss_records', 'ziswaf_aids',
+                  'users'
                 ].map((tbl) => (
                   <div key={tbl} className="p-2 rounded-xl bg-slate-50 flex items-center gap-1.5 font-mono text-[11px] text-slate-700 font-semibold border border-slate-100">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />

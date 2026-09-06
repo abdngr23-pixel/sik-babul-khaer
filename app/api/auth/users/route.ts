@@ -1,23 +1,14 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { OFFICIAL_USERS } from '@/lib/mock-auth';
 import { User, UserRole } from '@/types/auth';
 import { extractTokenFromRequest, verifySessionToken } from '@/lib/auth-session';
+import { store } from '@/lib/store';
 
-// In-memory persistent users store for runtime additions and PIN changes
-// Initialized from OFFICIAL_USERS
-const globalUsers = globalThis as unknown as {
-  activeUsersList?: User[];
-};
-
-export function getActiveUsersList(): User[] {
-  if (!globalUsers.activeUsersList || globalUsers.activeUsersList.length === 0) {
-    globalUsers.activeUsersList = OFFICIAL_USERS.map((u) => ({
-      ...u,
-      status: u.status || 'AKTIF',
-    }));
-  }
-  return globalUsers.activeUsersList;
+/**
+ * Mendapatkan daftar user aktif langsung dari database persistent (Turso / SQLite).
+ */
+export async function getActiveUsersList(): Promise<User[]> {
+  return await store.getUsers();
 }
 
 function getSessionPayload(req: Request) {
@@ -29,6 +20,7 @@ function getSessionPayload(req: Request) {
 /**
  * GET /api/auth/users
  * Mengembalikan daftar akun pengurus lengkap untuk panel Super Admin.
+ * Mengambil langsung dari persistent Turso Cloud LibSQL / SQLite fallback.
  * Hanya dapat diakses oleh SUPER_ADMIN atau KETUA_UMUM.
  */
 export async function GET(req: Request) {
@@ -42,7 +34,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const users = getActiveUsersList().map((u) => ({
+    const allUsers = await store.getUsers();
+    const users = allUsers.map((u) => ({
       id: u.id,
       name: u.name,
       title: u.title,
@@ -61,7 +54,7 @@ export async function GET(req: Request) {
       users,
     });
   } catch (error) {
-    console.error('Error fetching admin users:', error);
+    console.error('Error fetching admin users from database:', error);
     return NextResponse.json(
       { success: false, error: 'Gagal mengambil data pengguna admin' },
       { status: 500 }
@@ -71,7 +64,7 @@ export async function GET(req: Request) {
 
 /**
  * POST /api/auth/users
- * Menambahkan user pengurus baru dengan enkripsi PIN bcrypt.
+ * Menambahkan user pengurus baru dengan enkripsi PIN bcrypt langsung ke persistent storage.
  */
 export async function POST(req: Request) {
   try {
@@ -127,12 +120,11 @@ export async function POST(req: Request) {
       bio: `Akun pengurus ditambahkan secara administratif oleh ${session?.name || 'Super Admin'} pada ${new Date().toLocaleDateString('id-ID')}.`,
     };
 
-    const usersList = getActiveUsersList();
-    usersList.push(newUser);
+    await store.createUser(newUser);
 
     return NextResponse.json({
       success: true,
-      message: `Pengurus "${newUser.name}" berhasil ditambahkan.`,
+      message: `Pengurus "${newUser.name}" berhasil ditambahkan ke database persisten.`,
       user: {
         id: newUser.id,
         name: newUser.name,
@@ -146,9 +138,9 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error('Error creating user:', error);
+    console.error('Error creating user in database:', error);
     return NextResponse.json(
-      { success: false, error: 'Gagal menambahkan user pengurus baru' },
+      { success: false, error: 'Gagal menambahkan user pengurus baru ke database' },
       { status: 500 }
     );
   }
@@ -156,7 +148,7 @@ export async function POST(req: Request) {
 
 /**
  * PATCH /api/auth/users
- * Mengubah atau mereset PIN pengurus, atau mengubah status akun.
+ * Mengubah atau mereset PIN pengurus, atau mengubah status akun langsung di persistent storage.
  */
 export async function PATCH(req: Request) {
   try {
@@ -187,8 +179,7 @@ export async function PATCH(req: Request) {
       );
     }
 
-    const usersList = getActiveUsersList();
-    const targetUser = usersList.find((u) => u.id === targetUserId);
+    const targetUser = await store.getUserById(targetUserId);
 
     if (!targetUser) {
       return NextResponse.json(
@@ -224,25 +215,26 @@ export async function PATCH(req: Request) {
         }
       }
 
-      // Hash PIN baru
-      targetUser.pinHash = await bcrypt.hash(newPin, 10);
+      // Hash PIN baru dan simpan ke database persisten
+      const newPinHash = await bcrypt.hash(newPin, 10);
+      await store.updateUserPin(targetUserId, newPinHash);
     }
 
     // Update status jika diminta
     if (newStatus && isSuperAdmin) {
-      targetUser.status = newStatus;
+      await store.updateUserStatus(targetUserId, newStatus);
     }
 
     return NextResponse.json({
       success: true,
       message: newPin
-        ? `PIN untuk akun ${targetUser.name} berhasil diperbarui.`
+        ? `PIN untuk akun ${targetUser.name} berhasil diperbarui di database persisten.`
         : `Status akun ${targetUser.name} berhasil diubah menjadi ${newStatus}.`,
     });
   } catch (error) {
-    console.error('Error updating user PIN/status:', error);
+    console.error('Error updating user PIN/status in database:', error);
     return NextResponse.json(
-      { success: false, error: 'Gagal memperbarui data akun pengurus' },
+      { success: false, error: 'Gagal memperbarui data akun pengurus di database' },
       { status: 500 }
     );
   }

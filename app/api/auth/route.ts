@@ -5,7 +5,6 @@ import { store } from '@/lib/store';
 import { UserRole, SafeUser } from '@/types/auth';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/lib/rate-limit';
 import { createSessionToken, setSessionCookie } from '@/lib/auth-session';
-import { getActiveUsersList } from './users/route';
 
 /**
  * GET /api/auth
@@ -15,7 +14,7 @@ import { getActiveUsersList } from './users/route';
  */
 export async function GET() {
   try {
-    const allActive = getActiveUsersList();
+    const allActive = await store.getUsers();
     const safeUsers: SafeUser[] = allActive.map((u) => ({
       id: u.id,
       name: u.name,
@@ -74,8 +73,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Cari target akun dari daftar aktif
-    const activeList = getActiveUsersList();
+    // Cari target akun dari daftar aktif persistent di database
+    const activeList = await store.getUsers();
     let matchedUser = activeList.find((u) => u.id === userId);
     if (!matchedUser && role) {
       matchedUser = activeList.find((u) => u.role === role);

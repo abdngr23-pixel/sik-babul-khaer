@@ -7,7 +7,7 @@ import { INITIAL_TRANSACTIONS } from './mock-finance';
 import { INITIAL_DONORS } from './mock-donors';
 import { INITIAL_ASSETS } from './mock-assets';
 import { INITIAL_APPROVALS, INITIAL_FIELD_KPIS } from './mock-reports';
-import { INITIAL_AUDIT_LOGS } from './mock-auth';
+import { INITIAL_AUDIT_LOGS, OFFICIAL_USERS } from './mock-auth';
 import {
   INITIAL_KHATIB_DATABASE,
   INITIAL_FRIDAY_SCHEDULES,
@@ -24,7 +24,7 @@ import { FinanceTransaction } from '@/types/finance';
 import { DonorItem } from '@/types/donor';
 import { AssetItem } from '@/types/asset';
 import { ApprovalItem, FieldKPI } from '@/types/reports';
-import { AuditLogEntry } from '@/types/auth';
+import { AuditLogEntry, User, UserRole } from '@/types/auth';
 import {
   KhatibItem,
   FridayScheduleItem,
@@ -431,6 +431,27 @@ export async function initTursoSchema(client: Client): Promise<void> {
       status TEXT NOT NULL,
       receiptNumber TEXT,
       notes TEXT NOT NULL
+    );
+  `);
+
+  // 19. Users Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      title TEXT NOT NULL,
+      role TEXT NOT NULL,
+      roleLabel TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      department TEXT NOT NULL,
+      isReadOnly INTEGER DEFAULT 0,
+      pinHash TEXT NOT NULL,
+      status TEXT DEFAULT 'AKTIF',
+      bio TEXT,
+      avatarUrl TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
     );
   `);
 
@@ -983,6 +1004,39 @@ async function seedTursoIfEmpty(client: Client): Promise<void> {
     await client.batch(stmts, 'write');
   }
 
+  // 19. Users
+  const userRes = await client.execute('SELECT COUNT(*) as count FROM users');
+  const userCount = Number(userRes.rows[0]?.count || 0);
+  if (userCount === 0 && OFFICIAL_USERS.length > 0) {
+    const now = new Date().toISOString();
+    const stmts: InStatement[] = OFFICIAL_USERS.map((u) => ({
+      sql: `
+        INSERT INTO users (
+          id, name, title, role, roleLabel, email, phone, department,
+          isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        u.id,
+        u.name,
+        u.title,
+        u.role,
+        u.roleLabel,
+        u.email,
+        u.phone,
+        u.department,
+        u.isReadOnly ? 1 : 0,
+        u.pinHash || '',
+        u.status || 'AKTIF',
+        u.bio || null,
+        u.avatarUrl || null,
+        now,
+        now,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
   await client.execute({
     sql: 'INSERT OR REPLACE INTO meta_kv (key, value) VALUES (?, ?)',
     args: ['turso_initialized_at', new Date().toISOString()],
@@ -1286,6 +1340,22 @@ const parseZiswafAid = (r: Record<string, unknown>): ZiswafAidItem => ({
   notes: (r.notes as string) || '',
 });
 
+const parseUser = (r: Record<string, unknown>): User => ({
+  id: r.id as string,
+  name: r.name as string,
+  title: r.title as string,
+  role: r.role as UserRole,
+  roleLabel: r.roleLabel as string,
+  email: r.email as string,
+  phone: r.phone as string,
+  department: r.department as string,
+  isReadOnly: Boolean(r.isReadOnly),
+  pinHash: (r.pinHash as string) || undefined,
+  status: (r.status as 'AKTIF' | 'NON_AKTIF') || 'AKTIF',
+  bio: (r.bio as string) || undefined,
+  avatarUrl: (r.avatarUrl as string) || undefined,
+});
+
 // ---------------- QUERY ALL DATA ----------------
 export async function tursoLoadAllData(client: Client) {
   await initTursoSchema(client);
@@ -1308,6 +1378,7 @@ export async function tursoLoadAllData(client: Client) {
     cansRes,
     recordsRes,
     aidsRes,
+    usersRes,
   ] = await Promise.all([
     client.execute('SELECT * FROM letters ORDER BY sequenceNumber DESC'),
     client.execute('SELECT * FROM minutes ORDER BY date DESC'),
@@ -1326,6 +1397,7 @@ export async function tursoLoadAllData(client: Client) {
     client.execute('SELECT * FROM sss_cans ORDER BY canCode ASC'),
     client.execute('SELECT * FROM sss_records ORDER BY collectionDate DESC'),
     client.execute('SELECT * FROM ziswaf_aids ORDER BY distributionDate DESC'),
+    client.execute('SELECT * FROM users ORDER BY id ASC'),
   ]);
 
   return {
@@ -1346,6 +1418,7 @@ export async function tursoLoadAllData(client: Client) {
     sssCans: cansRes.rows.map((r) => parseSSSCan(r as unknown as Record<string, unknown>)),
     sssRecords: recordsRes.rows.map((r) => parseSSSRecord(r as unknown as Record<string, unknown>)),
     ziswafAids: aidsRes.rows.map((r) => parseZiswafAid(r as unknown as Record<string, unknown>)),
+    users: usersRes.rows.map((r) => parseUser(r as unknown as Record<string, unknown>)),
   };
 }
 
@@ -2350,6 +2423,76 @@ export async function tursoUpdateZiswafAid(client: Client, a: ZiswafAidItem): Pr
   });
 }
 
+// ---------------- USER MUTATIONS ----------------
+export async function tursoGetUsers(client: Client): Promise<User[]> {
+  await initTursoSchema(client);
+  const res = await client.execute('SELECT * FROM users ORDER BY id ASC');
+  return res.rows.map((r) => parseUser(r as unknown as Record<string, unknown>));
+}
+
+export async function tursoGetUserById(client: Client, id: string): Promise<User | null> {
+  await initTursoSchema(client);
+  const res = await client.execute({
+    sql: 'SELECT * FROM users WHERE id = ? LIMIT 1',
+    args: [id],
+  });
+  if (res.rows.length === 0) return null;
+  return parseUser(res.rows[0] as unknown as Record<string, unknown>);
+}
+
+export async function tursoInsertUser(client: Client, user: User): Promise<User> {
+  await initTursoSchema(client);
+  const now = new Date().toISOString();
+  await client.execute({
+    sql: `
+      INSERT INTO users (
+        id, name, title, role, roleLabel, email, phone, department,
+        isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      user.id,
+      user.name,
+      user.title,
+      user.role,
+      user.roleLabel,
+      user.email,
+      user.phone,
+      user.department,
+      user.isReadOnly ? 1 : 0,
+      user.pinHash || '',
+      user.status || 'AKTIF',
+      user.bio || null,
+      user.avatarUrl || null,
+      now,
+      now,
+    ],
+  });
+  return user;
+}
+
+export async function tursoUpdateUserPin(client: Client, userId: string, pinHash: string): Promise<boolean> {
+  await initTursoSchema(client);
+  const res = await client.execute({
+    sql: 'UPDATE users SET pinHash = ?, updatedAt = ? WHERE id = ?',
+    args: [pinHash, new Date().toISOString(), userId],
+  });
+  return res.rowsAffected > 0;
+}
+
+export async function tursoUpdateUserStatus(
+  client: Client,
+  userId: string,
+  status: 'AKTIF' | 'NON_AKTIF'
+): Promise<boolean> {
+  await initTursoSchema(client);
+  const res = await client.execute({
+    sql: 'UPDATE users SET status = ?, updatedAt = ? WHERE id = ?',
+    args: [status, new Date().toISOString(), userId],
+  });
+  return res.rowsAffected > 0;
+}
+
 // ---------------- DATABASE STATS HELPER ----------------
 export async function tursoGetDatabaseStats(client: Client) {
   await initTursoSchema(client);
@@ -2380,6 +2523,7 @@ export async function tursoGetDatabaseStats(client: Client) {
     totalSssCans,
     totalSssRecords,
     totalZiswafAids,
+    totalUsers,
   ] = await Promise.all([
     getCount('letters'),
     getCount('minutes'),
@@ -2397,6 +2541,7 @@ export async function tursoGetDatabaseStats(client: Client) {
     getCount('sss_cans'),
     getCount('sss_records'),
     getCount('ziswaf_aids'),
+    getCount('users'),
   ]);
 
   const rawUrl = process.env.TURSO_DATABASE_URL || '';
@@ -2424,7 +2569,8 @@ export async function tursoGetDatabaseStats(client: Client) {
     totalSssCans,
     totalSssRecords,
     totalZiswafAids,
-    managedTablesCount: 18,
+    totalUsers,
+    managedTablesCount: 19,
   };
 }
 
@@ -2462,6 +2608,7 @@ export async function tursoRestoreDatabaseSnapshot(
       sssCans?: SSSCanItem[];
       sssRecords?: SSSCollectionRecord[];
       ziswafAids?: ZiswafAidItem[];
+      users?: User[];
     };
   }
 ): Promise<{ success: boolean; message: string }> {
@@ -3006,6 +3153,39 @@ export async function tursoRestoreDatabaseSnapshot(
             a.status,
             a.receiptNumber || null,
             a.notes,
+          ],
+        });
+      }
+    }
+
+    // Users
+    if (snapshot.data.users && Array.isArray(snapshot.data.users)) {
+      batchStatements.push({ sql: 'DELETE FROM users;', args: [] });
+      const now = new Date().toISOString();
+      for (const u of snapshot.data.users) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO users (
+              id, name, title, role, roleLabel, email, phone, department,
+              isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            u.id,
+            u.name,
+            u.title,
+            u.role,
+            u.roleLabel,
+            u.email,
+            u.phone,
+            u.department,
+            u.isReadOnly ? 1 : 0,
+            u.pinHash || '',
+            u.status || 'AKTIF',
+            u.bio || null,
+            u.avatarUrl || null,
+            now,
+            now,
           ],
         });
       }

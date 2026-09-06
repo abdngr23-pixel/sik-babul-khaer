@@ -9,7 +9,7 @@ import { INITIAL_TRANSACTIONS } from './mock-finance';
 import { INITIAL_DONORS } from './mock-donors';
 import { INITIAL_ASSETS } from './mock-assets';
 import { INITIAL_APPROVALS, INITIAL_FIELD_KPIS } from './mock-reports';
-import { INITIAL_AUDIT_LOGS } from './mock-auth';
+import { INITIAL_AUDIT_LOGS, OFFICIAL_USERS } from './mock-auth';
 import {
   INITIAL_KHATIB_DATABASE,
   INITIAL_FRIDAY_SCHEDULES,
@@ -26,7 +26,7 @@ import { FinanceTransaction } from '@/types/finance';
 import { DonorItem } from '@/types/donor';
 import { AssetItem } from '@/types/asset';
 import { ApprovalItem, FieldKPI } from '@/types/reports';
-import { AuditLogEntry } from '@/types/auth';
+import { AuditLogEntry, User, UserRole } from '@/types/auth';
 import {
   KhatibItem,
   FridayScheduleItem,
@@ -443,6 +443,27 @@ function initializeDatabase(db: DatabaseSync) {
       status TEXT NOT NULL,
       receiptNumber TEXT,
       notes TEXT NOT NULL
+    );
+  `);
+
+  // 19. Users Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      title TEXT NOT NULL,
+      role TEXT NOT NULL,
+      roleLabel TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      department TEXT NOT NULL,
+      isReadOnly INTEGER DEFAULT 0,
+      pinHash TEXT NOT NULL,
+      status TEXT DEFAULT 'AKTIF',
+      bio TEXT,
+      avatarUrl TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
     );
   `);
 
@@ -1001,6 +1022,39 @@ function seedIfEmpty(db: DatabaseSync) {
     }
   }
 
+  // 19. Users
+  const userCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number | bigint }).count
+  );
+  if (userCount === 0 && OFFICIAL_USERS.length > 0) {
+    const insertUser = db.prepare(`
+      INSERT INTO users (
+        id, name, title, role, roleLabel, email, phone, department,
+        isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const now = new Date().toISOString();
+    for (const u of OFFICIAL_USERS) {
+      insertUser.run(
+        u.id,
+        u.name,
+        u.title,
+        u.role,
+        u.roleLabel,
+        u.email,
+        u.phone,
+        u.department,
+        u.isReadOnly ? 1 : 0,
+        u.pinHash || '',
+        u.status || 'AKTIF',
+        u.bio || null,
+        u.avatarUrl || null,
+        now,
+        now
+      );
+    }
+  }
+
   // Save Meta initialization date
   db.prepare(`
     INSERT OR REPLACE INTO meta_kv (key, value) VALUES (?, ?)
@@ -1304,6 +1358,22 @@ const parseZiswafAid = (r: Record<string, unknown>): ZiswafAidItem => ({
   notes: (r.notes as string) || '',
 });
 
+const parseUser = (r: Record<string, unknown>): User => ({
+  id: r.id as string,
+  name: r.name as string,
+  title: r.title as string,
+  role: r.role as UserRole,
+  roleLabel: r.roleLabel as string,
+  email: r.email as string,
+  phone: r.phone as string,
+  department: r.department as string,
+  isReadOnly: Boolean(r.isReadOnly),
+  pinHash: (r.pinHash as string) || undefined,
+  status: (r.status as 'AKTIF' | 'NON_AKTIF') || 'AKTIF',
+  bio: (r.bio as string) || undefined,
+  avatarUrl: (r.avatarUrl as string) || undefined,
+});
+
 // ---------------- LOAD ALL DATA FROM DATABASE ----------------
 export function loadAllDataFromDatabase() {
   const db = getDb();
@@ -1325,6 +1395,7 @@ export function loadAllDataFromDatabase() {
     sssCans: db.prepare('SELECT * FROM sss_cans ORDER BY canCode ASC').all().map(parseSSSCan),
     sssRecords: db.prepare('SELECT * FROM sss_records ORDER BY collectionDate DESC').all().map(parseSSSRecord),
     ziswafAids: db.prepare('SELECT * FROM ziswaf_aids ORDER BY distributionDate DESC').all().map(parseZiswafAid),
+    users: db.prepare('SELECT * FROM users ORDER BY id ASC').all().map(parseUser),
   };
 }
 
@@ -2250,6 +2321,7 @@ export async function getDatabaseStats(): Promise<{
   totalSssCans?: number;
   totalSssRecords?: number;
   totalZiswafAids?: number;
+  totalUsers?: number;
   managedTablesCount?: number;
 }> {
   if (isTursoConfigured()) {
@@ -2300,8 +2372,69 @@ export async function getDatabaseStats(): Promise<{
     totalSssCans: getCount('sss_cans'),
     totalSssRecords: getCount('sss_records'),
     totalZiswafAids: getCount('ziswaf_aids'),
-    managedTablesCount: 18,
+    totalUsers: getCount('users'),
+    managedTablesCount: 19,
   };
+}
+
+// ---------------- USER LOCAL MUTATIONS ----------------
+export function dbGetUsers(): User[] {
+  const db = getDb();
+  return db.prepare('SELECT * FROM users ORDER BY id ASC').all().map(parseUser);
+}
+
+export function dbGetUserById(id: string): User | null {
+  const db = getDb();
+  const row = db.prepare('SELECT * FROM users WHERE id = ? LIMIT 1').get(id);
+  if (!row) return null;
+  return parseUser(row as Record<string, unknown>);
+}
+
+export function dbInsertUser(u: User) {
+  const db = getDb();
+  const now = new Date().toISOString();
+  db.prepare(`
+    INSERT INTO users (
+      id, name, title, role, roleLabel, email, phone, department,
+      isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    u.id,
+    u.name,
+    u.title,
+    u.role,
+    u.roleLabel,
+    u.email,
+    u.phone,
+    u.department,
+    u.isReadOnly ? 1 : 0,
+    u.pinHash || '',
+    u.status || 'AKTIF',
+    u.bio || null,
+    u.avatarUrl || null,
+    now,
+    now
+  );
+}
+
+export function dbUpdateUserPin(userId: string, pinHash: string): boolean {
+  const db = getDb();
+  const res = db.prepare('UPDATE users SET pinHash = ?, updatedAt = ? WHERE id = ?').run(
+    pinHash,
+    new Date().toISOString(),
+    userId
+  );
+  return (res as unknown as { changes: number }).changes > 0;
+}
+
+export function dbUpdateUserStatus(userId: string, status: 'AKTIF' | 'NON_AKTIF'): boolean {
+  const db = getDb();
+  const res = db.prepare('UPDATE users SET status = ?, updatedAt = ? WHERE id = ?').run(
+    status,
+    new Date().toISOString(),
+    userId
+  );
+  return (res as unknown as { changes: number }).changes > 0;
 }
 
 // Full Database Export Snapshot for Backup
@@ -2328,6 +2461,7 @@ export async function exportDatabaseSnapshot(): Promise<{
     sssCans?: SSSCanItem[];
     sssRecords?: SSSCollectionRecord[];
     ziswafAids?: ZiswafAidItem[];
+    users?: User[];
   };
 }> {
   if (isTursoConfigured()) {
@@ -2367,6 +2501,7 @@ export async function restoreDatabaseSnapshot(snapshot: {
     sssCans?: SSSCanItem[];
     sssRecords?: SSSCollectionRecord[];
     ziswafAids?: ZiswafAidItem[];
+    users?: User[];
   };
 }): Promise<{ success: boolean; message: string }> {
   if (isTursoConfigured()) {
@@ -2874,6 +3009,37 @@ export async function restoreDatabaseSnapshot(snapshot: {
           a.status,
           a.receiptNumber || null,
           a.notes
+        );
+      }
+    }
+
+    // Users
+    if (snapshot.data.users && Array.isArray(snapshot.data.users)) {
+      db.exec('DELETE FROM users;');
+      const stmt = db.prepare(`
+        INSERT INTO users (
+          id, name, title, role, roleLabel, email, phone, department,
+          isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      const now = new Date().toISOString();
+      for (const u of snapshot.data.users) {
+        stmt.run(
+          u.id,
+          u.name,
+          u.title,
+          u.role,
+          u.roleLabel,
+          u.email,
+          u.phone,
+          u.department,
+          u.isReadOnly ? 1 : 0,
+          u.pinHash || '',
+          u.status || 'AKTIF',
+          u.bio || null,
+          u.avatarUrl || null,
+          now,
+          now
         );
       }
     }

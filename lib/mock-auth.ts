@@ -11,7 +11,7 @@ export const OFFICIAL_USERS: User[] = [
     phone: '0812-4000-0000',
     department: 'Pusat Data & Infrastruktur TI Masjid',
     isReadOnly: false,
-    pinHash: '$2b$10$EELfAlg0AdLrq9rdzEIsfuMCCmKN/WtsaC1UC8f5dYkcHI2v0lS16',
+    pinHash: '$2b$10$EBga.R2ZSbhc8Qx0CdJq8ewRaoCUc8UOY4Ifs/YCIY6p09hVi7Le2',
     bio: 'Pengelola teknis database cloud Turso, pencadangan dan pemulihan data, otorisasi akun pengguna, dan pengaturan PIN keamanan DKM.',
     status: 'AKTIF',
   },
