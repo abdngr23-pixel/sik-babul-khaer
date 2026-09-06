@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   Loader2,
   ChevronLeft,
+  Database,
 } from 'lucide-react';
 
 interface LoginModalProps {
@@ -95,6 +96,10 @@ export default function LoginModal({ isOpen, onClose, onSuccessToast }: LoginMod
         return <Users className="w-5 h-5 text-teal-500" />;
       case 'DEWAN_PENGAWAS':
         return <Eye className="w-5 h-5 text-purple-500" />;
+      case 'SUPER_ADMIN':
+        return <Database className="w-5 h-5 text-teal-500" />;
+      default:
+        return <Shield className="w-5 h-5 text-slate-500" />;
     }
   };
 
@@ -135,6 +140,18 @@ export default function LoginModal({ isOpen, onClose, onSuccessToast }: LoginMod
           border: 'hover:border-purple-500/80',
           activeBorder: 'border-purple-600 bg-purple-50/40 ring-2 ring-purple-500/20',
           badgeBg: 'bg-purple-100 text-purple-800 border-purple-200',
+        };
+      case 'SUPER_ADMIN':
+        return {
+          border: 'hover:border-slate-800/80',
+          activeBorder: 'border-slate-900 bg-slate-900 text-teal-300 ring-2 ring-teal-500/20',
+          badgeBg: 'bg-slate-900 text-teal-300 border-slate-700',
+        };
+      default:
+        return {
+          border: 'hover:border-slate-400',
+          activeBorder: 'border-slate-600 bg-slate-50',
+          badgeBg: 'bg-slate-100 text-slate-800 border-slate-200',
         };
     }
   };

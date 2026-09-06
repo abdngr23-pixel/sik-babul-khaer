@@ -29,7 +29,8 @@ import CashflowRunwayAlert from '@/components/finance/cashflow-runway-alert';
 import RakerBudgetTracker from '@/components/finance/raker-budget-tracker';
 import DakwahView from '@/components/dakwah/dakwah-view';
 import AssetStatsCards from '@/components/assets/asset-stats';
-import AssetTable from '@/components/assets/asset-table';
+import SarprasView from '@/components/assets/sarpras-view';
+import SuperAdminView from '@/components/admin/super-admin-view';
 import AssetFormModal from '@/components/assets/asset-form-modal';
 
 // Laporan & Eksekutif Components
@@ -85,6 +86,7 @@ import {
   Archive,
   LogOut,
   Calendar,
+  Database,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -1053,6 +1055,21 @@ export default function DashboardPage() {
               </button>
             )}
 
+            {/* Super Admin & Database */}
+            {canAccessTab('superadmin') && (
+              <button
+                onClick={() => setActiveTab('superadmin')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'superadmin'
+                    ? 'bg-slate-900 text-teal-300 shadow-soft-sm ring-1 ring-teal-500/20'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                }`}
+              >
+                <Database className="w-3.5 h-3.5 text-teal-500" />
+                <span>Super Admin</span>
+              </button>
+            )}
+
             {/* Akses & Keamanan */}
             <div className="ml-auto flex items-center gap-1.5 pl-2">
               <button
@@ -1238,10 +1255,10 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Sarpras: Katalog Aset */}
+              {/* Sarpras: Tracker Proyek Fisik Raker 2026, Katalog Aset & Pemeliharaan */}
               {activeTab === 'assets' && (
                 <div className="space-y-4">
-                  <AssetTable
+                  <SarprasView
                     assets={assets}
                     selectedCategory={assetCategoryFilter}
                     onSelectCategory={setAssetCategoryFilter}
@@ -1332,6 +1349,16 @@ export default function DashboardPage() {
               {activeTab === 'dakwah' && (
                 <div className="space-y-4">
                   <DakwahView />
+                </div>
+              )}
+
+              {/* Super Admin: Database Cloud Turso, Cadangkan/Pulihkan & Kelola Akun/PIN */}
+              {activeTab === 'superadmin' && (
+                <div className="space-y-4">
+                  <SuperAdminView
+                    onOpenAuditLogs={() => setIsAuditLogModalOpen(true)}
+                    onOpenBackupModal={() => setIsBackupModalOpen(true)}
+                  />
                 </div>
               )}
             </>

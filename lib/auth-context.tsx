@@ -254,8 +254,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return true;
       }
 
-      // Ketua Umum memiliki hak supervisi & akses penuh ke seluruh modul
-      if (currentUser.role === 'KETUA_UMUM') {
+      // Super Admin dan Ketua Umum memiliki akses administratif penuh ke seluruh modul
+      if (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'KETUA_UMUM') {
         return true;
       }
 
@@ -290,8 +290,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         case 'reports':
           return true;
 
-        // Modul Pengesahan Satu Pintu (Eksklusif Ketua Umum, sudah ditangani di atas)
+        // Modul Pengesahan Satu Pintu (Eksklusif Ketua Umum & Super Admin)
         case 'approvals':
+          return false;
+
+        // Modul Super Admin (Khusus Super Admin & Ketua Umum, sudah ditangani di atas)
+        case 'superadmin':
           return false;
 
         default:
@@ -308,8 +312,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      // Ketua Umum has master administrative control over all modules
-      if (currentUser.role === 'KETUA_UMUM') {
+      // Super Admin dan Ketua Umum memiliki kontrol mutasi penuh
+      if (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'KETUA_UMUM') {
         return true;
       }
 
@@ -332,10 +336,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return currentUser.role === 'SARPRAS';
 
         case 'approvals':
-          return false; // Khusus Ketua Umum, sudah ditangani pada pengecekan awal di atas
+          return false;
 
         case 'reports':
           return currentUser.role === 'SEKRETARIS';
+
+        case 'superadmin':
+          return false;
 
         default:
           return false;

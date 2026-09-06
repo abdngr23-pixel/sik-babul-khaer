@@ -2,6 +2,20 @@ import { User, SafeUser, UserRole, RolePermission, AuditLogEntry } from '@/types
 
 export const OFFICIAL_USERS: User[] = [
   {
+    id: 'usr-admin',
+    name: 'Administrator TI & Sistem DKM',
+    title: 'Super Administrator & Operator IT',
+    role: 'SUPER_ADMIN',
+    roleLabel: 'Super Admin Sistem',
+    email: 'admin@babulkhaer.or.id',
+    phone: '0812-4000-0000',
+    department: 'Pusat Data & Infrastruktur TI Masjid',
+    isReadOnly: false,
+    pinHash: '$2b$10$EELfAlg0AdLrq9rdzEIsfuMCCmKN/WtsaC1UC8f5dYkcHI2v0lS16',
+    bio: 'Pengelola teknis database cloud Turso, pencadangan dan pemulihan data, otorisasi akun pengguna, dan pengaturan PIN keamanan DKM.',
+    status: 'AKTIF',
+  },
+  {
     id: 'usr-ketua',
     name: 'Drs. Muhammad Hasri, M. Hum.',
     title: 'Ketua Umum DKM',
@@ -99,6 +113,23 @@ export function getSafeOfficials(): SafeUser[] {
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
+  SUPER_ADMIN: {
+    canAccessArchive: true,
+    canCreateLetter: true,
+    canAccessMinutes: true,
+    canAccessJamaah: true,
+    canMutateJamaah: true,
+    canAccessFinance: true,
+    canMutateFinance: true,
+    canAccessAssets: true,
+    canMutateAssets: true,
+    canAccessReports: true,
+    canAccessApprovals: true,
+    canExecuteDispositions: true,
+    canViewAuditLogs: true,
+    canAccessSuperAdmin: true,
+    isReadOnly: false,
+  },
   KETUA_UMUM: {
     canAccessArchive: true,
     canCreateLetter: true,
@@ -113,6 +144,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canAccessApprovals: true,
     canExecuteDispositions: true,
     canViewAuditLogs: true,
+    canAccessSuperAdmin: true,
     isReadOnly: false,
   },
   SEKRETARIS: {
@@ -129,6 +161,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canAccessApprovals: false,
     canExecuteDispositions: false,
     canViewAuditLogs: false,
+    canAccessSuperAdmin: false,
     isReadOnly: false,
   },
   BENDAHARA: {
@@ -145,6 +178,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canAccessApprovals: false,
     canExecuteDispositions: false,
     canViewAuditLogs: false,
+    canAccessSuperAdmin: false,
     isReadOnly: false,
   },
   SARPRAS: {
@@ -161,6 +195,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canAccessApprovals: false,
     canExecuteDispositions: false,
     canViewAuditLogs: false,
+    canAccessSuperAdmin: false,
     isReadOnly: false,
   },
   KEMASJIDAN: {
@@ -177,6 +212,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canAccessApprovals: false,
     canExecuteDispositions: false,
     canViewAuditLogs: false,
+    canAccessSuperAdmin: false,
     isReadOnly: false,
   },
   DEWAN_PENGAWAS: {
@@ -193,6 +229,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canAccessApprovals: false,
     canExecuteDispositions: false,
     canViewAuditLogs: true,
+    canAccessSuperAdmin: false,
     isReadOnly: true,
   },
 };

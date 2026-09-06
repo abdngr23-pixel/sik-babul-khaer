@@ -1,4 +1,5 @@
 export type UserRole =
+  | 'SUPER_ADMIN'
   | 'KETUA_UMUM'
   | 'SEKRETARIS'
   | 'BENDAHARA'
@@ -19,6 +20,7 @@ export interface User {
   isReadOnly: boolean;
   pinHash?: string;
   bio?: string;
+  status?: 'AKTIF' | 'NON_AKTIF';
 }
 
 /**
@@ -26,7 +28,7 @@ export interface User {
  */
 export type SafeUser = Pick<
   User,
-  'id' | 'name' | 'title' | 'role' | 'roleLabel' | 'avatarUrl' | 'department' | 'isReadOnly' | 'bio'
+  'id' | 'name' | 'title' | 'role' | 'roleLabel' | 'avatarUrl' | 'department' | 'isReadOnly' | 'bio' | 'status'
 >;
 
 export interface AuthSessionPayload {
@@ -42,6 +44,10 @@ export type AuditActionType =
   | 'LOGIN'
   | 'LOGOUT'
   | 'SWITCH_ROLE'
+  | 'CHANGE_PIN'
+  | 'RESET_PIN'
+  | 'CREATE_USER'
+  | 'UPDATE_USER'
   | 'CREATE_LETTER'
   | 'UPDATE_LETTER'
   | 'EXTRACT_MINUTES'
@@ -60,7 +66,8 @@ export type AuditActionType =
   | 'UPDATE_DONOR'
   | 'DELETE_DONOR'
   | 'BACKUP_DATABASE'
-  | 'RESTORE_DATABASE';
+  | 'RESTORE_DATABASE'
+  | 'SYNC_TURSO';
 
 export type AuditModule =
   | 'AUTENTIKASI'
@@ -100,6 +107,7 @@ export interface RolePermission {
   canAccessApprovals: boolean;
   canExecuteDispositions: boolean;
   canViewAuditLogs: boolean;
+  canAccessSuperAdmin?: boolean;
   isReadOnly: boolean;
 }
 

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { OFFICIAL_USERS, ROLE_PERMISSIONS, getSafeOfficials } from '@/lib/mock-auth';
+import { ROLE_PERMISSIONS } from '@/lib/mock-auth';
 import { store } from '@/lib/store';
 import { UserRole, SafeUser } from '@/types/auth';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/lib/rate-limit';
 import { createSessionToken, setSessionCookie } from '@/lib/auth-session';
+import { getActiveUsersList } from './users/route';
 
 /**
  * GET /api/auth
@@ -14,7 +15,20 @@ import { createSessionToken, setSessionCookie } from '@/lib/auth-session';
  */
 export async function GET() {
   try {
-    const safeUsers = getSafeOfficials();
+    const allActive = getActiveUsersList();
+    const safeUsers: SafeUser[] = allActive.map((u) => ({
+      id: u.id,
+      name: u.name,
+      title: u.title,
+      role: u.role,
+      roleLabel: u.roleLabel,
+      avatarUrl: u.avatarUrl,
+      department: u.department,
+      isReadOnly: u.isReadOnly,
+      bio: u.bio,
+      status: u.status || 'AKTIF',
+    }));
+
     return NextResponse.json({
       success: true,
       users: safeUsers,
@@ -60,10 +74,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Cari target akun
-    let matchedUser = OFFICIAL_USERS.find((u) => u.id === userId);
+    // Cari target akun dari daftar aktif
+    const activeList = getActiveUsersList();
+    let matchedUser = activeList.find((u) => u.id === userId);
     if (!matchedUser && role) {
-      matchedUser = OFFICIAL_USERS.find((u) => u.role === role);
+      matchedUser = activeList.find((u) => u.role === role);
     }
 
     if (!matchedUser) {

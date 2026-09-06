@@ -17,6 +17,7 @@ import {
   Sparkles,
   AlertCircle,
   CheckCircle2,
+  Database,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
@@ -43,6 +44,32 @@ interface FeaturePortalConfig {
 }
 
 const FEATURE_PORTALS: FeaturePortalConfig[] = [
+  {
+    id: 'superadmin-portal',
+    roleId: 'usr-admin',
+    title: 'Pusat Data & Super Admin',
+    roleTitle: 'Administrator TI & Sistem DKM',
+    officerName: 'Administrator Sistem (IT DKM)',
+    icon: Database,
+    themeColor: {
+      bg: 'hover:bg-slate-900/5',
+      border: 'hover:border-slate-800',
+      iconBg: 'bg-slate-900 text-teal-300',
+      iconColor: 'text-teal-400',
+      badgeBg: 'bg-slate-900 border-slate-700 text-teal-300',
+      badgeText: 'text-teal-300',
+      btnBg: 'bg-slate-900 hover:bg-slate-800',
+      btnHover: 'hover:bg-slate-800',
+    },
+    badge: 'Turso, Backup & Pengguna',
+    description: 'Hak akses administratif penuh: sinkronisasi database cloud Turso, pencadangan/pemulihan SQLite, manajemen akun pengurus, dan pengaturan PIN keamanan.',
+    features: [
+      'Sinkronisasi Database Cloud Turso LibSQL',
+      'Pencadangan & Pemulihan (Backup/Restore)',
+      'Manajemen Pengguna & Tambah Akun',
+      'Pengaturan & Reset PIN Pengurus',
+    ],
+  },
   {
     id: 'finance-portal',
     roleId: 'usr-bendahara',
