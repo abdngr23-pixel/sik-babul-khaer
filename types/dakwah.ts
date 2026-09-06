@@ -16,6 +16,7 @@ export interface KhatibItem {
 
 export interface FridayScheduleItem {
   id: string;
+  year?: number; // Periode Tahun Kalender Masehi (misal 2026, 2027)
   date: string; // Format YYYY-MM-DD
   dateHijri: string;
   khatibName: string;
@@ -68,6 +69,8 @@ export interface KajianScheduleItem {
 
 export interface RamadhanScheduleItem {
   id: string;
+  year?: number; // Periode Tahun Kalender (misal 2026, 2027)
+  hijriYear?: string; // Format Hijriah (misal '1448 H')
   nightNumber: number; // Malam ke-1 s.d. 30
   date: string;
   penceramahTarawih: string;

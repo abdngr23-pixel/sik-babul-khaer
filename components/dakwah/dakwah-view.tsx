@@ -21,6 +21,9 @@ import {
   MapPin,
   ExternalLink,
   Filter,
+  FileSpreadsheet,
+  Upload,
+  Download,
 } from 'lucide-react';
 import {
   INITIAL_KHATIB_DATABASE,
@@ -39,10 +42,28 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import CreateKhatibModal from './create-khatib-modal';
 import CompleteAgendaModal from './complete-agenda-modal';
+import DakwahUploadModal from './dakwah-upload-modal';
+import {
+  downloadFridayScheduleTemplate,
+  exportFridayScheduleToExcel,
+  downloadRamadhanScheduleTemplate,
+  exportRamadhanScheduleToExcel,
+} from '@/lib/dakwah-excel-helper';
 
 export default function DakwahView() {
   const { isReadOnly } = useAuth();
   const [activeSubTab, setActiveSubTab] = useState<'asatidz' | 'khatib' | 'rawatib' | 'kajian' | 'ramadhan'>('khatib');
+
+  // Periode Tahun Terpilih (Default 2026)
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
+  const availableYears = [2025, 2026, 2027, 2028];
+
+  const getHijriYear = (yr: number): string => {
+    if (yr === 2026) return '1448 H';
+    if (yr === 2027) return '1449 H';
+    if (yr === 2025) return '1447 H';
+    return `${yr - 578} H`;
+  };
 
   // Master Database Asatidz / Khatib & Penceramah
   const [khatibList, setKhatibList] = useState<KhatibItem[]>(INITIAL_KHATIB_DATABASE);
@@ -61,7 +82,13 @@ export default function DakwahView() {
   const [kajianFilter, setKajianFilter] = useState<'ALL' | 'UPCOMING' | 'COMPLETED'>('ALL');
   const [ramadhanFilter, setRamadhanFilter] = useState<'ALL' | 'UPCOMING' | 'COMPLETED'>('ALL');
 
-  // Modal Tandai Selesai / Terlaksana
+  // Modal Upload & Template State
+  const [uploadModalState, setUploadModalState] = useState<{
+    isOpen: boolean;
+    type: 'FRIDAY' | 'RAMADHAN';
+  }>({ isOpen: false, type: 'FRIDAY' });
+
+  // Modal Tandai Selesai / Realisasi Pelaksanaan
   const [completeModalTarget, setCompleteModalTarget] = useState<{
     type: 'FRIDAY' | 'KAJIAN' | 'RAMADHAN';
     id: string;
@@ -73,6 +100,25 @@ export default function DakwahView() {
   } | null>(null);
 
   const [copiedMessage, setCopiedMessage] = useState<string | null>(null);
+
+  // Helper filter by Year
+  const getFridayItemYear = (item: FridayScheduleItem) => {
+    if (item.year) return item.year;
+    if (item.date && item.date.length >= 4) {
+      const parsed = parseInt(item.date.slice(0, 4), 10);
+      if (!isNaN(parsed)) return parsed;
+    }
+    return 2026;
+  };
+
+  const getRamadhanItemYear = (item: RamadhanScheduleItem) => {
+    if (item.year) return item.year;
+    return 2026;
+  };
+
+  // Schedules filtered by selectedYear
+  const fridayForSelectedYear = fridaySchedules.filter((f) => getFridayItemYear(f) === selectedYear);
+  const ramadhanForSelectedYear = ramadhanSchedules.filter((r) => getRamadhanItemYear(r) === selectedYear);
 
   // Handler tambah khatib baru
   const handleSaveKhatib = (newKhatibData: Omit<KhatibItem, 'id' | 'createdAt' | 'totalAppearances'>) => {
@@ -87,6 +133,36 @@ export default function DakwahView() {
     setTimeout(() => {
       setCopiedMessage(null);
     }, 4000);
+  };
+
+  // Handler import jadwal Jumat dari Excel
+  const handleImportFriday = (items: FridayScheduleItem[], mode: 'APPEND' | 'REPLACE') => {
+    if (mode === 'REPLACE') {
+      setFridaySchedules((prev) => [
+        ...prev.filter((f) => getFridayItemYear(f) !== selectedYear),
+        ...items,
+      ]);
+      setCopiedMessage(`Berhasil menggantikan jadwal Jumat tahun ${selectedYear} dengan ${items.length} sesi baru.`);
+    } else {
+      setFridaySchedules((prev) => [...prev, ...items]);
+      setCopiedMessage(`Alhamdulillah! Berhasil menambahkan ${items.length} sesi jadwal Jumat ke tahun ${selectedYear}.`);
+    }
+    setTimeout(() => setCopiedMessage(null), 4000);
+  };
+
+  // Handler import jadwal Ramadhan dari Excel
+  const handleImportRamadhan = (items: RamadhanScheduleItem[], mode: 'APPEND' | 'REPLACE') => {
+    if (mode === 'REPLACE') {
+      setRamadhanSchedules((prev) => [
+        ...prev.filter((r) => getRamadhanItemYear(r) !== selectedYear),
+        ...items,
+      ]);
+      setCopiedMessage(`Berhasil memperbarui jadwal Ramadhan ${getHijriYear(selectedYear)} dengan ${items.length} malam.`);
+    } else {
+      setRamadhanSchedules((prev) => [...prev, ...items]);
+      setCopiedMessage(`Alhamdulillah! Berhasil mengimpor ${items.length} jadwal malam Ramadhan.`);
+    }
+    setTimeout(() => setCopiedMessage(null), 4000);
   };
 
   // Handler selesaikan agenda dakwah
@@ -205,7 +281,7 @@ export default function DakwahView() {
   });
 
   // Filtered Friday
-  const filteredFridaySchedules = fridaySchedules.filter((f) => {
+  const filteredFridaySchedules = fridayForSelectedYear.filter((f) => {
     if (fridayFilter === 'UPCOMING') return !f.isCompleted;
     if (fridayFilter === 'COMPLETED') return f.isCompleted;
     return true;
@@ -219,7 +295,7 @@ export default function DakwahView() {
   });
 
   // Filtered Ramadhan
-  const filteredRamadhanSchedules = ramadhanSchedules.filter((r) => {
+  const filteredRamadhanSchedules = ramadhanForSelectedYear.filter((r) => {
     if (ramadhanFilter === 'UPCOMING') return !r.isCompleted;
     if (ramadhanFilter === 'COMPLETED') return r.isCompleted;
     return true;
@@ -232,7 +308,7 @@ export default function DakwahView() {
 
   return (
     <div className="space-y-6">
-      {/* Alert Notifikasi Salin / Tambah Berhasil */}
+      {/* Alert Notifikasi Salin / Tambah / Import Berhasil */}
       {copiedMessage && (
         <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center gap-2 shadow-soft-sm animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -251,8 +327,8 @@ export default function DakwahView() {
             Sistem Manajemen Peribadatan & Dakwah Masjid
           </h2>
           <p className="mt-2 text-xs sm:text-sm text-teal-100/90 leading-relaxed">
-            Database resmi Khatib & Penceramah, pengelolaan jadwal Sholat Jumat, realisasi agenda terlaksana, 3 Imam Rawatib sholat fardhu (insentif Rp1.5jt/bln),
-            agenda kajian pekanan swadaya, dan Semarak Ramadhan 1448 H sesuai Berita Acara Raker No. 006/A/DKM-BK-VIII/2026.
+            Database penceramah per periode tahun, sistem template & upload file Excel/CSV, jadwal Khatib Jumat (52 pekan), realisasi agenda dakwah terlaksana,
+            dan Semarak Ramadhan 1448 H sesuai Berita Acara Raker No. 006/A/DKM-BK-VIII/2026.
           </p>
           <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-4 text-xs text-teal-200 font-medium flex-wrap">
             <span>PJ Seksi: <strong>Drs. Manai, M.M.</strong></span>
@@ -281,43 +357,43 @@ export default function DakwahView() {
 
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-soft-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Khutbah Jumat</span>
+            <span className="text-xs font-semibold text-slate-500">Khutbah Jumat ({selectedYear})</span>
             <span className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
               <Calendar className="w-4 h-4" />
             </span>
           </div>
           <p className="text-xl font-extrabold text-slate-900 mt-2">
-            {fridaySchedules.filter((f) => f.isCompleted).length} / {fridaySchedules.length} Sesi
+            {fridayForSelectedYear.filter((f) => f.isCompleted).length} / {fridayForSelectedYear.length} Sesi
           </p>
           <p className="text-[11px] text-emerald-700 font-semibold mt-1">
-            {fridaySchedules.filter((f) => f.isCompleted).length} Agenda Selesai Dikerjakan
+            Periode Tahun {selectedYear} ({getHijriYear(selectedYear)})
           </p>
         </div>
 
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-soft-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Kajian Jamaah</span>
-            <span className="p-2 rounded-xl bg-blue-50 text-blue-700">
-              <BookOpen className="w-4 h-4" />
+            <span className="text-xs font-semibold text-slate-500">Semarak Ramadhan</span>
+            <span className="p-2 rounded-xl bg-purple-50 text-purple-700">
+              <Moon className="w-4 h-4" />
             </span>
           </div>
           <p className="text-xl font-extrabold text-slate-900 mt-2">
-            {kajianSchedules.filter((k) => k.isCompleted).length} / {kajianSchedules.length} Sesi
+            {ramadhanForSelectedYear.length} Malam Terjadwal
           </p>
-          <p className="text-[11px] text-blue-700 font-semibold mt-1">
-            Maks. 2x/Pekan • Dana Swadaya
+          <p className="text-[11px] text-purple-700 font-semibold mt-1">
+            Ramadhan {getHijriYear(selectedYear)} • {ramadhanForSelectedYear.filter((r) => r.isCompleted).length} Selesai
           </p>
         </div>
 
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-soft-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Imam Sholat Fardhu</span>
-            <span className="p-2 rounded-xl bg-purple-50 text-purple-700">
+            <span className="p-2 rounded-xl bg-blue-50 text-blue-700">
               <Clock className="w-4 h-4" />
             </span>
           </div>
           <p className="text-xl font-extrabold text-slate-900 mt-2">3 Imam Rawatib</p>
-          <p className="text-[11px] text-purple-700 font-semibold mt-1">
+          <p className="text-[11px] text-blue-700 font-semibold mt-1">
             Rp 1.500.000 / imam / bulan
           </p>
         </div>
@@ -328,10 +404,10 @@ export default function DakwahView() {
         <div className="flex items-center gap-1 sm:gap-2">
           {[
             { id: 'asatidz', label: 'Database Khatib & Dai', icon: Users, badge: khatibList.length },
-            { id: 'khatib', label: 'Khatib & Sholat Jumat', icon: Calendar, badge: fridaySchedules.length },
+            { id: 'khatib', label: 'Khatib & Sholat Jumat', icon: Calendar, badge: fridayForSelectedYear.length },
             { id: 'rawatib', label: 'Imam Rawatib & Marbot', icon: Clock },
             { id: 'kajian', label: 'Agenda Kajian & Tabligh', icon: BookOpen, badge: kajianSchedules.length },
-            { id: 'ramadhan', label: 'Semarak Ramadhan 1448 H', icon: Moon, badge: ramadhanSchedules.length },
+            { id: 'ramadhan', label: 'Semarak Ramadhan', icon: Moon, badge: ramadhanForSelectedYear.length },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeSubTab === tab.id;
@@ -461,7 +537,6 @@ export default function DakwahView() {
           {/* Grid Kartu Khatib */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredKhatibList.map((khatib) => {
-              // Extract initials
               const initials = khatib.name
                 .replace(/^(Dr\.|Drs\.|H\.|Prof\.|Ust\.|Ir\.)\s*/g, '')
                 .split(' ')
@@ -470,7 +545,6 @@ export default function DakwahView() {
                 .join('')
                 .toUpperCase();
 
-              // Clean phone for wa.me link
               const cleanPhone = khatib.phone.replace(/[^0-9]/g, '');
               const waNumber = cleanPhone.startsWith('0') ? `62${cleanPhone.slice(1)}` : cleanPhone;
 
@@ -480,7 +554,6 @@ export default function DakwahView() {
                   className="bg-white rounded-2xl p-5 border border-slate-200 shadow-soft-sm hover:shadow-soft-md transition-all flex flex-col justify-between"
                 >
                   <div>
-                    {/* Header Card */}
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-700 to-emerald-800 text-white font-extrabold text-sm flex items-center justify-center shadow-2xs shrink-0">
@@ -507,7 +580,6 @@ export default function DakwahView() {
                       </span>
                     </div>
 
-                    {/* Metadata & Tag */}
                     <div className="space-y-2 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
                       <div className="flex items-start gap-2">
                         <GraduationCap className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
@@ -532,7 +604,6 @@ export default function DakwahView() {
                     )}
                   </div>
 
-                  {/* Footer & Actions */}
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800">
                       {khatib.totalAppearances}x Penugasan
@@ -555,79 +626,132 @@ export default function DakwahView() {
               );
             })}
           </div>
-
-          {filteredKhatibList.length === 0 && (
-            <div className="bg-white rounded-2xl p-8 text-center border border-slate-200">
-              <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-bold text-slate-700">Tidak ada penceramah ditemukan</p>
-              <p className="text-xs text-slate-400 mt-1">
-                Silakan sesuaikan kata kunci pencarian atau tambahkan asatidz baru.
-              </p>
-            </div>
-          )}
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 1: KHATIB & SHOLAT JUMAT                                         */}
+      {/* SUB-TAB 1: KHATIB & SHOLAT JUMAT (DENGAN TAHUN, TEMPLATE & UPLOAD)       */}
       {/* ========================================================================= */}
       {activeSubTab === 'khatib' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-soft-sm">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">
-                Jadwal Penugasan Khatib & Imam Sholat Jumat
-              </h3>
+          {/* Toolbar Periode Tahun & Fitur Template / Upload */}
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-soft-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-base font-bold text-slate-900">
+                  Jadwal Penugasan Khatib Sholat Jumat
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-xs font-extrabold">
+                  Periode {selectedYear} ({getHijriYear(selectedYear)})
+                </span>
+              </div>
               <p className="text-xs text-slate-500">
-                Standar insentif Rp 1.500.000 / Jumat. Anda dapat menandai agenda yang telah dikerjakan beserta realisasi kehadirannya.
+                Pilih periode tahun kalender, unduh template resmi DKM, atau unggah file jadwal dari file Excel / CSV.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Selector Tahun & Action Buttons */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Year Selector */}
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
+                <Calendar className="w-3.5 h-3.5 text-teal-700" />
+                <span className="text-xs font-bold text-slate-600">Tahun:</span>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="bg-transparent text-xs font-extrabold text-teal-900 outline-hidden cursor-pointer"
+                >
+                  {availableYears.map((y) => (
+                    <option key={y} value={y}>
+                      {y} ({getHijriYear(y)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Unduh Template Excel */}
               <button
-                onClick={() => {
-                  const text = fridaySchedules
-                    .map(
-                      (s) =>
-                        `📅 *Jumat, ${s.date} (${s.dateHijri})* ${s.isCompleted ? '✅ [TERLAKSANA]' : ''}\n🎙️ Khatib: ${s.khatibName}\n🕌 Imam: ${s.imamName}\n📖 Tema: "${s.khutbahTopic}"\n`
-                    )
-                    .join('\n');
-                  handleCopyWhatsAppText(
-                    `*JADWAL KHATIB & IMAM JUMAT MASJID BABUL KHAER BTP BLOK AE*\n\n${text}\n_Wassalamu'alaikum Wr. Wb. — DKM Babul Khaer_`,
-                    'Khatib Jumat'
-                  );
-                }}
-                className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer"
+                type="button"
+                onClick={() => downloadFridayScheduleTemplate(selectedYear, khatibList)}
+                title="Unduh Template Excel Resmi DKM untuk Jadwal Jumat"
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
               >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Salin Teks ke WhatsApp Jamaah</span>
+                <Download className="w-3.5 h-3.5 text-teal-700" />
+                <span className="hidden sm:inline">Template Excel</span>
+              </button>
+
+              {/* Upload Jadwal Excel */}
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={() => setUploadModalState({ isOpen: true, type: 'FRIDAY' })}
+                  title="Upload Jadwal Khatib dari File Excel atau CSV"
+                  className="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-soft-sm transition-all cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Jadwal</span>
+                </button>
+              )}
+
+              {/* Export Excel */}
+              <button
+                type="button"
+                onClick={() => exportFridayScheduleToExcel(fridayForSelectedYear, selectedYear)}
+                title="Export seluruh jadwal Jumat tahun ini ke file Excel"
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span className="hidden sm:inline">Export Excel</span>
               </button>
             </div>
           </div>
 
-          {/* Filter Status Agenda Jumat */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500">Filter Agenda:</span>
-            <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
-              {[
-                { id: 'ALL', label: `Semua (${fridaySchedules.length})` },
-                { id: 'UPCOMING', label: `Terjadwal (${fridaySchedules.filter((f) => !f.isCompleted).length})` },
-                { id: 'COMPLETED', label: `Sudah Dikerjakan (${fridaySchedules.filter((f) => f.isCompleted).length})` },
-              ].map((pill) => (
-                <button
-                  key={pill.id}
-                  onClick={() => setFridayFilter(pill.id as 'ALL' | 'UPCOMING' | 'COMPLETED')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                    fridayFilter === pill.id
-                      ? 'bg-teal-700 text-white shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {pill.label}
-                </button>
-              ))}
+          {/* Filter Status Agenda Jumat & Share Button */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500">Filter Agenda:</span>
+              <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                {[
+                  { id: 'ALL', label: `Semua (${fridayForSelectedYear.length})` },
+                  { id: 'UPCOMING', label: `Terjadwal (${fridayForSelectedYear.filter((f) => !f.isCompleted).length})` },
+                  { id: 'COMPLETED', label: `Sudah Dikerjakan (${fridayForSelectedYear.filter((f) => f.isCompleted).length})` },
+                ].map((pill) => (
+                  <button
+                    key={pill.id}
+                    onClick={() => setFridayFilter(pill.id as 'ALL' | 'UPCOMING' | 'COMPLETED')}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      fridayFilter === pill.id
+                        ? 'bg-teal-700 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {pill.label}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            <button
+              onClick={() => {
+                const text = fridayForSelectedYear
+                  .map(
+                    (s) =>
+                      `📅 *Jumat, ${s.date} (${s.dateHijri})* ${s.isCompleted ? '✅ [TERLAKSANA]' : ''}\n🎙️ Khatib: ${s.khatibName}\n🕌 Imam: ${s.imamName}\n📖 Tema: "${s.khutbahTopic}"\n`
+                  )
+                  .join('\n');
+                handleCopyWhatsAppText(
+                  `*JADWAL KHATIB & IMAM JUMAT MASJID BABUL KHAER (TAHUN ${selectedYear})*\n\n${text}\n_Wassalamu'alaikum Wr. Wb. — Seksi Peribadatan & Dakwah DKM_`,
+                  `Khatib Jumat Tahun ${selectedYear}`
+                );
+              }}
+              className="px-3.5 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer self-stretch sm:self-auto justify-center"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Salin Teks ke WhatsApp Jamaah</span>
+            </button>
           </div>
 
+          {/* Grid Jadwal Jumat */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredFridaySchedules.map((item) => (
               <div
@@ -784,6 +908,40 @@ export default function DakwahView() {
               </div>
             ))}
           </div>
+
+          {filteredFridaySchedules.length === 0 && (
+            <div className="bg-white rounded-2xl p-8 text-center border border-slate-200 space-y-3">
+              <Calendar className="w-10 h-10 text-slate-300 mx-auto" />
+              <div>
+                <p className="text-sm font-bold text-slate-800">
+                  Belum ada jadwal Khatib Jumat untuk Tahun {selectedYear}
+                </p>
+                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                  Gunakan tombol di bawah untuk mengunduh template Excel resmi, mengisi daftar khatib setahun penuh, lalu unggah file ke sistem.
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => downloadFridayScheduleTemplate(selectedYear, khatibList)}
+                  className="px-4 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh Template Excel {selectedYear}</span>
+                </button>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => setUploadModalState({ isOpen: true, type: 'FRIDAY' })}
+                    className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Jadwal {selectedYear}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -899,7 +1057,6 @@ export default function DakwahView() {
             </button>
           </div>
 
-          {/* Filter Status Agenda Kajian */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-500">Filter Agenda:</span>
             <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
@@ -1031,26 +1188,92 @@ export default function DakwahView() {
       )}
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 4: SEMARAK RAMADHAN 1448 H                                        */}
+      {/* SUB-TAB 4: SEMARAK RAMADHAN (DENGAN TAHUN, TEMPLATE & UPLOAD)             */}
       {/* ========================================================================= */}
       {activeSubTab === 'ramadhan' && (
         <div className="space-y-4">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-soft-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="p-1.5 rounded-lg bg-purple-100 text-purple-800">
-                <Moon className="w-4 h-4" />
-              </span>
-              <h3 className="text-base font-bold text-slate-900">
-                Perencanaan & Realisasi Semarak Ramadhan 1448 H
-              </h3>
+          {/* Toolbar Periode Ramadhan & Fitur Template / Upload */}
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-soft-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="p-1.5 rounded-lg bg-purple-100 text-purple-800">
+                  <Moon className="w-4 h-4" />
+                </span>
+                <h3 className="text-base font-bold text-slate-900">
+                  Jadwal Penceramah Tarawih Ramadhan
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-xs font-extrabold">
+                  Ramadhan {getHijriYear(selectedYear)} ({selectedYear} M)
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Unduh template 30 malam Ramadhan, isi daftar ustadz kultum, dan unggah langsung ke sistem.
+              </p>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Standar honor resmi hasil revisi sidang pleno Raker 2026:
-              <br />• <strong>Honor Penceramah Ramadhan:</strong> Rp 400.000 / malam.
-              <br />• <strong>Honor Imam Tarawih:</strong> Rp 300.000 / malam.
-              <br />• <strong>Buka Puasa Ramadhan:</strong> Rp 0 (Murni partisipasi konsumsi swadaya jamaah RT 01 s/d RT 05).
-              <br />• <strong>I&apos;tikaf 10 Akhir Ramadhan:</strong> Masih terbuka / belum diputuskan final oleh Pengurus DKM.
-            </p>
+
+            {/* Actions for Ramadhan */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Year / Season Selector */}
+              <div className="flex items-center gap-1.5 bg-purple-50/70 border border-purple-200 rounded-xl px-2.5 py-1">
+                <Moon className="w-3.5 h-3.5 text-purple-700" />
+                <span className="text-xs font-bold text-slate-600">Tahun:</span>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="bg-transparent text-xs font-extrabold text-purple-950 outline-hidden cursor-pointer"
+                >
+                  {availableYears.map((y) => (
+                    <option key={y} value={y}>
+                      Ramadhan {getHijriYear(y)} ({y} M)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Unduh Template Ramadhan */}
+              <button
+                type="button"
+                onClick={() => downloadRamadhanScheduleTemplate(selectedYear, getHijriYear(selectedYear), khatibList)}
+                title="Unduh Template Excel 30 Malam Ramadhan Lengkap Standar Raker"
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-purple-700" />
+                <span className="hidden sm:inline">Template 30 Malam</span>
+              </button>
+
+              {/* Upload Jadwal Ramadhan */}
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={() => setUploadModalState({ isOpen: true, type: 'RAMADHAN' })}
+                  title="Upload Jadwal Penceramah Tarawih dari File Excel"
+                  className="px-3.5 py-2 rounded-xl bg-purple-800 hover:bg-purple-900 text-white text-xs font-bold flex items-center gap-1.5 shadow-soft-sm transition-all cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Ramadhan</span>
+                </button>
+              )}
+
+              {/* Export Ramadhan to Excel */}
+              <button
+                type="button"
+                onClick={() => exportRamadhanScheduleToExcel(ramadhanForSelectedYear, getHijriYear(selectedYear), selectedYear)}
+                title="Export Jadwal Ramadhan ke File Excel"
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span className="hidden sm:inline">Export Excel</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Standar Pleno Raker Banner */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
+            Standar honor resmi hasil revisi sidang pleno Raker 2026:
+            <br />• <strong>Honor Penceramah Ramadhan:</strong> Rp 400.000 / malam.
+            <br />• <strong>Honor Imam Tarawih:</strong> Rp 300.000 / malam.
+            <br />• <strong>Buka Puasa Ramadhan:</strong> Rp 0 (Murni partisipasi swadaya jamaah RT 01 s/d RT 05).
+            <br />• <strong>I&apos;tikaf 10 Akhir Ramadhan:</strong> Terjadwal pada malam ke-21 s.d. 30.
           </div>
 
           {/* Filter Status Ramadhan */}
@@ -1058,16 +1281,16 @@ export default function DakwahView() {
             <span className="text-xs font-bold text-slate-500">Filter Agenda:</span>
             <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
               {[
-                { id: 'ALL', label: `Semua Malam (${ramadhanSchedules.length})` },
-                { id: 'UPCOMING', label: `Mendatang (${ramadhanSchedules.filter((r) => !r.isCompleted).length})` },
-                { id: 'COMPLETED', label: `Sudah Dikerjakan (${ramadhanSchedules.filter((r) => r.isCompleted).length})` },
+                { id: 'ALL', label: `Semua (${ramadhanForSelectedYear.length})` },
+                { id: 'UPCOMING', label: `Mendatang (${ramadhanForSelectedYear.filter((r) => !r.isCompleted).length})` },
+                { id: 'COMPLETED', label: `Sudah Dikerjakan (${ramadhanForSelectedYear.filter((r) => r.isCompleted).length})` },
               ].map((pill) => (
                 <button
                   key={pill.id}
                   onClick={() => setRamadhanFilter(pill.id as 'ALL' | 'UPCOMING' | 'COMPLETED')}
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                     ramadhanFilter === pill.id
-                      ? 'bg-teal-700 text-white shadow-2xs'
+                      ? 'bg-purple-800 text-white shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -1171,6 +1394,40 @@ export default function DakwahView() {
               </tbody>
             </table>
           </div>
+
+          {filteredRamadhanSchedules.length === 0 && (
+            <div className="bg-white rounded-2xl p-8 text-center border border-slate-200 space-y-3">
+              <Moon className="w-10 h-10 text-slate-300 mx-auto" />
+              <div>
+                <p className="text-sm font-bold text-slate-800">
+                  Belum ada jadwal penceramah untuk Ramadhan {getHijriYear(selectedYear)}
+                </p>
+                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                  Unduh template resmi 30 malam Ramadhan yang telah disiapkan, lalu unggah file jadwal Anda.
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => downloadRamadhanScheduleTemplate(selectedYear, getHijriYear(selectedYear), khatibList)}
+                  className="px-4 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh Template 30 Malam</span>
+                </button>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => setUploadModalState({ isOpen: true, type: 'RAMADHAN' })}
+                    className="px-4 py-2 rounded-xl bg-purple-800 hover:bg-purple-900 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Jadwal Ramadhan</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1195,6 +1452,18 @@ export default function DakwahView() {
           onSave={handleSaveCompletedAgenda}
         />
       )}
+
+      {/* MODAL 3: Upload Spreadsheet Jadwal (Friday & Ramadhan) */}
+      <DakwahUploadModal
+        isOpen={uploadModalState.isOpen}
+        type={uploadModalState.type}
+        selectedYear={selectedYear}
+        hijriYear={getHijriYear(selectedYear)}
+        asatidzList={khatibList}
+        onClose={() => setUploadModalState({ ...uploadModalState, isOpen: false })}
+        onImportFriday={handleImportFriday}
+        onImportRamadhan={handleImportRamadhan}
+      />
     </div>
   );
 }
