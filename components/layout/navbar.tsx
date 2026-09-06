@@ -87,13 +87,13 @@ export default function Navbar({
   };
 
   return (
-    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 shadow-soft-sm gap-3">
+    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-2.5 sm:px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 shadow-soft-sm gap-1.5 sm:gap-3 max-w-full overflow-hidden">
       {/* Left: Islamic Greeting & Title */}
-      <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink min-w-0 overflow-hidden">
         <button
           type="button"
           onClick={onToggleMobileMenu}
-          className="md:hidden p-2 -ml-1 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer border border-slate-200/60"
+          className="md:hidden p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer border border-slate-200/60 shrink-0"
           aria-label="Buka Menu Navigasi"
         >
           <Menu className="w-5 h-5 text-emerald-800" />
@@ -104,7 +104,7 @@ export default function Navbar({
           <button
             type="button"
             onClick={onGoBack}
-            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 text-xs font-bold border border-emerald-200/90 shadow-2xs transition-all cursor-pointer group shrink-0"
+            className="inline-flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 text-xs font-bold border border-emerald-200/90 shadow-2xs transition-all cursor-pointer group shrink-0"
             title={`Kembali ke ${previousTabLabel || 'Menu Sebelumnya'}`}
             aria-label={`Kembali ke ${previousTabLabel || 'Menu Sebelumnya'}`}
           >
@@ -113,10 +113,10 @@ export default function Navbar({
           </button>
         )}
 
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">Assalamu&apos;alaikum,</span>
-            <span className="text-xs font-bold text-slate-900 truncate max-w-[130px] sm:max-w-[180px] xl:max-w-xs block">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap hidden sm:inline">Assalamu&apos;alaikum,</span>
+            <span className="text-xs font-bold text-slate-900 truncate max-w-[90px] xs:max-w-[120px] sm:max-w-[180px] xl:max-w-xs block">
               {currentUser.name}
             </span>
           </div>
@@ -139,7 +139,7 @@ export default function Navbar({
       </div>
 
       {/* Right: Prayer Schedule & Control Actions */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         {/* Dynamic Prayer Schedule Widget (Makassar WITA) */}
         <PrayerWidget />
 
@@ -154,10 +154,10 @@ export default function Navbar({
           <button
             onClick={onOpenAuditLogs}
             title={`${pendingApprovalsCount} pengajuan menunggu disposisi Ketua Umum`}
-            className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-colors cursor-pointer"
+            className="relative p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-colors cursor-pointer shrink-0"
           >
             <Bell className="w-4 h-4 text-slate-600" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
           </button>
         )}
 
@@ -166,38 +166,39 @@ export default function Navbar({
           <button
             onClick={onOpenAuditLogs}
             title="Buka Log Audit Aktivitas Sistem"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold transition-all cursor-pointer shadow-soft-sm"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold transition-all cursor-pointer shadow-soft-sm shrink-0"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-            <span className="hidden sm:inline">Log Audit</span>
+            <span>Log Audit</span>
           </button>
         )}
 
         {/* Active Role Card & Switch Button */}
         <div
           onClick={onOpenSwitchRole}
-          title="Klik untuk beralih akun pengurus"
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs cursor-pointer hover:shadow-soft-sm transition-all ${getRoleBadgeStyle(
+          title={`Klik untuk beralih akun: ${currentUser.roleLabel}`}
+          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl border text-xs cursor-pointer hover:shadow-soft-sm transition-all shrink-0 ${getRoleBadgeStyle(
             currentUser.role
           )}`}
         >
           {getRoleIcon(currentUser.role)}
-          <div className="flex flex-col text-left">
+          <div className="hidden sm:flex flex-col text-left">
             <span className="font-bold text-[11px] leading-tight whitespace-nowrap">
               {currentUser.roleLabel}
             </span>
           </div>
-          <ArrowRightLeft className="w-3 h-3 text-slate-400 hover:text-slate-600 ml-1" />
+          <ArrowRightLeft className="w-3 h-3 text-slate-400 hover:text-slate-600 ml-0.5 sm:ml-1" />
         </div>
 
         {/* Action Button (Dynamic per module) */}
         {!hideCreateButton && (
           <button
             onClick={onOpenCreate}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-semibold shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer active:scale-95 whitespace-nowrap"
+            title={createButtonLabel}
+            className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-semibold shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer active:scale-95 shrink-0"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{createButtonLabel}</span>
+            <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+            <span className="hidden sm:inline whitespace-nowrap">{createButtonLabel}</span>
           </button>
         )}
       </div>

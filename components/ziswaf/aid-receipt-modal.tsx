@@ -41,62 +41,63 @@ export default function AidReceiptModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-soft-2xl border border-slate-200 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in print:p-0 print:bg-transparent print:static">
+      <div className="bg-white w-full max-w-2xl rounded-t-3xl sm:rounded-2xl shadow-soft-2xl border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] animate-slide-up sm:animate-none print:shadow-none print:border-none print:h-auto print:max-h-none print:rounded-none">
         {/* Top Control Bar (Hidden on print) */}
-        <div className="px-6 py-3.5 bg-slate-900 text-white flex items-center justify-between print:hidden">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs font-bold">Kwitansi / Tanda Terima Bantuan Sosial Resmi</span>
+        <div className="px-4 sm:px-6 py-3 bg-slate-900 text-white flex items-center justify-between shrink-0 print:hidden">
+          <div className="flex items-center gap-2 min-w-0">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="text-xs font-bold truncate">Kwitansi ZISWAF Resmi</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handlePrint}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Cetak Bukti</span>
+              <span className="hidden xs:inline">Cetak Bukti</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Printable Document Container */}
-        <div className="p-8 space-y-6 text-slate-900 bg-white" id="printable-aid-receipt">
-          {/* Kop Surat Resmi */}
-          <div className="border-b-2 border-slate-900 pb-4 text-center relative">
-            <div className="flex items-center justify-center gap-3 mb-1">
-              <div className="w-12 h-12 relative rounded-full overflow-hidden bg-emerald-50 border border-emerald-300 flex items-center justify-center shrink-0">
-                <Image
-                  src="/logo-babul-khaer.png"
-                  alt="Logo DKM"
-                  width={44}
-                  height={44}
-                  className="object-contain"
-                />
-              </div>
-              <div className="text-left">
-                <h2 className="text-sm font-extrabold tracking-wider text-slate-900 uppercase">
-                  Dewan Kemakmuran Masjid Babul Khaer
-                </h2>
-                <h3 className="text-xs font-bold text-emerald-800">
-                  Bidang III: Sosial, Kemasyarakatan & Unit Pengumpul Zakat (UPZ)
-                </h3>
-                <p className="text-[10px] text-slate-600">
-                  Kompleks Bumi Tamalanrea Permai (BTP) Blok AE, Kel. Tamalanrea, Kec. Tamalanrea, Kota Makassar 90245
-                </p>
+        {/* Printable Document Container (Pan-scrollable on mobile) */}
+        <div className="flex-1 overflow-y-auto overscroll-contain overflow-x-auto p-2 sm:p-6 bg-slate-100/60 print:p-0 print:bg-white print:overflow-visible">
+          <div className="p-5 sm:p-8 space-y-6 text-slate-900 bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-[520px] sm:min-w-0 mx-auto print:border-none print:shadow-none print:p-0 print:min-w-0 print:rounded-none" id="printable-aid-receipt">
+            {/* Kop Surat Resmi */}
+            <div className="border-b-2 border-slate-900 pb-4 text-center relative">
+              <div className="flex items-center justify-center gap-3 mb-1">
+                <div className="w-12 h-12 relative rounded-full overflow-hidden bg-emerald-50 border border-emerald-300 flex items-center justify-center shrink-0">
+                  <Image
+                    src="/logo-babul-khaer.png"
+                    alt="Logo DKM"
+                    width={44}
+                    height={44}
+                    className="object-contain"
+                  />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-sm font-extrabold tracking-wider text-slate-900 uppercase">
+                    Dewan Kemakmuran Masjid Babul Khaer
+                  </h2>
+                  <h3 className="text-xs font-bold text-emerald-800">
+                    Bidang III: Sosial, Kemasyarakatan & Unit Pengumpul Zakat (UPZ)
+                  </h3>
+                  <p className="text-[10px] text-slate-600">
+                    Kompleks Bumi Tamalanrea Permai (BTP) Blok AE, Kel. Tamalanrea, Kec. Tamalanrea, Kota Makassar 90245
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Judul Kwitansi */}
-          <div className="text-center space-y-1">
-            <h1 className="text-base font-extrabold tracking-wider uppercase underline decoration-emerald-600 decoration-2">
+            {/* Judul Kwitansi */}
+            <div className="text-center space-y-1">
+              <h1 className="text-base font-extrabold tracking-wider uppercase underline decoration-emerald-600 decoration-2">
               Tanda Terima Penyaluran Bantuan Sosial / ZISWAF
             </h1>
             <p className="text-xs font-mono font-bold text-slate-700">
@@ -199,5 +200,6 @@ export default function AidReceiptModal({
         </div>
       </div>
     </div>
+  </div>
   );
 }

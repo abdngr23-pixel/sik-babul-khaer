@@ -47,7 +47,7 @@ export default function DashboardSummaryGrid({
 
   const gridColsClass =
     activeCardsCount === 1
-      ? 'grid-cols-1 max-w-md'
+      ? 'grid-cols-1 w-full max-w-xl'
       : activeCardsCount === 2
       ? 'grid-cols-1 sm:grid-cols-2'
       : activeCardsCount === 3

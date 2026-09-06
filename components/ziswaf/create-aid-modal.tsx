@@ -116,28 +116,28 @@ export default function CreateAidModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
+      <div className="bg-white w-full max-w-xl rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] animate-slide-up sm:animate-none">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-emerald-900 to-teal-900 text-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-white/10 border border-white/20">
+        <div className="px-5 py-4 sm:px-6 sm:py-5 bg-gradient-to-r from-emerald-900 to-teal-900 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-xl bg-white/10 border border-white/20 shrink-0">
               <HeartHandshake className="w-5 h-5 text-emerald-300" />
             </div>
-            <div>
-              <h3 className="text-base font-bold">Catat Penyaluran ZISWAF & Bansos</h3>
-              <p className="text-xs text-emerald-200">Seksi Sosial & UPZ DKM Babul Khaer BTP Blok AE</p>
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold truncate">Catat Penyaluran ZISWAF & Bansos</h3>
+              <p className="text-xs text-emerald-200 truncate">Seksi Sosial & UPZ DKM Babul Khaer</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-300 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg text-slate-300 hover:text-white transition-colors shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6 space-y-4">
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
@@ -343,17 +343,17 @@ export default function CreateAidModal({
             />
           </div>
 
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <div className="pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer text-center"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold shadow-soft-sm transition-all cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold shadow-soft-sm transition-all cursor-pointer text-center"
             >
               Simpan Penyaluran Bansos
             </button>

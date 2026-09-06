@@ -781,27 +781,27 @@ export default function SuperAdminView({
       {/* MODAL: RESET / GANTI PIN PENGURUS                                         */}
       {/* ========================================================================= */}
       {resetPinTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden">
-            <div className="px-6 py-5 bg-slate-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-white/10 border border-white/20">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
+          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col max-h-[92dvh] animate-slide-up sm:animate-none">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 bg-slate-900 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-2 rounded-xl bg-white/10 border border-white/20 shrink-0">
                   <KeyRound className="w-5 h-5 text-teal-300" />
                 </div>
-                <div>
-                  <h3 className="text-base font-bold">Ubah / Reset PIN Pengurus</h3>
-                  <p className="text-xs text-slate-300">Akun: {resetPinTarget.name}</p>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold truncate">Ubah / Reset PIN Pengurus</h3>
+                  <p className="text-xs text-slate-300 truncate">Akun: {resetPinTarget.name}</p>
                 </div>
               </div>
               <button
                 onClick={() => setResetPinTarget(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
+                className="p-1 rounded-lg text-slate-400 hover:text-white shrink-0 ml-2"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleResetPinSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleResetPinSubmit} className="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto overscroll-contain">
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
                 <span>Jabatan: <strong>{resetPinTarget.title}</strong></span>
                 <br />
@@ -843,17 +843,17 @@ export default function SuperAdminView({
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <button
                   type="button"
                   onClick={() => setResetPinTarget(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 text-center"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold"
+                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold text-center"
                 >
                   Simpan Perubahan PIN
                 </button>
@@ -867,27 +867,27 @@ export default function SuperAdminView({
       {/* MODAL: TAMBAH PENGURUS BARU                                               */}
       {/* ========================================================================= */}
       {isAddUserOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden my-6">
-            <div className="px-6 py-5 bg-slate-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-white/10 border border-white/20">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] animate-slide-up sm:animate-none">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 bg-slate-900 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-2 rounded-xl bg-white/10 border border-white/20 shrink-0">
                   <Users className="w-5 h-5 text-teal-300" />
                 </div>
-                <div>
-                  <h3 className="text-base font-bold">Pendaftaran Akun Pengurus Baru</h3>
-                  <p className="text-xs text-slate-300">Penambahan pengurus DKM Babul Khaer</p>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold truncate">Pendaftaran Akun Pengurus Baru</h3>
+                  <p className="text-xs text-slate-300 truncate">Penambahan pengurus DKM Babul Khaer</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAddUserOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
+                className="p-1 rounded-lg text-slate-400 hover:text-white shrink-0 ml-2"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddUserSubmit} className="p-6 space-y-3.5">
+            <form onSubmit={handleAddUserSubmit} className="p-4 sm:p-6 space-y-3.5 flex-1 overflow-y-auto overscroll-contain">
               {addUserError && (
                 <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
@@ -976,17 +976,17 @@ export default function SuperAdminView({
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <button
                   type="button"
                   onClick={() => setIsAddUserOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 text-center"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold"
+                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold text-center"
                 >
                   Daftarkan Pengurus
                 </button>

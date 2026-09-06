@@ -108,32 +108,32 @@ export default function CreateKhatibModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
+      <div className="bg-white w-full max-w-xl rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] animate-slide-up sm:animate-none">
         {/* Header Modal */}
-        <div className="px-6 py-5 bg-gradient-to-r from-teal-800 to-emerald-900 text-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-teal-800 to-emerald-900 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 shrink-0">
               <UserPlus className="w-5 h-5 text-teal-200" />
             </div>
-            <div>
-              <h3 className="text-base font-bold tracking-tight">Tambah Khatib & Penceramah Baru</h3>
-              <p className="text-xs text-teal-100/80">
-                Pendaftaran data asatidz untuk penugasan Sholat Jumat dan Kajian Masjid.
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold tracking-tight truncate">Tambah Khatib & Penceramah Baru</h3>
+              <p className="text-xs text-teal-100/80 truncate">
+                Pendaftaran data asatidz untuk penugasan Sholat Jumat dan Kajian.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="p-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Isi */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4 flex-1">
           {/* Nama Lengkap */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -286,17 +286,17 @@ export default function CreateKhatibModal({
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors cursor-pointer text-center"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-soft-sm flex items-center gap-2 transition-all cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-soft-sm flex items-center justify-center gap-2 transition-all cursor-pointer text-center"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Simpan ke Database</span>

@@ -48,12 +48,12 @@ export default function FridayReportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto print:p-0 print:bg-white animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[96vh] my-auto text-slate-800 print:max-h-none print:shadow-none print:border-none print:rounded-none">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 overflow-hidden print:p-0 print:bg-white animate-in fade-in duration-150">
+      <div className="bg-white w-full sm:max-w-4xl rounded-t-3xl sm:rounded-2xl shadow-2xl border-t sm:border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[96dvh] text-slate-800 print:max-h-none print:shadow-none print:border-none print:rounded-none">
         {/* Top Control Bar (Hidden on Print) */}
-        <div className="px-6 py-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 print:hidden shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white p-1 border border-emerald-300 flex items-center justify-center shrink-0 shadow-2xs">
+        <div className="px-4 py-3 sm:px-6 sm:py-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 print:hidden shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white p-1 border border-emerald-300 flex items-center justify-center shrink-0 shadow-2xs">
               <Image
                 src="/logo-babul-khaer.png"
                 alt="Logo Masjid Babul Khaer"
@@ -63,22 +63,22 @@ export default function FridayReportModal({
               />
             </div>
             <div>
-              <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider leading-tight">
                 Laporan Kas Keuangan Mingguan Sholat Jumat
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[10px] sm:text-[11px] text-slate-400 leading-tight">
                 Format Standar Cetak Pengumuman Mimbar Jumat & Papan Bicara
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all cursor-pointer shadow-soft-sm active:scale-95"
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all cursor-pointer shadow-soft-sm active:scale-95 shrink-0"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Cetak / Simpan PDF</span>
+              <span className="hidden sm:inline">Cetak / Simpan PDF</span>
             </button>
             <button
               onClick={onClose}
@@ -90,8 +90,8 @@ export default function FridayReportModal({
         </div>
 
         {/* Printable Document Canvas */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12 print:p-0 print:overflow-visible font-serif bg-slate-100/50 print:bg-white flex justify-center">
-          <div className="w-full max-w-[210mm] bg-white p-8 md:p-12 shadow-md print:shadow-none print:p-4 text-slate-900 leading-relaxed border border-slate-200 print:border-none">
+        <div className="flex-1 overflow-y-auto overflow-x-auto p-3 sm:p-6 md:p-12 print:p-0 print:overflow-visible font-serif bg-slate-100/50 print:bg-white flex justify-center overscroll-contain">
+          <div className="w-full max-w-[210mm] bg-white p-4 sm:p-8 md:p-12 shadow-md print:shadow-none print:p-4 text-slate-900 leading-relaxed border border-slate-200 print:border-none">
             {/* Kop Resmi DKM */}
             <div className="text-center border-b-2 border-slate-900 pb-4 mb-6 relative">
               <div className="flex items-center justify-center gap-4 mb-2">

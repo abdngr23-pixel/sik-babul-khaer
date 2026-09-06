@@ -117,49 +117,49 @@ export default function DakwahUploadModal({
   const totalValid = type === 'FRIDAY' ? parsedFriday.length : parsedRamadhan.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
+      <div className="bg-white w-full max-w-2xl rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] animate-slide-up sm:animate-none">
         {/* Header Modal */}
-        <div className="px-6 py-5 bg-gradient-to-r from-teal-800 to-emerald-900 text-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-teal-800 to-emerald-900 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 shrink-0">
               <FileSpreadsheet className="w-5 h-5 text-teal-200" />
             </div>
-            <div>
-              <h3 className="text-base font-bold tracking-tight">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold tracking-tight truncate">
                 {type === 'FRIDAY'
-                  ? `Upload Jadwal Khatib & Sholat Jumat — Tahun ${selectedYear}`
-                  : `Upload Jadwal Penceramah Tarawih — ${hijriYear} (${selectedYear})`}
+                  ? `Upload Jadwal Jumat — ${selectedYear}`
+                  : `Upload Jadwal Ramadhan — ${hijriYear}`}
               </h3>
-              <p className="text-xs text-teal-100/80">
-                Impor massal dari file Excel (.xlsx, .xls) atau CSV untuk periode tahun yang dipilih.
+              <p className="text-xs text-teal-100/80 truncate">
+                Impor massal dari file Excel (.xlsx, .xls) atau CSV.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="p-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Banner Unduh Template Resmi */}
-        <div className="p-4 bg-teal-50/70 border-b border-teal-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="text-xs text-teal-900">
+        <div className="p-3.5 sm:p-4 bg-teal-50/70 border-b border-teal-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+          <div className="text-xs text-teal-900 min-w-0">
             <p className="font-bold flex items-center gap-1.5">
-              <Download className="w-3.5 h-3.5 text-teal-700" />
+              <Download className="w-3.5 h-3.5 text-teal-700 shrink-0" />
               <span>Belum memiliki file dengan format standar?</span>
             </p>
             <p className="text-teal-700 text-[11px] mt-0.5">
-              Unduh template resmi DKM Babul Khaer yang telah dilengkapi contoh data dan referensi Asatidz.
+              Unduh template resmi DKM Babul Khaer yang telah dilengkapi contoh data.
             </p>
           </div>
           <button
             type="button"
             onClick={handleDownloadTemplate}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-teal-100/60 text-teal-800 border border-teal-200 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors shrink-0 cursor-pointer"
+            className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-white hover:bg-teal-100/60 text-teal-800 border border-teal-200 text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors shrink-0 cursor-pointer text-center"
           >
             <Download className="w-3.5 h-3.5 text-teal-700" />
             <span>Unduh Template Excel</span>
@@ -167,7 +167,7 @@ export default function DakwahUploadModal({
         </div>
 
         {/* Konten Upload & Preview */}
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto overscroll-contain">
           {/* File Drag & Drop / Input */}
           <div
             onClick={() => fileInputRef.current?.click()}
@@ -369,17 +369,17 @@ export default function DakwahUploadModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Calendar className="w-3.5 h-3.5 text-teal-700" />
+            <Calendar className="w-3.5 h-3.5 text-teal-700 shrink-0" />
             <span>Tahun Target: <strong>{selectedYear}</strong></span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-white text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 hover:bg-white text-slate-700 text-xs font-bold transition-colors cursor-pointer text-center"
             >
               Batal
             </button>
@@ -387,7 +387,7 @@ export default function DakwahUploadModal({
               type="button"
               disabled={totalValid === 0 || isParsing}
               onClick={handleCommitImport}
-              className={`px-5 py-2 rounded-xl text-xs font-bold shadow-soft-sm flex items-center gap-2 transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-none px-5 py-2.5 sm:py-2 rounded-xl text-xs font-bold shadow-soft-sm flex items-center justify-center gap-2 transition-all cursor-pointer text-center ${
                 totalValid > 0 && !isParsing
                   ? 'bg-teal-700 hover:bg-teal-800 text-white'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'

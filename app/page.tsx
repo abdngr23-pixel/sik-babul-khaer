@@ -472,7 +472,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 overflow-x-hidden">
       {/* Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
@@ -489,7 +489,7 @@ export default function DashboardPage() {
       />
 
       {/* Main Content Layout */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         {/* Top Navbar */}
         <Navbar
           onOpenCreate={handleOpenCreateLetter}
@@ -510,7 +510,7 @@ export default function DashboardPage() {
           onOpenAuditLogs={() => setIsAuditLogModalOpen(true)}
         />
 
-        <main className="p-6 md:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
+        <main className="p-3.5 sm:p-5 md:p-8 space-y-4 sm:space-y-6 flex-1 max-w-7xl w-full mx-auto overflow-x-hidden">
           {/* Indikator Persistensi Basis Data (Khusus Super Admin) */}
           {currentUser.role === 'SUPER_ADMIN' && (
             <PersistenceBanner onOpenBackupModal={() => setIsBackupModalOpen(true)} />
@@ -518,22 +518,22 @@ export default function DashboardPage() {
 
           {/* Quick Back & Breadcrumb Bar (Visible when not on Dashboard) */}
           {activeTab !== 'dashboard' && (
-            <div className="flex items-center justify-between gap-3 bg-white/95 backdrop-blur-md p-2.5 px-4 rounded-2xl border border-slate-200/90 shadow-soft-sm animate-in fade-in slide-in-from-left-2 duration-200">
+            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 bg-white/95 backdrop-blur-md p-2 sm:p-2.5 px-3 sm:px-4 rounded-2xl border border-slate-200/90 shadow-soft-sm animate-in fade-in slide-in-from-left-2 duration-200">
               <button
                 type="button"
                 onClick={handleGoBack}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold shadow-soft-sm hover:shadow-md transition-all cursor-pointer group"
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold shadow-soft-sm hover:shadow-md transition-all cursor-pointer group shrink-0"
                 title={`Kembali ke ${previousTabLabel}`}
               >
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                <span>Kembali ke {previousTabLabel}</span>
+                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" />
+                <span className="truncate max-w-[200px] sm:max-w-none">Kembali ke {previousTabLabel}</span>
               </button>
 
               <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 font-medium overflow-hidden">
                 <button
                   type="button"
                   onClick={() => handleNavigateTab('dashboard')}
-                  className="hover:text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                  className="hover:text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer transition-colors shrink-0"
                 >
                   <LayoutDashboard className="w-3.5 h-3.5 text-emerald-600" />
                   <span className="hidden sm:inline">Pusat Kendali</span>

@@ -157,12 +157,12 @@ export default function LoginModal({ isOpen, onClose, onSuccessToast }: LoginMod
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200 overflow-hidden">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl border-t sm:border border-slate-200 w-full sm:max-w-3xl h-[95dvh] sm:h-auto sm:max-h-[90dvh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white flex items-center justify-between border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white p-1 shadow-soft-sm border border-emerald-100 flex items-center justify-center shrink-0">
+        <div className="px-4 py-3 sm:px-6 sm:py-5 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white p-1 shadow-soft-sm border border-emerald-100 flex items-center justify-center shrink-0">
               <Image
                 src="/logo-babul-khaer.png"
                 alt="Logo Resmi Masjid Babul Khaer"
@@ -171,15 +171,15 @@ export default function LoginModal({ isOpen, onClose, onSuccessToast }: LoginMod
                 className="w-full h-full object-contain"
               />
             </div>
-            <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <span>Manajemen Hak Akses & Akun Pengurus</span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  Otentikasi PIN Aman
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5 sm:gap-2 leading-tight truncate">
+                <span className="truncate">Hak Akses Pengurus</span>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 sm:px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
+                  PIN Aman
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">
-                Pilih profil pimpinan DKM Babul Khaer dan masukkan PIN 6 digit resmi untuk otentikasi sesi.
+              <p className="text-[11px] sm:text-xs text-slate-400 leading-tight truncate">
+                Pilih profil pimpinan DKM Babul Khaer dan masukkan PIN 6 digit resmi
               </p>
             </div>
           </div>

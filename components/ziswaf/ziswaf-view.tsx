@@ -795,27 +795,27 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
       {/* MODAL: TAMBAH DISTRIBUSI KALENG SSS BARU                                  */}
       {/* ========================================================================= */}
       {isAddCanOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden">
-            <div className="px-6 py-5 bg-teal-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-white/10 border border-white/20">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
+          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col max-h-[92dvh] animate-slide-up sm:animate-none">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 bg-teal-900 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-2 rounded-xl bg-white/10 border border-white/20 shrink-0">
                   <Coins className="w-5 h-5 text-amber-300" />
                 </div>
-                <div>
-                  <h3 className="text-base font-bold">Distribusi Kaleng SSS Baru</h3>
-                  <p className="text-xs text-teal-200">Program Sedekah Seribu Sehari</p>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold truncate">Distribusi Kaleng SSS Baru</h3>
+                  <p className="text-xs text-teal-200 truncate">Program Sedekah Seribu Sehari</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAddCanOpen(false)}
-                className="p-1 rounded-lg text-slate-300 hover:text-white"
+                className="p-1 rounded-lg text-slate-300 hover:text-white shrink-0 ml-2"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateNewCan} className="p-6 space-y-3.5">
+            <form onSubmit={handleCreateNewCan} className="p-4 sm:p-6 space-y-3.5 flex-1 overflow-y-auto overscroll-contain">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Kode Label Kaleng <span className="text-rose-500">*</span>
@@ -907,17 +907,17 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
                 </select>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <button
                   type="button"
                   onClick={() => setIsAddCanOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 text-center"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold"
+                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold text-center"
                 >
                   Daftarkan Kaleng SSS
                 </button>

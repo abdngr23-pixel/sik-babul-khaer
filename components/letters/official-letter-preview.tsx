@@ -53,43 +53,43 @@ ${letter.signatory1.name}               ${letter.signatory2.name}
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 overflow-hidden print:p-0 print:bg-white">
       {/* Container Dialog */}
-      <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto">
+      <div className="bg-white w-full sm:max-w-4xl rounded-t-3xl sm:rounded-2xl shadow-2xl border-t sm:border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 print:max-h-none print:shadow-none print:border-none print:rounded-none">
         {/* Top Control Bar (Hidden on print) */}
-        <div className="print:hidden bg-slate-900 text-white px-6 py-3.5 flex items-center justify-between border-b border-slate-800 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <FileCheck2 className="w-5 h-5 text-emerald-400" />
-            <div>
-              <h3 className="font-semibold text-sm">
+        <div className="print:hidden bg-slate-900 text-white px-3 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between border-b border-slate-800 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <FileCheck2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div className="min-w-0">
+              <h3 className="font-semibold text-xs sm:text-sm truncate">
                 Pratinjau Dokumen Surat Resmi
               </h3>
-              <p className="text-xs text-slate-400 font-mono">
+              <p className="text-[10px] sm:text-xs text-slate-400 font-mono truncate">
                 {letter.letterNumber}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={handleCopyText}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors cursor-pointer"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Tersalin' : 'Salin Naskah'}</span>
+              <span className="hidden sm:inline">{copied ? 'Tersalin' : 'Salin Naskah'}</span>
             </button>
 
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold text-white shadow-sm transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold text-white shadow-sm transition-all cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Cetak / Simpan PDF</span>
+              <span className="hidden sm:inline">Cetak / Simpan PDF</span>
             </button>
 
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors ml-2 cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -97,11 +97,11 @@ ${letter.signatory1.name}               ${letter.signatory2.name}
         </div>
 
         {/* Scrollable Letter Document Canvas */}
-        <div className="p-6 md:p-10 overflow-y-auto bg-slate-100/70 flex justify-center flex-1">
+        <div className="p-3 sm:p-6 md:p-10 overflow-y-auto overflow-x-auto bg-slate-100/70 flex justify-center flex-1 overscroll-contain">
           {/* A4 Paper Mockup */}
           <div
             id="printable-official-letter"
-            className="bg-white text-slate-900 w-full max-w-[210mm] min-h-[297mm] p-10 md:p-14 shadow-md rounded-sm border border-slate-200 relative flex flex-col justify-between"
+            className="bg-white text-slate-900 w-full max-w-[210mm] min-h-[297mm] p-6 sm:p-10 md:p-14 shadow-md rounded-sm border border-slate-200 relative flex flex-col justify-between"
             style={{ fontFamily: '"Times New Roman", Times, serif' }}
           >
             {/* Draft Watermark */}

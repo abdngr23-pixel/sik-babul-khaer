@@ -18,6 +18,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -53,9 +54,9 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${plusJakartaSans.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} h-full antialiased overflow-x-hidden`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-[#F8FAFC] text-[#0F172A]">
+      <body className="min-h-full flex flex-col font-sans bg-[#F8FAFC] text-[#0F172A] overflow-x-hidden">
         <AuthProvider>
           <ToastProvider>
             <ConfirmProvider>

@@ -91,12 +91,12 @@ export default function PrayerWidget() {
         className="flex items-center gap-1.5 bg-slate-50/90 hover:bg-slate-100/90 p-1 pr-2.5 rounded-xl border border-slate-200/80 text-xs shadow-2xs transition-all cursor-pointer select-none group"
         title="Klik untuk melihat seluruh jadwal waktu sholat Makassar (WITA)"
       >
-        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-200/60">
+        <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-200/60">
           <Clock className="w-3 h-3 text-emerald-600" />
           <span>WITA</span>
         </div>
 
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-600 text-white font-bold text-[11px] shadow-xs">
+        <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-lg bg-emerald-600 text-white font-bold text-[10px] sm:text-[11px] shadow-xs">
           <ActiveIcon className="w-3 h-3 text-emerald-200" />
           <span>{currentPrayerItem.name}</span>
           <span className="font-mono text-emerald-100 font-bold">{currentPrayerItem.time}</span>

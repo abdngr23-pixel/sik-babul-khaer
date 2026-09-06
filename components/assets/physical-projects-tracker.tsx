@@ -396,22 +396,22 @@ export default function PhysicalProjectsTracker() {
 
       {/* Modal Update Progres */}
       {editingProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden">
-            <div className="px-6 py-5 bg-amber-900 text-white flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold">Update Progres Proyek Fisik</h3>
-                <p className="text-xs text-amber-200">{editingProject.title}</p>
+        <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
+          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col max-h-[92dvh] animate-slide-up sm:animate-none">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 bg-amber-900 text-white flex items-center justify-between shrink-0">
+              <div className="min-w-0">
+                <h3 className="text-sm sm:text-base font-bold truncate">Update Progres Proyek Fisik</h3>
+                <p className="text-xs text-amber-200 truncate">{editingProject.title}</p>
               </div>
               <button
                 onClick={() => setEditingProject(null)}
-                className="text-amber-200 hover:text-white"
+                className="text-amber-200 hover:text-white p-1 shrink-0 ml-2"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveProgress} className="p-6 space-y-4">
+            <form onSubmit={handleSaveProgress} className="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto overscroll-contain">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Persentase Progres Fisik: <strong className="text-amber-700">{editPercentage}%</strong>
@@ -461,17 +461,17 @@ export default function PhysicalProjectsTracker() {
                 </select>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <button
                   type="button"
                   onClick={() => setEditingProject(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 text-center"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold"
+                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold text-center"
                 >
                   Simpan Perubahan
                 </button>
