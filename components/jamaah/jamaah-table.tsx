@@ -9,16 +9,15 @@ import {
   Phone,
   Eye,
   Edit2,
-  ExternalLink,
   HeartHandshake,
   Sparkles,
-  MapPin,
   Download,
   Upload,
   Plus,
   ShieldCheck,
 } from 'lucide-react';
 import { downloadJamaahTemplate } from '@/lib/excel-helper';
+import Pagination from '@/components/ui/pagination';
 
 interface JamaahTableProps {
   jamaahList: Jamaah[];
@@ -49,6 +48,8 @@ export default function JamaahTable({
 }: JamaahTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedResidency, setSelectedResidency] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Filtered list
   const effectiveTerm = (externalSearchTerm || searchTerm).toLowerCase().trim();
@@ -78,6 +79,11 @@ export default function JamaahTable({
 
     return matchesSearch && matchesRT && matchesEconomic && matchesResidency;
   });
+
+  const paginatedList = filteredList.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const getEconomicBadge = (status: EconomicStatus) => {
     switch (status) {
@@ -149,13 +155,7 @@ export default function JamaahTable({
     }
   };
 
-  const cleanPhoneForWa = (phoneStr: string) => {
-    let clean = phoneStr.replace(/\D/g, '');
-    if (clean.startsWith('0')) {
-      clean = '62' + clean.slice(1);
-    }
-    return clean;
-  };
+
 
   return (
     <div className="space-y-4">
@@ -327,7 +327,7 @@ export default function JamaahTable({
                   </td>
                 </tr>
               ) : (
-                filteredList.map((j) => (
+                paginatedList.map((j) => (
                   <tr
                     key={j.id}
                     className="hover:bg-slate-50/80 transition-colors group"
@@ -350,53 +350,44 @@ export default function JamaahTable({
                           </p>
                           <div className="flex items-center gap-1.5 mt-1">
                             {getFamilyRoleBadge(j.familyRole, j.isYouthMember)}
-                            {j.familyMemberCount && j.familyRole === 'KEPALA_KELUARGA' && (
-                              <span className="text-[10px] text-slate-500">
-                                ({j.familyMemberCount} jiwa)
-                              </span>
+                            {j.gender === 'L' ? (
+                              <span className="text-[10px] text-slate-500 font-medium">Laki-laki</span>
+                            ) : (
+                              <span className="text-[10px] text-slate-500 font-medium">Perempuan</span>
                             )}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    {/* Alamat */}
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-                        <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span>{j.houseNumber}</span>
-                      </div>
-                      <div className="mt-0.5">
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                    {/* Alamat & RT */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1 text-slate-800 font-semibold">
+                        <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] font-bold text-emerald-800">
                           {j.rt}
                         </span>
+                        <span>No. {j.houseNumber}</span>
                       </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Blok AE, Kompleks BTP
+                      </p>
                     </td>
 
-                    {/* Status ZISWAF */}
+                    {/* No WhatsApp */}
+                    <td className="py-3 px-4 font-mono text-slate-700 whitespace-nowrap">
+                      {j.phone ? (
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{j.phone}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 italic">-</span>
+                      )}
+                    </td>
+
+                    {/* Status Ekonomi */}
                     <td className="py-3 px-4 whitespace-nowrap">
                       {getEconomicBadge(j.economicStatus)}
-                    </td>
-
-                    {/* Kontak WhatsApp */}
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      {j.phone ? (
-                        <a
-                          href={`https://wa.me/${cleanPhoneForWa(j.phone)}?text=${encodeURIComponent(
-                            `Assalamu'alaikum Warahmatullahi Wabarakatuh Bapak/Ibu ${j.fullName}, salam dari Pengurus DKM Babul Khaer BTP Blok AE.`
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium text-xs border border-emerald-200 transition-colors"
-                          title="Kirim pesan WhatsApp"
-                        >
-                          <Phone className="w-3 h-3 text-emerald-600" />
-                          <span>{j.phone}</span>
-                          <ExternalLink className="w-2.5 h-2.5 text-emerald-500 opacity-70" />
-                        </a>
-                      ) : (
-                        <span className="text-slate-400 text-xs italic">-</span>
-                      )}
                     </td>
 
                     {/* Pekerjaan & Domisili */}
@@ -437,15 +428,17 @@ export default function JamaahTable({
           </table>
         </div>
 
-        {/* Footer Summary */}
-        <div className="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-          <span>
-            Menampilkan <strong>{filteredList.length}</strong> dari total <strong>{jamaahList.length}</strong> warga terdata di BTP Blok AE
-          </span>
-          <span className="text-[11px] text-slate-400">
-            Sistem Informasi DKM Babul Khaer • Basis Data Umat
-          </span>
-        </div>
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredList.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+        />
       </div>
     </div>
   );

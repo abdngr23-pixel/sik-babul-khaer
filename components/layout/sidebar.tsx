@@ -21,23 +21,12 @@ import {
   Database,
   LogOut,
   Calendar,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { AppNavTab } from '@/types/navigation';
 
-export type AppNavTab =
-  | 'dashboard'
-  | 'archive'
-  | 'create'
-  | 'minutes'
-  | 'jamaah'
-  | 'mustahiq'
-  | 'dakwah'
-  | 'finance'
-  | 'donors'
-  | 'assets'
-  | 'reports'
-  | 'approvals'
-  | 'superadmin';
+export type { AppNavTab };
 
 interface SidebarProps {
   activeTab: AppNavTab;
@@ -50,6 +39,8 @@ interface SidebarProps {
   onOpenSwitchRole?: () => void;
   onOpenAuditLogs?: () => void;
   onOpenBackupModal?: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export default function Sidebar({
@@ -62,8 +53,22 @@ export default function Sidebar({
   onOpenSwitchRole,
   onOpenAuditLogs,
   onOpenBackupModal,
+  isMobileOpen = false,
+  onCloseMobile,
 }: SidebarProps) {
   const { currentUser, isReadOnly, canAccessTab, canMutateTab, logout } = useAuth();
+
+  const handleTabClick = (tab: AppNavTab) => {
+    setActiveTab(tab);
+    onCloseMobile?.();
+  };
+
+  const handleActionClick = (action?: () => void) => {
+    if (action) {
+      action();
+      onCloseMobile?.();
+    }
+  };
 
   // Role visibility checks
   const showPhase1 =
@@ -74,34 +79,60 @@ export default function Sidebar({
   const showPhase4 = canAccessTab('reports') || canAccessTab('approvals');
 
   return (
-    <aside className="w-72 bg-white text-slate-800 flex flex-col border-r border-slate-200/80 shrink-0 h-screen sticky top-0 overflow-y-auto shadow-soft-sm z-30">
-      {/* Brand Header: Official Logo + Mosque Identity */}
-      <div className="p-5 border-b border-slate-100 bg-gradient-to-b from-emerald-50/50 via-white to-white">
-        <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-2xl bg-white p-1.5 shadow-soft-md border border-emerald-100 flex items-center justify-center shrink-0">
-            <Image
-              src="/logo-babul-khaer.png"
-              alt="Logo Resmi Masjid Babul Khaer"
-              width={44}
-              height={44}
-              className="w-full h-full object-contain"
-              priority
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <h1 className="font-extrabold text-base tracking-tight text-slate-900 leading-tight">
-                SIK-MBH
-              </h1>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                v1.5
-              </span>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isMobileOpen && (
+        <div
+          onClick={onCloseMobile}
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-200"
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`fixed md:sticky top-0 inset-y-0 left-0 z-50 md:z-30 w-72 bg-white text-slate-800 flex flex-col border-r border-slate-200/80 shrink-0 h-screen overflow-y-auto shadow-2xl md:shadow-soft-sm transition-transform duration-300 ease-in-out ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        {/* Brand Header: Official Logo + Mosque Identity */}
+        <div className="p-5 border-b border-slate-100 bg-gradient-to-b from-emerald-50/50 via-white to-white">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative w-12 h-12 rounded-2xl bg-white p-1.5 shadow-soft-md border border-emerald-100 flex items-center justify-center shrink-0">
+                <Image
+                  src="/logo-babul-khaer.png"
+                  alt="Logo Resmi Masjid Babul Khaer"
+                  width={44}
+                  height={44}
+                  className="w-full h-full object-contain"
+                  priority
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <h1 className="font-extrabold text-base tracking-tight text-slate-900 leading-tight">
+                    SIK-MBH
+                  </h1>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    v1.5
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-800 font-bold truncate">
+                  DKM Masjid Babul Khaer
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-emerald-800 font-bold truncate">
-              DKM Masjid Babul Khaer
-            </p>
+
+            {/* Mobile Close Button */}
+            <button
+              type="button"
+              onClick={onCloseMobile}
+              className="md:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              aria-label="Tutup Navigasi"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-        </div>
 
         {/* Location Subtext Badge */}
         <div className="mt-3 text-[11px] text-slate-600 bg-slate-50/90 rounded-xl px-2.5 py-1.5 flex items-center justify-between border border-slate-200/70 shadow-2xs">
@@ -128,7 +159,7 @@ export default function Sidebar({
 
           <nav className="space-y-1">
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => handleTabClick('dashboard')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'dashboard'
                   ? 'bg-[#059669] text-white shadow-soft-md'
@@ -156,7 +187,7 @@ export default function Sidebar({
             <nav className="space-y-1">
               {canAccessTab('archive') && (
                 <button
-                  onClick={() => setActiveTab('archive')}
+                  onClick={() => handleTabClick('archive')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'archive'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -170,7 +201,7 @@ export default function Sidebar({
 
               {canMutateTab('archive') && !isReadOnly && (
                 <button
-                  onClick={() => onOpenCreateLetter()}
+                  onClick={() => handleActionClick(onOpenCreateLetter)}
                   className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-all cursor-pointer"
                 >
                   <PenTool className="w-4 h-4 text-emerald-600" />
@@ -181,7 +212,7 @@ export default function Sidebar({
 
               {canAccessTab('minutes') && (
                 <button
-                  onClick={() => setActiveTab('minutes')}
+                  onClick={() => handleTabClick('minutes')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'minutes'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -214,7 +245,7 @@ export default function Sidebar({
             <nav className="space-y-1">
               {canAccessTab('jamaah') && (
                 <button
-                  onClick={() => setActiveTab('jamaah')}
+                  onClick={() => handleTabClick('jamaah')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'jamaah'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -228,7 +259,7 @@ export default function Sidebar({
 
               {canAccessTab('mustahiq') && (
                 <button
-                  onClick={() => setActiveTab('mustahiq')}
+                  onClick={() => handleTabClick('mustahiq')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'mustahiq'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -245,7 +276,7 @@ export default function Sidebar({
 
               {canAccessTab('dakwah') && (
                 <button
-                  onClick={() => setActiveTab('dakwah')}
+                  onClick={() => handleTabClick('dakwah')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'dakwah'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -262,7 +293,7 @@ export default function Sidebar({
 
               {canMutateTab('jamaah') && !isReadOnly && (
                 <button
-                  onClick={() => onOpenCreateJamaah()}
+                  onClick={() => handleActionClick(onOpenCreateJamaah)}
                   className="w-full flex items-center gap-2 px-3.5 py-2 rounded-xl text-[11px] font-semibold text-teal-700 bg-teal-50/70 border border-teal-200/50 hover:bg-teal-100/70 hover:text-teal-900 transition-all cursor-pointer mt-1"
                 >
                   <span>+ Registrasi Warga Baru</span>
@@ -287,7 +318,7 @@ export default function Sidebar({
             <nav className="space-y-1">
               {canAccessTab('finance') && (
                 <button
-                  onClick={() => setActiveTab('finance')}
+                  onClick={() => handleTabClick('finance')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'finance'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -301,7 +332,7 @@ export default function Sidebar({
 
               {canAccessTab('donors') && (
                 <button
-                  onClick={() => setActiveTab('donors')}
+                  onClick={() => handleTabClick('donors')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'donors'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -324,7 +355,7 @@ export default function Sidebar({
 
               {canMutateTab('finance') && !isReadOnly && onOpenCreateTransaction && (
                 <button
-                  onClick={() => onOpenCreateTransaction()}
+                  onClick={() => handleActionClick(onOpenCreateTransaction)}
                   className="w-full flex items-center gap-2 px-3.5 py-2 rounded-xl text-[11px] font-semibold text-amber-800 bg-amber-50/70 border border-amber-200/60 hover:bg-amber-100/70 transition-all cursor-pointer mt-1"
                 >
                   <span>+ Catat Transaksi Kas</span>
@@ -349,7 +380,7 @@ export default function Sidebar({
             <nav className="space-y-1">
               {canAccessTab('assets') && (
                 <button
-                  onClick={() => setActiveTab('assets')}
+                  onClick={() => handleTabClick('assets')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'assets'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -363,7 +394,7 @@ export default function Sidebar({
 
               {canMutateTab('assets') && !isReadOnly && onOpenCreateAsset && (
                 <button
-                  onClick={() => onOpenCreateAsset()}
+                  onClick={() => handleActionClick(onOpenCreateAsset)}
                   className="w-full flex items-center gap-2 px-3.5 py-2 rounded-xl text-[11px] font-semibold text-emerald-800 bg-emerald-50/70 border border-emerald-200/60 hover:bg-emerald-100/70 transition-all cursor-pointer mt-1"
                 >
                   <span>+ Daftarkan Aset Baru</span>
@@ -388,7 +419,7 @@ export default function Sidebar({
             <nav className="space-y-1">
               {canAccessTab('reports') && (
                 <button
-                  onClick={() => setActiveTab('reports')}
+                  onClick={() => handleTabClick('reports')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'reports'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -402,7 +433,7 @@ export default function Sidebar({
 
               {canAccessTab('approvals') && (
                 <button
-                  onClick={() => setActiveTab('approvals')}
+                  onClick={() => handleTabClick('approvals')}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'approvals'
                       ? 'bg-[#059669] text-white shadow-soft-md'
@@ -431,7 +462,7 @@ export default function Sidebar({
 
             <nav className="space-y-1">
               <button
-                onClick={() => setActiveTab('superadmin')}
+                onClick={() => handleTabClick('superadmin')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === 'superadmin'
                     ? 'bg-slate-900 text-teal-300 shadow-soft-md'
@@ -447,7 +478,7 @@ export default function Sidebar({
 
               {onOpenBackupModal && (
                 <button
-                  onClick={onOpenBackupModal}
+                  onClick={() => handleActionClick(onOpenBackupModal)}
                   className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer"
                 >
                   <Database className="w-3.5 h-3.5 text-teal-600" />
@@ -472,7 +503,7 @@ export default function Sidebar({
           <div className="space-y-1.5 text-xs">
             {onOpenSwitchRole && (
               <button
-                onClick={onOpenSwitchRole}
+                onClick={() => handleActionClick(onOpenSwitchRole)}
                 className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-purple-800 bg-purple-50 hover:bg-purple-100/80 border border-purple-200/60 transition-all cursor-pointer font-medium"
               >
                 <div className="flex items-center gap-2.5">
@@ -487,7 +518,7 @@ export default function Sidebar({
 
             {onOpenAuditLogs && (currentUser.role === 'DEWAN_PENGAWAS' || currentUser.role === 'KETUA_UMUM' || currentUser.role === 'SUPER_ADMIN') && (
               <button
-                onClick={onOpenAuditLogs}
+                onClick={() => handleActionClick(onOpenAuditLogs)}
                 className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-slate-700 bg-slate-100/70 hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer font-medium"
               >
                 <div className="flex items-center gap-2.5">
@@ -539,5 +570,6 @@ export default function Sidebar({
         </div>
       </div>
     </aside>
-  );
+  </>
+);
 }

@@ -23,8 +23,8 @@ import {
   CheckCircle2,
   FolderArchive,
   Download,
-  QrCode,
 } from 'lucide-react';
+import Pagination from '@/components/ui/pagination';
 
 interface LetterArchiveTableProps {
   letters: OfficialLetter[];
@@ -48,6 +48,8 @@ export default function LetterArchiveTable({
   const [selectedDepartment, setSelectedDepartment] = useState<LetterDepartment | 'ALL'>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Filter letters
   const effectiveSearch = (externalSearchTerm || searchTerm).toLowerCase().trim();
@@ -71,6 +73,11 @@ export default function LetterArchiveTable({
 
     return matchesSearch && matchesCategory && matchesDepartment && matchesStatus;
   });
+
+  const paginatedLetters = filteredLetters.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const handleExportCSV = () => {
     const headers = [
@@ -288,7 +295,7 @@ export default function LetterArchiveTable({
                   </td>
                 </tr>
               ) : (
-                filteredLetters.map((letter) => (
+                paginatedLetters.map((letter) => (
                   <tr
                     key={letter.id}
                     className="hover:bg-slate-50/80 transition-colors group"
@@ -320,10 +327,6 @@ export default function LetterArchiveTable({
                             {letter.department}
                           </span>
                         )}
-                        <span className="text-[9px] font-mono text-slate-400 flex items-center gap-0.5" title="Terverifikasi QR Code Resmi">
-                          <QrCode className="w-2.5 h-2.5 text-emerald-600" />
-                          <span>QR</span>
-                        </span>
                       </div>
                       <p className="font-semibold text-slate-900 line-clamp-1">
                         {letter.subject}
@@ -331,38 +334,61 @@ export default function LetterArchiveTable({
                     </td>
 
                     {/* Penerima */}
-                    <td className="py-3 px-4 max-w-[200px]">
-                      <p className="font-medium text-slate-900 line-clamp-1">
+                    <td className="py-3 px-4 max-w-[180px]">
+                      <p className="font-medium text-slate-800 line-clamp-1">
                         {letter.recipientName}
                       </p>
                       {letter.recipientAddress && (
-                        <p className="text-[11px] text-slate-500 line-clamp-1">
+                        <p className="text-[11px] text-slate-400 line-clamp-1">
                           {letter.recipientAddress}
                         </p>
                       )}
                     </td>
 
                     {/* Tanggal */}
-                    <td className="py-3 px-4 whitespace-nowrap text-slate-600">
-                      {formatIndonesianDate(letter.letterDate)}
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-slate-600">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{formatIndonesianDate(letter.letterDate)}</span>
+                      </div>
                     </td>
 
-                    {/* Status */}
+                    {/* Status & Quick Action */}
                     <td className="py-3 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         {getStatusBadge(letter.status)}
+
+                        {/* Fast Status Change Actions */}
                         {!isReadOnly && (
-                          <select
-                            value={letter.status}
-                            onChange={(e) => onUpdateStatus(letter.id, e.target.value as LetterStatus)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] border border-slate-200 rounded px-1 py-0.5 bg-white text-slate-600 cursor-pointer"
-                            title="Ubah Status Surat"
-                          >
-                            <option value="DRAFT">Draf</option>
-                            <option value="APPROVED">Disetujui</option>
-                            <option value="SENT">Terkirim</option>
-                            <option value="ARCHIVED">Diarsipkan</option>
-                          </select>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                            {letter.status === 'DRAFT' && (
+                              <button
+                                onClick={() => onUpdateStatus(letter.id, 'APPROVED')}
+                                title="Sahkan Surat (Ketua Umum)"
+                                className="p-1 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            {letter.status === 'APPROVED' && (
+                              <button
+                                onClick={() => onUpdateStatus(letter.id, 'SENT')}
+                                title="Tandai Sudah Terkirim ke Penerima"
+                                className="p-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors cursor-pointer"
+                              >
+                                <Send className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            {letter.status === 'SENT' && (
+                              <button
+                                onClick={() => onUpdateStatus(letter.id, 'ARCHIVED')}
+                                title="Simpan ke Arsip Permanen"
+                                className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                              >
+                                <Archive className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>
@@ -384,15 +410,17 @@ export default function LetterArchiveTable({
           </table>
         </div>
 
-        {/* Footer Summary */}
-        <div className="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-          <span>
-            Menampilkan <strong>{filteredLetters.length}</strong> dari total <strong>{letters.length}</strong> surat dalam E-Arsip
-          </span>
-          <span className="text-[11px] text-slate-400">
-            Katalog Dokumen DKM Masjid Babul Khaer
-          </span>
-        </div>
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredLetters.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+        />
       </div>
     </div>
   );

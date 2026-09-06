@@ -13,6 +13,7 @@ import {
   HardDrive,
   Cloud,
 } from 'lucide-react';
+import { useConfirm } from '@/lib/confirm-context';
 
 interface DatabaseStats {
   path: string;
@@ -41,6 +42,7 @@ export default function DatabaseBackupModal({
   onClose,
   onDataRestored,
 }: DatabaseBackupModalProps) {
+  const { confirm } = useConfirm();
   const [stats, setStats] = useState<DatabaseStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -117,10 +119,13 @@ export default function DatabaseBackupModal({
   const handleRestoreSubmit = async () => {
     if (!selectedFile) return;
 
-    const confirmRestore = window.confirm(
-      'PERINGATAN: Memulihkan basis data akan menimpa data aktif saat ini dengan data dari berkas cadangan. Apakah Anda yakin ingin melanjutkan?'
-    );
-    if (!confirmRestore) return;
+    const ok = await confirm({
+      title: 'Peringatan Pemulihan Basis Data',
+      message: 'Memulihkan basis data akan menimpa data aktif saat ini dengan data dari berkas cadangan snapshot. Apakah Anda yakin ingin melanjutkan?',
+      confirmText: 'Ya, Pulihkan Data',
+      variant: 'danger',
+    });
+    if (!ok) return;
 
     setIsRestoring(true);
     setRestoreSuccess(null);

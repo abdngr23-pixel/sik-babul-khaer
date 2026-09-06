@@ -10,6 +10,7 @@ import {
   Shield,
   Search,
   Bell,
+  Menu,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { UserRole } from '@/types/auth';
@@ -24,6 +25,7 @@ interface NavbarProps {
   pendingApprovalsCount?: number;
   globalSearchQuery?: string;
   onGlobalSearchChange?: (q: string) => void;
+  onToggleMobileMenu?: () => void;
 }
 
 export default function Navbar({
@@ -35,6 +37,7 @@ export default function Navbar({
   pendingApprovalsCount = 0,
   globalSearchQuery = '',
   onGlobalSearchChange,
+  onToggleMobileMenu,
 }: NavbarProps) {
   const { currentUser } = useAuth();
 
@@ -78,7 +81,15 @@ export default function Navbar({
   return (
     <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 shadow-soft-sm gap-3">
       {/* Left: Islamic Greeting & Title */}
-      <div className="flex items-center gap-3 shrink-0 min-w-0">
+      <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
+        <button
+          type="button"
+          onClick={onToggleMobileMenu}
+          className="md:hidden p-2 -ml-1 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer border border-slate-200/60"
+          aria-label="Buka Menu Navigasi"
+        >
+          <Menu className="w-5 h-5 text-emerald-800" />
+        </button>
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-slate-500 font-medium whitespace-nowrap">Assalamu&apos;alaikum,</span>

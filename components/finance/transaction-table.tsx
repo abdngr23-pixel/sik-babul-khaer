@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import FridayReportModal from './friday-report-modal';
+import Pagination from '@/components/ui/pagination';
 
 interface TransactionTableProps {
   transactions: FinanceTransaction[];
@@ -44,6 +45,8 @@ export default function TransactionTable({
   const [searchTerm, setSearchTerm] = useState('');
   const [internalSelectedType, setInternalSelectedType] = useState('ALL');
   const [isFridayReportOpen, setIsFridayReportOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const selectedType = propSelectedType !== undefined ? propSelectedType : internalSelectedType;
   const handleSelectType = (type: string) => {
@@ -67,6 +70,11 @@ export default function TransactionTable({
 
     return matchesSearch && matchesCategory && matchesType;
   });
+
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const getCategoryBadge = (category: FinanceCategory) => {
     const info = FINANCE_CATEGORIES[category];
@@ -246,7 +254,7 @@ export default function TransactionTable({
                   </td>
                 </tr>
               ) : (
-                filteredTransactions.map((t) => {
+                paginatedTransactions.map((t) => {
                   const isIncome = t.type === 'INCOME';
 
                   return (
@@ -255,28 +263,21 @@ export default function TransactionTable({
                       <td className="py-3 px-4 whitespace-nowrap">
                         <p className="font-semibold text-slate-900">{t.date}</p>
                         <span className="text-[10px] text-slate-400 font-mono">
-                          {t.receiptNumber || '-'}
+                          {t.receiptNumber || `TX-${t.id.slice(0, 6)}`}
                         </span>
                       </td>
 
-                      {/* Pos Anggaran */}
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        {getCategoryBadge(t.category)}
-                      </td>
-
-                      {/* Uraian */}
-                      <td className="py-3 px-4 max-w-xs">
-                        <p className="font-medium text-slate-900 leading-snug">
+                      {/* Deskripsi & Kategori */}
+                      <td className="py-3 px-4">
+                        <p className="font-medium text-slate-900 line-clamp-2 leading-snug">
                           {t.description}
                         </p>
-                        {t.notes && (
-                          <p className="text-[11px] text-slate-500 italic mt-0.5">
-                            {t.notes}
-                          </p>
-                        )}
+                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                          {getCategoryBadge(t.category)}
+                        </div>
                       </td>
 
-                      {/* Pihak & Metode */}
+                      {/* Pihak Terkait & Metode */}
                       <td className="py-3 px-4 whitespace-nowrap">
                         <p className="font-medium text-slate-800">{t.payerOrPayee || '-'}</p>
                         <span className="text-[10px] text-slate-500 font-mono">
@@ -341,15 +342,17 @@ export default function TransactionTable({
           </table>
         </div>
 
-        {/* Footer Summary */}
-        <div className="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-          <span>
-            Menampilkan <strong>{filteredTransactions.length}</strong> dari total <strong>{transactions.length}</strong> mutasi kas
-          </span>
-          <span className="text-[11px] text-slate-400">
-            Sistem Informasi DKM Babul Khaer • Buku Kas Digital
-          </span>
-        </div>
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredTransactions.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {/* Friday Cash Report Modal */}

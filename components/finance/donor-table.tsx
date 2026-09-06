@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import DonorModal from './donor-modal';
 import DonorPaymentModal from './donor-payment-modal';
+import { useConfirm } from '@/lib/confirm-context';
+import Pagination from '@/components/ui/pagination';
 
 interface DonorTableProps {
   donors: DonorItem[];
@@ -43,10 +45,13 @@ export default function DonorTable({
   isExternalCreateOpen = false,
   onCloseExternalCreate,
 }: DonorTableProps) {
+  const { confirm } = useConfirm();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedRT, setSelectedRT] = useState<string>('ALL');
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<string>('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Modals state
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -82,6 +87,12 @@ export default function DonorTable({
 
     return matchesSearch && matchesCategory && matchesRT && matchesPaymentStatus;
   });
+
+  // Paginated slice
+  const paginatedDonors = filteredDonors.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -321,7 +332,7 @@ export default function DonorTable({
                   </td>
                 </tr>
               ) : (
-                filteredDonors.map((donor) => {
+                paginatedDonors.map((donor) => {
                   const categoryInfo = DONOR_CATEGORIES[donor.category] || {
                     name: donor.category,
                     badgeColor: 'emerald',
@@ -343,79 +354,94 @@ export default function DonorTable({
                       {/* Wilayah & Kontak */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                            {donor.rt}
-                          </span>
-                          <span className="font-mono text-[11px] text-slate-700">{donor.phone}</span>
+                          <span className="font-semibold text-slate-800">{donor.rt}</span>
+                          <span className="text-slate-300">•</span>
+                          <span className="font-mono text-slate-600">{donor.phone}</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                        <div className="text-[11px] text-slate-500 truncate max-w-[200px] mt-0.5">
                           {donor.address}
-                        </p>
+                        </div>
                       </td>
 
-                      {/* Pos Alokasi */}
+                      {/* Pos Donasi */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200">
                           {categoryInfo.name}
                         </span>
                       </td>
 
                       {/* Komitmen Bulanan */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-bold text-slate-900">
-                          {formatRupiah(donor.commitmentAmount)}
-                        </span>
-                        <span className="text-[10px] text-slate-400 block font-medium">
-                          via {donor.paymentMethod.replace('_', ' ')}
-                        </span>
+                      <td className="py-3.5 px-4 whitespace-nowrap font-extrabold text-slate-900 text-sm">
+                        {formatRupiah(donor.commitmentAmount)}
                       </td>
 
-                      {/* Jadwal Rutin */}
-                      <td className="py-3.5 px-4 whitespace-nowrap text-slate-600">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Tgl {donor.billingDay} / bln</span>
-                        </div>
-                      </td>
-
-                      {/* Status Bulan Berjalan */}
+                      {/* Status Setor Bulan Ini */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         {isPaidThisMonth ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Lunas Bulan Ini</span>
+                            <span>Lunas ({currentMonthName})</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                             <Clock className="w-3.5 h-3.5 text-amber-600" />
-                            <span>Belum Setor</span>
+                            <span>Menunggu Setoran</span>
                           </span>
                         )}
                       </td>
 
-                      {/* Aksi */}
-                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                      {/* Setor Terakhir */}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-slate-500">
+                        {donor.lastPaymentDate ? (
+                          <div>
+                            <div className="font-semibold text-slate-700">
+                              {new Date(donor.lastPaymentDate).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              Bulan: {donor.lastPaymentMonth || '-'}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">Belum pernah setor</span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          {/* 1-Klik Catat Setor Kas */}
-                          {!isReadOnly && (
+                          {/* Fast 1-Click Payment Button */}
+                          {!isReadOnly && !isPaidThisMonth && (
                             <button
                               onClick={() => handleOpenPayment(donor)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition-all cursor-pointer"
-                              title="Catat penerimaan donasi langsung masuk ke Buku Kas DKM"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition-all cursor-pointer"
+                              title="Catat Setoran Infaq 1-Klik ke Kas Masjid"
                             >
                               <CreditCard className="w-3.5 h-3.5" />
-                              <span>Setor Kas</span>
+                              <span>Catat Setor</span>
                             </button>
                           )}
 
-                          {/* Chat WhatsApp Konfirmasi */}
-                          <button
-                            onClick={() => handleWhatsApp(donor.phone, donor.donorName, isPaidThisMonth, donor.commitmentAmount)}
-                            className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 border border-emerald-200 transition-colors cursor-pointer"
-                            title={isPaidThisMonth ? 'Kirim Ucapan Terima Kasih via WhatsApp' : 'Kirim Pengingat Santun via WhatsApp'}
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" />
-                          </button>
+                          {/* WhatsApp Reminder */}
+                          {donor.phone && (
+                            <button
+                              onClick={() =>
+                                handleWhatsApp(
+                                  donor.phone,
+                                  donor.donorName,
+                                  isPaidThisMonth,
+                                  donor.commitmentAmount
+                                )
+                              }
+                              className="p-1.5 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
+                              title="Kirim Konfirmasi / Pengingat WhatsApp"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                            </button>
+                          )}
 
                           {/* Edit */}
                           {!isReadOnly && (
@@ -431,8 +457,14 @@ export default function DonorTable({
                           {/* Delete */}
                           {!isReadOnly && (
                             <button
-                              onClick={() => {
-                                if (confirm(`Yakin ingin menghapus donatur ${donor.donorName}?`)) {
+                              onClick={async () => {
+                                const ok = await confirm({
+                                  title: 'Hapus Data Donatur',
+                                  message: `Yakin ingin menghapus donatur ${donor.donorName}? Data komitmen donasi dan riwayat donatur akan dihapus dari sistem.`,
+                                  confirmText: 'Ya, Hapus Donatur',
+                                  variant: 'danger',
+                                });
+                                if (ok) {
                                   onDonorDeleted(donor.id);
                                 }
                               }}
@@ -452,15 +484,17 @@ export default function DonorTable({
           </table>
         </div>
 
-        {/* Footer */}
-        <div className="bg-slate-50 px-4 py-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-          <span>
-            Menampilkan <strong>{filteredDonors.length}</strong> dari total <strong>{donors.length}</strong> donatur tetap terdata
-          </span>
-          <span className="text-[11px] text-slate-400">
-            Seksi ZISWAF & Kesejahteraan Umat DKM Masjid Babul Khaer
-          </span>
-        </div>
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredDonors.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {/* Modal Tambah/Edit */}

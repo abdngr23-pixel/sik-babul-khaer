@@ -16,6 +16,7 @@ import {
   Calendar
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import Pagination from '@/components/ui/pagination';
 
 interface AssetTableProps {
   assets: AssetItem[];
@@ -49,6 +50,8 @@ export default function AssetTable({
   externalSearchTerm = '',
 }: AssetTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Filtered Assets
   const filteredAssets = useMemo(() => {
@@ -80,6 +83,11 @@ export default function AssetTable({
       return true;
     });
   }, [assets, selectedCategory, selectedCondition, onlyDue, searchQuery, externalSearchTerm]);
+
+  const paginatedAssets = filteredAssets.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   // Export to Excel
   const handleExportExcel = () => {
@@ -323,7 +331,7 @@ export default function AssetTable({
                 </td>
               </tr>
             ) : (
-              filteredAssets.map((asset) => {
+              paginatedAssets.map((asset) => {
                 return (
                   <tr
                     key={asset.id}
@@ -400,7 +408,7 @@ export default function AssetTable({
                           <div className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
                             <span>Jadwal Aman</span>
                           </div>
-                          <div className="text-[11px] font-semibold text-slate-700">
+                          <div className="text-[11px] font-medium text-slate-600">
                             {asset.nextMaintenanceDate || '-'}
                           </div>
                         </div>
@@ -408,13 +416,13 @@ export default function AssetTable({
                     </td>
 
                     {/* Kondisi Fisik */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <td className="py-3.5 px-4">
                       {getConditionBadge(asset.condition)}
                     </td>
 
-                    {/* Tindakan */}
-                    <td className="py-3.5 px-4 whitespace-nowrap text-center">
-                      <div className="flex items-center justify-center gap-1.5">
+                    {/* Aksi Operasional */}
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
                         {!isReadOnly ? (
                           <>
                             {/* Tombol 1-Klik Catat Servis Selesai */}
@@ -460,16 +468,17 @@ export default function AssetTable({
         </table>
       </div>
 
-      {/* Table Footer */}
-      <div className="p-3.5 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span>
-          Menampilkan <span className="font-bold text-slate-800">{filteredAssets.length}</span> dari{' '}
-          <span className="font-bold text-slate-800">{assets.length}</span> unit aset inventaris DKM
-        </span>
-        <span className="text-[11px] text-slate-400">
-          Siklus servis dihitung otomatis sesuai kategori dan tanggal pemeliharaan
-        </span>
-      </div>
+      {/* Pagination Controls */}
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredAssets.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+      />
     </div>
   );
 }

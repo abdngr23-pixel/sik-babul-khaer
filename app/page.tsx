@@ -1,29 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
+import React, { useState, useCallback } from 'react';
 import Sidebar, { AppNavTab } from '@/components/layout/sidebar';
 import Navbar from '@/components/layout/navbar';
+import { ModuleHeaderBanner } from '@/components/layout/module-header-banner';
+import { ModuleTabSelector } from '@/components/layout/module-tab-selector';
+import { AppModals } from '@/components/modals/app-modals';
 
 // Phase 1 Components
 import LetterArchiveTable from '@/components/letters/letter-archive-table';
-import CreateLetterModal from '@/components/letters/create-letter-modal';
-import ArchiveLetterModal from '@/components/letters/archive-letter-modal';
-import OfficialLetterPreview from '@/components/letters/official-letter-preview';
 import MinutesExtractor from '@/components/letters/minutes-extractor';
 
 // Phase 2 Components
 import JamaahStatsCards from '@/components/jamaah/jamaah-stats';
 import JamaahTable from '@/components/jamaah/jamaah-table';
-import JamaahFormModal from '@/components/jamaah/jamaah-form-modal';
-import JamaahDetailModal from '@/components/jamaah/jamaah-detail-modal';
-import JamaahExcelModal from '@/components/jamaah/jamaah-excel-modal';
 
 // Keuangan & Sarpras Components
 import FinanceStatsCards from '@/components/finance/finance-stats';
 import TransactionTable from '@/components/finance/transaction-table';
-import TransactionModal from '@/components/finance/transaction-modal';
-import FridayReportModal from '@/components/finance/friday-report-modal';
 import DonorTable from '@/components/finance/donor-table';
 import CashflowRunwayAlert from '@/components/finance/cashflow-runway-alert';
 import RakerBudgetTracker from '@/components/finance/raker-budget-tracker';
@@ -32,20 +26,17 @@ import ZiswafView from '@/components/ziswaf/ziswaf-view';
 import AssetStatsCards from '@/components/assets/asset-stats';
 import SarprasView from '@/components/assets/sarpras-view';
 import SuperAdminView from '@/components/admin/super-admin-view';
-import AssetFormModal from '@/components/assets/asset-form-modal';
 
 // Laporan & Eksekutif Components
 import ExecutiveKPI from '@/components/reports/executive-kpi';
 import LPJGenerator from '@/components/reports/lpj-generator';
-import LPJPreviewModal from '@/components/reports/lpj-preview-modal';
 import ApprovalBoard from '@/components/reports/approval-board';
 
 // Keamanan & Auth
 import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/lib/toast-context';
+import { useConfirm } from '@/lib/confirm-context';
 import RoleBanner from '@/components/auth/role-banner';
-import LoginModal from '@/components/auth/login-modal';
-import AuditLogModal from '@/components/auth/audit-log-modal';
-import DatabaseBackupModal from '@/components/auth/database-backup-modal';
 import FeatureLoginPortal from '@/components/auth/feature-login-portal';
 
 // Modular Dashboard Components (Refactor Prioritas 4)
@@ -70,24 +61,12 @@ import { LPJReport, ApprovalStatus, ApprovalType } from '@/types/reports';
 import {
   Inbox,
   FileCheck2,
-  Sparkles,
   CheckCircle2,
   FileText,
   ListTodo,
-  Plus,
   Loader2,
-  Users,
-  HeartHandshake,
-  Wrench,
-  Package,
   BarChart3,
   ShieldCheck,
-  Eye,
-  LayoutDashboard,
-  Archive,
-  LogOut,
-  Calendar,
-  Database,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -144,12 +123,23 @@ export default function DashboardPage() {
   const [previewLPJ, setPreviewLPJ] = useState<LPJReport | null>(null);
   const [reportsSubView, setReportsSubView] = useState<'generator' | 'kpi'>('generator');
 
-  // Toast Notification
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
-  };
+  // Responsive Mobile Drawer
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Global Toast & Confirm Contexts
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
+
+  const showToast = useCallback((msg: string, type?: 'success' | 'error' | 'warning' | 'info') => {
+    const lower = msg.toLowerCase();
+    if (type === 'error' || lower.includes('gagal') || lower.includes('tidak diizinkan') || lower.includes('terbatas')) {
+      toast.error(msg);
+    } else if (type === 'warning') {
+      toast.warning(msg);
+    } else {
+      toast.success(msg);
+    }
+  }, [toast]);
 
   // Data fetching hook
   const {
@@ -188,7 +178,6 @@ export default function DashboardPage() {
   // Tab category flags
   const isDashboardTab = activeTab === 'dashboard';
   const isFinanceTab = activeTab === 'finance';
-  const isDonorsTab = activeTab === 'donors';
   const isAssetTab = activeTab === 'assets';
   const isJamaahTab = activeTab === 'jamaah' || activeTab === 'mustahiq';
   const isReportsTab = activeTab === 'reports';
@@ -265,7 +254,13 @@ export default function DashboardPage() {
       showToast('Wewenang terbatas: Hanya Bendahara yang dapat menghapus data kas.');
       return;
     }
-    if (!window.confirm(`Yakin ingin menghapus transaksi kas "${desc}"?`)) return;
+    const ok = await confirm({
+      title: 'Hapus Transaksi Kas',
+      message: `Yakin ingin menghapus transaksi kas "${desc}"? Tindakan ini tidak dapat dibatalkan.`,
+      confirmText: 'Hapus Transaksi',
+      variant: 'danger',
+    });
+    if (!ok) return;
 
     try {
       const res = await fetch(`/api/finance?id=${id}`, { method: 'DELETE' });
@@ -316,7 +311,13 @@ export default function DashboardPage() {
       showToast('Wewenang terbatas: Hanya Koordinator Sarpras yang dapat menghapus aset.');
       return;
     }
-    if (!window.confirm(`Yakin ingin menghapus inventaris sarpras "${name}"?`)) return;
+    const ok = await confirm({
+      title: 'Hapus Inventaris Sarpras',
+      message: `Yakin ingin menghapus inventaris sarpras "${name}"? Tindakan ini akan menghapus aset dari pembukuan masjid.`,
+      confirmText: 'Hapus Aset',
+      variant: 'danger',
+    });
+    if (!ok) return;
 
     try {
       const res = await fetch(`/api/assets?id=${id}`, { method: 'DELETE' });
@@ -437,14 +438,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 text-xs font-semibold border border-slate-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
       {/* Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
@@ -456,6 +449,8 @@ export default function DashboardPage() {
         onOpenSwitchRole={() => setIsLoginModalOpen(true)}
         onOpenAuditLogs={() => setIsAuditLogModalOpen(true)}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main Content Layout */}
@@ -468,6 +463,7 @@ export default function DashboardPage() {
           pendingApprovalsCount={pendingApprovalsCount}
           globalSearchQuery={globalSearchQuery}
           onGlobalSearchChange={setGlobalSearchQuery}
+          onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)}
         />
 
         {/* Mode Pengawas & Role Alert Banner */}
@@ -483,235 +479,25 @@ export default function DashboardPage() {
           )}
 
           {/* Dynamic Module Header Banner */}
-          <div
-            className={`text-white rounded-2xl p-6 md:p-8 shadow-lg relative overflow-hidden transition-all duration-300 ${
-              isReportsTab || isApprovalsTab
-                ? 'bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 shadow-indigo-950/20'
-                : isFinanceTab || isDonorsTab
-                ? 'bg-gradient-to-r from-amber-950 via-amber-900 to-slate-900 shadow-amber-950/20'
-                : isAssetTab
-                ? 'bg-gradient-to-r from-slate-900 via-teal-950 to-emerald-950 shadow-slate-950/20'
-                : isDakwahTab
-                ? 'bg-gradient-to-r from-teal-950 via-emerald-950 to-slate-900 shadow-teal-950/20'
-                : isJamaahTab
-                ? 'bg-gradient-to-r from-teal-950 via-teal-900 to-emerald-950 shadow-teal-950/20'
-                : 'bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 shadow-emerald-950/20'
-            }`}
-          >
-            {/* Watermark Logo */}
-            <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-15 pointer-events-none hidden md:block select-none">
-              <Image
-                src="/logo-babul-khaer.png"
-                alt="Watermark Logo Masjid Babul Khaer"
-                width={240}
-                height={240}
-                className="object-contain filter brightness-150"
-              />
-            </div>
-
-            <div className="relative z-10 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold mb-3 border border-white/20 backdrop-blur-xs">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>
-                  {isDashboardTab
-                    ? 'Pusat Kendali Operasional & Informasi Terpadu'
-                    : isReportsTab
-                    ? 'Modul Laporan Pertanggungjawaban (LPJ) & Evaluasi 4 Pilar'
-                    : isApprovalsTab
-                    ? 'Alur Pengesahan Satu Pintu (Approval & Disposisi Ketua Umum)'
-                    : isFinanceTab
-                    ? 'Pengelolaan Keuangan & Swadaya PHBI Satu Pintu'
-                    : isDonorsTab
-                    ? 'Kelola Infaq & Donatur Rutin Masjid Babul Khaer'
-                    : isDakwahTab
-                    ? 'Seksi Peribadatan & Dakwah: Khatib Jumat, Imam Rawatib Rp1.5jt, Kajian, & Ramadhan'
-                    : isAssetTab
-                    ? 'Inventarisasi Sarana Prasarana & Peringatan Servis Berkala'
-                    : isJamaahTab
-                    ? 'Sistem Basis Data Kependudukan & Jamaah Blok AE'
-                    : 'Administrasi Persuratan Resmi & Kesekretariatan DKM'}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-11 h-11 rounded-2xl bg-white/95 p-1 shadow-soft-sm border border-white/40 flex items-center justify-center shrink-0">
-                  <Image
-                    src="/logo-babul-khaer.png"
-                    alt="Logo Masjid Babul Khaer"
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-white leading-tight">
-                    {isDashboardTab
-                      ? 'Selamat Datang, Pengurus DKM Babul Khaer'
-                      : 'Dewan Kemakmuran Masjid Babul Khaer'}
-                  </h1>
-                  <p className="text-xs text-emerald-200 font-medium">
-                    Kompleks BTP Blok AE, Tamalanrea, Makassar • SIK-MBH Terpadu
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-sm text-slate-100/90 leading-relaxed">
-                {isDashboardTab
-                  ? 'Pusat kendali operasional Masjid Babul Khaer BTP Blok AE Tamalanrea Makassar. Mengintegrasikan otomasi administrasi surat dinas, basis data sensus jamaah, transparansi kas & swadaya PHBI, hingga jadwal pemeliharaan inventaris fisik sarpras.'
-                  : isReportsTab
-                  ? 'Kompilasi otomatis data pertanggungjawaban tahunan dari 4 pilar bidang DKM, evaluasi kinerja oleh Dewan Penasehat, serta draf dokumen resmi siap cetak format A4.'
-                  : isApprovalsTab
-                  ? 'Alur disposisi dan pengesahan resmi oleh Ketua Umum untuk penerbitan surat dinas keluar, pencairan anggaran swadaya PHBI, pengadaan sarpras, dan draf LPJ.'
-                  : isFinanceTab
-                  ? 'Transparansi mutasi kas DKM Kompleks BTP Blok AE: Pemisahan tegas antara Kas Operasional Rutin, Dana Swadaya Kegiatan PHBI (satu pintu), dan Rekapitulasi ZISWAF umat.'
-                  : isDonorsTab
-                  ? 'Manajemen donatur tetap bulanan (infaq operasional, beasiswa yatim, zakat mal, PHBI) dengan integrasi 1-klik setor kas masjid dan pemantauan tertib komitmen donasi.'
-                  : isDakwahTab
-                  ? 'Pengelolaan peribadatan resmi Masjid Babul Khaer BTP Blok AE: Jadwal Khatib Jumat, 3 Imam Rawatib sholat fardhu (standar insentif Rp1.5jt hasil Raker 2026), agenda kajian pekanan mandiri, dan perencanaan Semarak Ramadhan 1448 H.'
-                  : isAssetTab
-                  ? 'Katalog sarana & prasarana fisik masjid (AC duduk Daikin, genset silent 5500W, sound system, karpet shaf) lengkap dengan pemantauan otomatis jadwal servis berkala.'
-                  : isJamaahTab
-                  ? 'Basis data terpadu warga Kompleks BTP Blok AE untuk pemetaan jamaah, pendataan mustahiq zakat, penyaluran bantuan sosial darurat, dan koordinasi dakwah keumatan.'
-                  : 'Kelola penomoran surat resmi secara otomatis, telusuri e-arsip dokumen kesekretariatan, susun draf dinas Islami via Gemini AI, dan ekstrak notulensi rapat jadi daftar tugas terstruktur.'}
-              </p>
-
-              {/* Banner Action Buttons */}
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                {isReadOnly ? (
-                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-900/60 border border-purple-400/40 text-purple-200 text-xs font-semibold shadow-md">
-                    <Eye className="w-4 h-4 text-purple-300" />
-                    <span>Mode Pengawas: Akses Khusus Tinjauan Independen & Pengawasan Sistem</span>
-                  </div>
-                ) : isDashboardTab ? (
-                  <>
-                    {canMutateTab('archive') && (
-                      <button
-                        onClick={handleOpenCreateLetter}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
-                      >
-                        <Plus className="w-4 h-4 text-emerald-700" />
-                        <span>Buat Surat Dinas</span>
-                      </button>
-                    )}
-                    {canMutateTab('jamaah') && (
-                      <button
-                        onClick={handleOpenCreateJamaah}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4 text-teal-950" />
-                        <span>Registrasi Warga</span>
-                      </button>
-                    )}
-                    {canMutateTab('finance') && (
-                      <button
-                        onClick={handleOpenCreateTransaction}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4 text-amber-950" />
-                        <span>Catat Kas Masuk/Keluar</span>
-                      </button>
-                    )}
-                    {canMutateTab('assets') && (
-                      <button
-                        onClick={handleOpenCreateAsset}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4 text-emerald-950" />
-                        <span>Daftarkan Aset</span>
-                      </button>
-                    )}
-                  </>
-                ) : isFinanceTab ? (
-                  <>
-                    <button
-                      onClick={handleOpenCreateTransaction}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Catat Mutasi Kas Baru</span>
-                    </button>
-                    <button
-                      onClick={() => setIsFridayReportOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition-all cursor-pointer"
-                    >
-                      <span>Laporan Kas Jumat</span>
-                    </button>
-                  </>
-                ) : isDonorsTab ? (
-                  <>
-                    <button
-                      onClick={() => setIsCreateDonorOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Daftarkan Donatur Tetap</span>
-                    </button>
-                  </>
-                ) : isAssetTab ? (
-                  <>
-                    <button
-                      onClick={handleOpenCreateAsset}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Daftarkan Aset Baru</span>
-                    </button>
-                    <button
-                      onClick={() => setAssetOnlyDueFilter(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition-all cursor-pointer"
-                    >
-                      <Wrench className="w-4 h-4 text-amber-300" />
-                      <span>Jatuh Tempo Servis ({assetStats?.maintenanceDueCount || 0})</span>
-                    </button>
-                  </>
-                ) : isJamaahTab ? (
-                  <>
-                    <button
-                      onClick={handleOpenCreateJamaah}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-teal-900 hover:bg-teal-50 font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Registrasi Warga Baru</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedStatus('MUSTAHIQ_ALL');
-                        setActiveTab('mustahiq');
-                      }}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-800/80 hover:bg-teal-700/80 text-white border border-teal-600/50 font-semibold text-xs transition-all cursor-pointer"
-                    >
-                      <HeartHandshake className="w-4 h-4 text-amber-300" />
-                      <span>Data Mustahiq & Bansos</span>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={handleOpenCreateLetter}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4 text-emerald-700" />
-                      <span>Buat Surat Resmi Baru</span>
-                    </button>
-                    <button
-                      onClick={() => setIsArchiveLetterModalOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      <Archive className="w-4 h-4" />
-                      <span>Catat Arsip Keluar</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('minutes')}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-800/80 hover:bg-emerald-700/80 text-white border border-emerald-600/50 font-semibold text-xs transition-all cursor-pointer"
-                    >
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                      <span>Ekstraksi Notulensi AI</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          <ModuleHeaderBanner
+            activeTab={activeTab}
+            isReadOnly={isReadOnly}
+            canMutateTab={canMutateTab}
+            onOpenCreateLetter={handleOpenCreateLetter}
+            onOpenCreateJamaah={handleOpenCreateJamaah}
+            onOpenCreateTransaction={handleOpenCreateTransaction}
+            onOpenCreateDonor={() => setIsCreateDonorOpen(true)}
+            onOpenCreateAsset={handleOpenCreateAsset}
+            onOpenArchiveLetterModal={() => setIsArchiveLetterModalOpen(true)}
+            onOpenFridayReport={() => setIsFridayReportOpen(true)}
+            onOpenMustahiq={() => {
+              setSelectedStatus('MUSTAHIQ_ALL');
+              setActiveTab('mustahiq');
+            }}
+            onOpenMinutes={() => setActiveTab('minutes')}
+            assetStats={assetStats}
+            onFilterAssetOnlyDue={() => setAssetOnlyDueFilter(true)}
+          />
 
           {/* Dynamic Top Stats Grid based on active module */}
           {isDashboardTab ? (
@@ -893,209 +679,20 @@ export default function DashboardPage() {
           )}
 
           {/* Module Tab Selector Bar - Soft UI Segmented Container */}
-          <div className="bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/80 flex flex-wrap items-center gap-1.5 shadow-2xs">
-            {/* Dashboard Pill */}
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'dashboard'
-                  ? 'bg-white text-emerald-900 shadow-soft-sm ring-1 ring-emerald-500/20'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              }`}
-            >
-              <LayoutDashboard className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Pusat Kendali (Dashboard)</span>
-            </button>
-
-            {/* Administrasi & Persuratan */}
-            {canAccessTab('archive') && (
-              <button
-                onClick={() => setActiveTab('archive')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'archive'
-                    ? 'bg-white text-emerald-900 shadow-soft-sm ring-1 ring-emerald-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Inbox className="w-3.5 h-3.5 text-emerald-600" />
-                <span>E-Arsip Surat ({letters.length})</span>
-              </button>
-            )}
-
-            {canAccessTab('minutes') && (
-              <button
-                onClick={() => setActiveTab('minutes')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'minutes'
-                    ? 'bg-white text-emerald-900 shadow-soft-sm ring-1 ring-emerald-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Notulensi Rapat AI</span>
-              </button>
-            )}
-
-            {/* Database Jamaah & Sosial */}
-            {canAccessTab('jamaah') && (
-              <button
-                onClick={() => {
-                  setActiveTab('jamaah');
-                  setSelectedStatus('ALL');
-                }}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'jamaah'
-                    ? 'bg-white text-teal-900 shadow-soft-sm ring-1 ring-teal-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Users className="w-3.5 h-3.5 text-teal-600" />
-                <span>Basis Data Warga ({jamaahList.length})</span>
-              </button>
-            )}
-
-            {canAccessTab('mustahiq') && (
-              <button
-                onClick={() => {
-                  setActiveTab('mustahiq');
-                  setSelectedStatus('MUSTAHIQ_ALL');
-                }}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'mustahiq'
-                    ? 'bg-white text-teal-900 shadow-soft-sm ring-1 ring-teal-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <HeartHandshake className="w-3.5 h-3.5 text-teal-600" />
-                <span>Mustahiq ZISWAF</span>
-              </button>
-            )}
-
-            {canAccessTab('dakwah') && (
-              <button
-                onClick={() => setActiveTab('dakwah')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'dakwah'
-                    ? 'bg-white text-teal-900 shadow-soft-sm ring-1 ring-teal-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Calendar className="w-3.5 h-3.5 text-teal-600" />
-                <span>Dakwah & Peribadatan</span>
-              </button>
-            )}
-
-            {/* Keuangan & Swadaya */}
-            {canAccessTab('finance') && (
-              <button
-                onClick={() => setActiveTab('finance')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'finance'
-                    ? 'bg-white text-amber-900 shadow-soft-sm ring-1 ring-amber-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <span className="font-bold text-amber-600">Rp</span>
-                <span>Buku Kas Satu Pintu</span>
-              </button>
-            )}
-
-            {canAccessTab('donors') && (
-              <button
-                onClick={() => setActiveTab('donors')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'donors'
-                    ? 'bg-white text-teal-900 shadow-soft-sm ring-1 ring-teal-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <HeartHandshake className="w-3.5 h-3.5 text-teal-600" />
-                <span>Donatur Rutin ({donors.length})</span>
-              </button>
-            )}
-
-            {/* Sarpras Fisik */}
-            {canAccessTab('assets') && (
-              <button
-                onClick={() => setActiveTab('assets')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'assets'
-                    ? 'bg-white text-emerald-900 shadow-soft-sm ring-1 ring-emerald-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Package className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Inventaris Sarpras ({assets.length})</span>
-              </button>
-            )}
-
-            {/* Laporan & Pengesahan */}
-            {canAccessTab('reports') && (
-              <button
-                onClick={() => setActiveTab('reports')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'reports'
-                    ? 'bg-white text-indigo-900 shadow-soft-sm ring-1 ring-indigo-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Evaluasi & LPJ</span>
-              </button>
-            )}
-
-            {canAccessTab('approvals') && (
-              <button
-                onClick={() => setActiveTab('approvals')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'approvals'
-                    ? 'bg-white text-indigo-900 shadow-soft-sm ring-1 ring-indigo-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Pengesahan Satu Pintu ({pendingApprovalsCount})</span>
-              </button>
-            )}
-
-            {/* Super Admin & Database */}
-            {canAccessTab('superadmin') && (
-              <button
-                onClick={() => setActiveTab('superadmin')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'superadmin'
-                    ? 'bg-slate-900 text-teal-300 shadow-soft-sm ring-1 ring-teal-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <Database className="w-3.5 h-3.5 text-teal-500" />
-                <span>Super Admin</span>
-              </button>
-            )}
-
-            {/* Akses & Keamanan */}
-            <div className="ml-auto flex items-center gap-1.5 pl-2">
-              <button
-                onClick={() => logout()}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-700 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/60 transition-all cursor-pointer flex items-center gap-1.5"
-                title="Keluar / Ganti Divisi Fitur"
-              >
-                <LogOut className="w-3.5 h-3.5 text-rose-600" />
-                <span className="hidden md:inline">Ganti Divisi</span>
-              </button>
-
-              {(currentUser.role === 'DEWAN_PENGAWAS' || currentUser.role === 'KETUA_UMUM') && (
-                <button
-                  onClick={() => setIsAuditLogModalOpen(true)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/80 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                  title="Lihat Log Audit Aktivitas Sistem"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Log Audit</span>
-                </button>
-              )}
-            </div>
-          </div>
+          <ModuleTabSelector
+            activeTab={activeTab}
+            setActiveTab={(tab) => setActiveTab(tab)}
+            canAccessTab={canAccessTab}
+            lettersCount={letters.length}
+            jamaahCount={jamaahList.length}
+            donorsCount={donors.length}
+            assetsCount={assets.length}
+            pendingApprovalsCount={pendingApprovalsCount}
+            onSelectStatus={(status) => setSelectedStatus(status)}
+            onLogout={() => logout()}
+            onOpenAuditLogs={() => setIsAuditLogModalOpen(true)}
+            isAuditRole={currentUser.role === 'DEWAN_PENGAWAS' || currentUser.role === 'KETUA_UMUM'}
+          />
 
           {/* Main Tab Content */}
           {isLoading ? (
@@ -1379,100 +976,46 @@ export default function DashboardPage() {
       {/* ---------------------------------------------------- */}
       {/* Modal Dialogs                                        */}
       {/* ---------------------------------------------------- */}
-
-      {/* Modal Buat Surat */}
-      <CreateLetterModal
-        isOpen={isCreateLetterOpen}
-        onClose={() => setIsCreateLetterOpen(false)}
-        onLetterCreated={handleLetterCreated}
-        onPreviewLetter={(letter) => setPreviewLetter(letter)}
-      />
-
-      {/* Modal Pratinjau Dokumen Resmi A4 */}
-      <OfficialLetterPreview
-        letter={previewLetter}
-        onClose={() => setPreviewLetter(null)}
-      />
-
-      {/* Modal Catat Arsip Surat Keluar Fisik / Lampau */}
-      <ArchiveLetterModal
-        isOpen={isArchiveLetterModalOpen}
-        onClose={() => setIsArchiveLetterModalOpen(false)}
-        onLetterArchived={handleArchiveLetterSaved}
-      />
-
-      {/* Modal Form Tambah / Edit Profil Jamaah */}
-      <JamaahFormModal
-        isOpen={isJamaahFormOpen}
-        onClose={() => setIsJamaahFormOpen(false)}
-        initialData={editingJamaah}
-        onSaved={handleJamaahSaved}
-      />
-
-      {/* Modal Detail Profil Jamaah */}
-      <JamaahDetailModal
-        jamaah={detailJamaah}
-        onClose={() => setDetailJamaah(null)}
-        onEdit={(j) => {
-          setDetailJamaah(null);
-          handleEditJamaah(j);
-        }}
-      />
-
-      {/* Modal Impor & Ekspor Sensus Excel */}
-      <JamaahExcelModal
-        isOpen={isExcelModalOpen}
-        onClose={() => setIsExcelModalOpen(false)}
-        currentJamaahList={jamaahList}
-        onImportSuccess={handleImportSuccess}
-      />
-
-      {/* Modal Laporan Kas Mingguan Sholat Jumat */}
-      <FridayReportModal
-        isOpen={isFridayReportOpen}
-        onClose={() => setIsFridayReportOpen(false)}
+      <AppModals
+        isCreateLetterOpen={isCreateLetterOpen}
+        setIsCreateLetterOpen={setIsCreateLetterOpen}
+        previewLetter={previewLetter}
+        setPreviewLetter={setPreviewLetter}
+        handleLetterCreated={handleLetterCreated}
+        isArchiveLetterModalOpen={isArchiveLetterModalOpen}
+        setIsArchiveLetterModalOpen={setIsArchiveLetterModalOpen}
+        handleArchiveLetterSaved={handleArchiveLetterSaved}
+        isJamaahFormOpen={isJamaahFormOpen}
+        setIsJamaahFormOpen={setIsJamaahFormOpen}
+        editingJamaah={editingJamaah}
+        handleJamaahSaved={handleJamaahSaved}
+        detailJamaah={detailJamaah}
+        setDetailJamaah={setDetailJamaah}
+        handleEditJamaah={handleEditJamaah}
+        isExcelModalOpen={isExcelModalOpen}
+        setIsExcelModalOpen={setIsExcelModalOpen}
+        jamaahList={jamaahList}
+        handleImportSuccess={handleImportSuccess}
+        isFridayReportOpen={isFridayReportOpen}
+        setIsFridayReportOpen={setIsFridayReportOpen}
         transactions={transactions}
-      />
-
-      {/* Modal Catat Transaksi Kas */}
-      <TransactionModal
-        isOpen={isTransactionModalOpen}
-        onClose={() => setIsTransactionModalOpen(false)}
-        initialData={editingTransaction}
-        onSaved={handleTransactionSaved}
-      />
-
-      {/* Modal Form Tambah / Edit Aset Sarpras */}
-      <AssetFormModal
-        isOpen={isAssetModalOpen}
-        onClose={() => setIsAssetModalOpen(false)}
-        initialData={editingAsset}
-        onSaved={handleAssetSaved}
-      />
-
-      {/* Modal Pratinjau Dokumen Cetak LPJ A4 */}
-      <LPJPreviewModal
-        report={previewLPJ}
-        onClose={() => setPreviewLPJ(null)}
-      />
-
-      {/* Modal Pergantian Peran / Login Akun Pengurus */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onSuccessToast={showToast}
-      />
-
-      {/* Modal Log Audit Aktivitas Sistem */}
-      <AuditLogModal
-        isOpen={isAuditLogModalOpen}
-        onClose={() => setIsAuditLogModalOpen(false)}
-      />
-
-      {/* Modal Pusat Cadangan & Pemulihan Basis Data */}
-      <DatabaseBackupModal
-        isOpen={isBackupModalOpen}
-        onClose={() => setIsBackupModalOpen(false)}
+        isTransactionModalOpen={isTransactionModalOpen}
+        setIsTransactionModalOpen={setIsTransactionModalOpen}
+        editingTransaction={editingTransaction}
+        handleTransactionSaved={handleTransactionSaved}
+        isAssetModalOpen={isAssetModalOpen}
+        setIsAssetModalOpen={setIsAssetModalOpen}
+        editingAsset={editingAsset}
+        handleAssetSaved={handleAssetSaved}
+        previewLPJ={previewLPJ}
+        setPreviewLPJ={setPreviewLPJ}
+        isLoginModalOpen={isLoginModalOpen}
+        setIsLoginModalOpen={setIsLoginModalOpen}
+        onSuccessLoginToast={showToast}
+        isAuditLogModalOpen={isAuditLogModalOpen}
+        setIsAuditLogModalOpen={setIsAuditLogModalOpen}
+        isBackupModalOpen={isBackupModalOpen}
+        setIsBackupModalOpen={setIsBackupModalOpen}
         onDataRestored={() => {
           refreshAll();
           showToast('Data berhasil dipulihkan dari berkas cadangan!');
