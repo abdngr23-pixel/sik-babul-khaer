@@ -11,9 +11,11 @@ import {
   Search,
   Bell,
   Menu,
+  ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { UserRole } from '@/types/auth';
+import { AppNavTab } from '@/types/navigation';
 import PrayerWidget from './prayer-widget';
 
 interface NavbarProps {
@@ -26,6 +28,9 @@ interface NavbarProps {
   globalSearchQuery?: string;
   onGlobalSearchChange?: (q: string) => void;
   onToggleMobileMenu?: () => void;
+  activeTab?: AppNavTab;
+  onGoBack?: () => void;
+  previousTabLabel?: string;
 }
 
 export default function Navbar({
@@ -38,6 +43,9 @@ export default function Navbar({
   globalSearchQuery = '',
   onGlobalSearchChange,
   onToggleMobileMenu,
+  activeTab = 'dashboard',
+  onGoBack,
+  previousTabLabel,
 }: NavbarProps) {
   const { currentUser } = useAuth();
 
@@ -90,6 +98,21 @@ export default function Navbar({
         >
           <Menu className="w-5 h-5 text-emerald-800" />
         </button>
+
+        {/* Back Button (Navbar) */}
+        {onGoBack && activeTab !== 'dashboard' && (
+          <button
+            type="button"
+            onClick={onGoBack}
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 text-xs font-bold border border-emerald-200/90 shadow-2xs transition-all cursor-pointer group shrink-0"
+            title={`Kembali ke ${previousTabLabel || 'Menu Sebelumnya'}`}
+            aria-label={`Kembali ke ${previousTabLabel || 'Menu Sebelumnya'}`}
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-emerald-700" />
+            <span className="hidden sm:inline">Kembali</span>
+          </button>
+        )}
+
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-slate-500 font-medium whitespace-nowrap">Assalamu&apos;alaikum,</span>

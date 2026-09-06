@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Database,
   LogOut,
+  ArrowLeft,
 } from 'lucide-react';
 import { AppNavTab } from '@/types/navigation';
 
@@ -29,6 +30,8 @@ interface ModuleTabSelectorProps {
   onLogout: () => void;
   onOpenAuditLogs?: () => void;
   isAuditRole?: boolean;
+  onGoBack?: () => void;
+  previousTabLabel?: string;
 }
 
 export function ModuleTabSelector({
@@ -44,9 +47,24 @@ export function ModuleTabSelector({
   onLogout,
   onOpenAuditLogs,
   isAuditRole,
+  onGoBack,
+  previousTabLabel,
 }: ModuleTabSelectorProps) {
   return (
     <div className="bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/80 flex flex-wrap items-center gap-1.5 shadow-2xs">
+      {/* Back Button Pill */}
+      {activeTab !== 'dashboard' && onGoBack && (
+        <button
+          type="button"
+          onClick={onGoBack}
+          className="px-3 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs group shrink-0"
+          title={`Kembali ke ${previousTabLabel || 'Menu Sebelumnya'}`}
+        >
+          <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-emerald-700" />
+          <span>Kembali</span>
+        </button>
+      )}
+
       {/* Dashboard Pill */}
       <button
         onClick={() => setActiveTab('dashboard')}

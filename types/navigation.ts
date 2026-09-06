@@ -12,3 +12,20 @@ export type AppNavTab =
   | 'reports'
   | 'approvals'
   | 'superadmin';
+
+export const TAB_LABELS: Record<AppNavTab, string> = {
+  dashboard: 'Pusat Kendali',
+  archive: 'E-Arsip Surat',
+  create: 'Buat Surat',
+  minutes: 'Notulensi Rapat AI',
+  jamaah: 'Basis Data Warga',
+  mustahiq: 'Mustahiq & ZISWAF',
+  dakwah: 'Peribadatan & Dakwah',
+  finance: 'Buku Kas Satu Pintu',
+  donors: 'Donatur Rutin',
+  assets: 'Inventaris Sarpras',
+  reports: 'Evaluasi & LPJ',
+  approvals: 'Pengesahan Satu Pintu',
+  superadmin: 'Pusat Data & Super Admin',
+};
+

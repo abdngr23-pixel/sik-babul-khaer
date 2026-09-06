@@ -9,6 +9,7 @@ import {
   Wrench,
   HeartHandshake,
   Archive,
+  ArrowLeft,
 } from 'lucide-react';
 import { AppNavTab } from '@/types/navigation';
 
@@ -27,6 +28,8 @@ interface ModuleHeaderBannerProps {
   onOpenMinutes: () => void;
   assetStats?: { maintenanceDueCount?: number } | null;
   onFilterAssetOnlyDue: () => void;
+  onGoBack?: () => void;
+  previousTabLabel?: string;
 }
 
 export function ModuleHeaderBanner({
@@ -44,6 +47,8 @@ export function ModuleHeaderBanner({
   onOpenMinutes,
   assetStats,
   onFilterAssetOnlyDue,
+  onGoBack,
+  previousTabLabel,
 }: ModuleHeaderBannerProps) {
   const isDashboardTab = activeTab === 'dashboard';
   const isReportsTab = activeTab === 'reports';
@@ -82,6 +87,20 @@ export function ModuleHeaderBanner({
       </div>
 
       <div className="relative z-10 max-w-3xl">
+        {/* Back Button inside Module Banner */}
+        {!isDashboardTab && onGoBack && (
+          <div className="mb-3 flex items-center gap-2">
+            <button
+              onClick={onGoBack}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 active:bg-white/30 text-white text-xs font-bold border border-white/25 backdrop-blur-xs transition-all cursor-pointer shadow-soft-sm group"
+              title={`Kembali ke ${previousTabLabel || 'Menu Sebelumnya'}`}
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span>Kembali ke {previousTabLabel || 'Menu Sebelumnya'}</span>
+            </button>
+          </div>
+        )}
+
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold mb-3 border border-white/20 backdrop-blur-xs">
           <Sparkles className="w-3.5 h-3.5 text-amber-300" />
           <span>

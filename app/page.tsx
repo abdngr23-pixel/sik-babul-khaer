@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Sidebar, { AppNavTab } from '@/components/layout/sidebar';
+import { TAB_LABELS } from '@/types/navigation';
 import Navbar from '@/components/layout/navbar';
 import { ModuleHeaderBanner } from '@/components/layout/module-header-banner';
 import { ModuleTabSelector } from '@/components/layout/module-tab-selector';
@@ -67,6 +68,9 @@ import {
   Loader2,
   BarChart3,
   ShieldCheck,
+  ArrowLeft,
+  ChevronRight,
+  LayoutDashboard,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -78,7 +82,33 @@ export default function DashboardPage() {
     isAuthenticated,
     logout,
   } = useAuth();
-  const [requestedTab, setActiveTab] = useState<AppNavTab>('dashboard');
+  const [requestedTab, setRequestedTab] = useState<AppNavTab>('dashboard');
+  const [tabHistory, setTabHistory] = useState<AppNavTab[]>([]);
+
+  // History-aware navigation handler
+  const handleNavigateTab = useCallback((newTab: AppNavTab) => {
+    setRequestedTab((currentTab) => {
+      if (currentTab !== newTab) {
+        setTabHistory((prev) => [...prev, currentTab]);
+      }
+      return newTab;
+    });
+  }, []);
+
+  // Back handler to return to previous menu
+  const handleGoBack = useCallback(() => {
+    setTabHistory((prev) => {
+      if (prev.length === 0) {
+        setRequestedTab('dashboard');
+        return [];
+      }
+      const newHistory = [...prev];
+      const previousTab = newHistory.pop()!;
+      setRequestedTab(previousTab);
+      return newHistory;
+    });
+  }, []);
+
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [isFridayReportOpen, setIsFridayReportOpen] = useState(false);
 
@@ -86,6 +116,11 @@ export default function DashboardPage() {
   const activeTab: AppNavTab = canAccessTab(requestedTab)
     ? requestedTab
     : 'dashboard';
+
+  // Navigation labels
+  const previousTab: AppNavTab = tabHistory.length > 0 ? tabHistory[tabHistory.length - 1] : 'dashboard';
+  const previousTabLabel = TAB_LABELS[previousTab] || 'Menu Sebelumnya';
+  const currentTabLabel = TAB_LABELS[activeTab] || 'Halaman Aktif';
 
   // Modal States
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -441,7 +476,7 @@ export default function DashboardPage() {
       {/* Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
-        setActiveTab={(tab) => setActiveTab(tab)}
+        setActiveTab={handleNavigateTab}
         onOpenCreateLetter={handleOpenCreateLetter}
         onOpenCreateJamaah={handleOpenCreateJamaah}
         onOpenCreateTransaction={handleOpenCreateTransaction}
@@ -464,6 +499,9 @@ export default function DashboardPage() {
           globalSearchQuery={globalSearchQuery}
           onGlobalSearchChange={setGlobalSearchQuery}
           onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)}
+          activeTab={activeTab}
+          onGoBack={handleGoBack}
+          previousTabLabel={previousTabLabel}
         />
 
         {/* Mode Pengawas & Role Alert Banner */}
@@ -476,6 +514,34 @@ export default function DashboardPage() {
           {/* Indikator Persistensi Basis Data (Khusus Super Admin) */}
           {currentUser.role === 'SUPER_ADMIN' && (
             <PersistenceBanner onOpenBackupModal={() => setIsBackupModalOpen(true)} />
+          )}
+
+          {/* Quick Back & Breadcrumb Bar (Visible when not on Dashboard) */}
+          {activeTab !== 'dashboard' && (
+            <div className="flex items-center justify-between gap-3 bg-white/95 backdrop-blur-md p-2.5 px-4 rounded-2xl border border-slate-200/90 shadow-soft-sm animate-in fade-in slide-in-from-left-2 duration-200">
+              <button
+                type="button"
+                onClick={handleGoBack}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold shadow-soft-sm hover:shadow-md transition-all cursor-pointer group"
+                title={`Kembali ke ${previousTabLabel}`}
+              >
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                <span>Kembali ke {previousTabLabel}</span>
+              </button>
+
+              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 font-medium overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => handleNavigateTab('dashboard')}
+                  className="hover:text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">Pusat Kendali</span>
+                </button>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="font-bold text-slate-800 truncate">{currentTabLabel}</span>
+              </nav>
+            </div>
           )}
 
           {/* Dynamic Module Header Banner */}
@@ -492,11 +558,13 @@ export default function DashboardPage() {
             onOpenFridayReport={() => setIsFridayReportOpen(true)}
             onOpenMustahiq={() => {
               setSelectedStatus('MUSTAHIQ_ALL');
-              setActiveTab('mustahiq');
+              handleNavigateTab('mustahiq');
             }}
-            onOpenMinutes={() => setActiveTab('minutes')}
+            onOpenMinutes={() => handleNavigateTab('minutes')}
             assetStats={assetStats}
             onFilterAssetOnlyDue={() => setAssetOnlyDueFilter(true)}
+            onGoBack={handleGoBack}
+            previousTabLabel={previousTabLabel}
           />
 
           {/* Dynamic Top Stats Grid based on active module */}
@@ -511,7 +579,7 @@ export default function DashboardPage() {
               totalAssets={assets.length}
               assetStats={assetStats}
               overallScore={overallScore}
-              onNavigateTab={(tab) => setActiveTab(tab)}
+              onNavigateTab={(tab) => handleNavigateTab(tab)}
             />
           ) : isReportsTab || isApprovalsTab ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -681,7 +749,7 @@ export default function DashboardPage() {
           {/* Module Tab Selector Bar - Soft UI Segmented Container */}
           <ModuleTabSelector
             activeTab={activeTab}
-            setActiveTab={(tab) => setActiveTab(tab)}
+            setActiveTab={handleNavigateTab}
             canAccessTab={canAccessTab}
             lettersCount={letters.length}
             jamaahCount={jamaahList.length}
@@ -692,6 +760,8 @@ export default function DashboardPage() {
             onLogout={() => logout()}
             onOpenAuditLogs={() => setIsAuditLogModalOpen(true)}
             isAuditRole={currentUser.role === 'DEWAN_PENGAWAS' || currentUser.role === 'KETUA_UMUM'}
+            onGoBack={handleGoBack}
+            previousTabLabel={previousTabLabel}
           />
 
           {/* Main Tab Content */}
@@ -712,7 +782,7 @@ export default function DashboardPage() {
                         <DashboardSekretariatCard
                           letters={letters}
                           minutes={minutes}
-                          onNavigateTab={(tab) => setActiveTab(tab)}
+                          onNavigateTab={(tab) => handleNavigateTab(tab)}
                           onPreviewLetter={(l) => setPreviewLetter(l)}
                         />
                       )}
@@ -733,7 +803,7 @@ export default function DashboardPage() {
                         onOpenCreateTransaction={handleOpenCreateTransaction}
                         onOpenFridayReport={() => setIsFridayReportOpen(true)}
                         onOpenArchiveLetterModal={() => setIsArchiveLetterModalOpen(true)}
-                        onNavigateTab={(tab) => setActiveTab(tab)}
+                        onNavigateTab={(tab) => handleNavigateTab(tab)}
                         lpjReport={lpjReport}
                         onPreviewLPJ={(rep) => setPreviewLPJ(rep)}
                       />
@@ -742,7 +812,7 @@ export default function DashboardPage() {
                         <DashboardSarprasCard
                           assets={assets}
                           assetStats={assetStats}
-                          onNavigateTab={(tab) => setActiveTab(tab)}
+                          onNavigateTab={(tab) => handleNavigateTab(tab)}
                         />
                       )}
 
