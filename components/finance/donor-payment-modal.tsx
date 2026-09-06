@@ -81,7 +81,10 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
   };
 
   return (
-    <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92dvh] animate-slide-up sm:animate-none">
+    <div className="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
+      {/* Drag Handle Bar (Mobile Only) */}
+      <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+
       {/* Header Modal */}
       <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white px-4 sm:px-6 py-4 flex items-center justify-between border-b border-emerald-800 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
@@ -99,7 +102,7 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer shrink-0 ml-2"
+          className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer shrink-0 ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           <X className="w-5 h-5" />
         </button>
@@ -205,14 +208,14 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-center"
+            className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-center flex items-center justify-center"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 text-center"
+            className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 text-center"
           >
             {isLoading ? (
               <>
@@ -241,7 +244,7 @@ export default function DonorPaymentModal({
   if (!isOpen || !donor) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 animate-in fade-in">
+    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
       <DonorPaymentForm
         key={donor.id}
         donor={donor}

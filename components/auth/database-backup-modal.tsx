@@ -216,14 +216,17 @@ export default function DatabaseBackupModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-100 w-full max-w-3xl overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] animate-slide-up sm:animate-none">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in overflow-hidden">
+      <div className="bg-white rounded-t-3xl md:rounded-3xl shadow-2xl border-t md:border border-slate-100 w-full md:max-w-3xl overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
+        {/* Drag Handle Bar (Mobile Only) */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+
         {/* Header Modal */}
         <div className="p-4 sm:p-6 bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3 sm:space-x-3.5 min-w-0">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 backdrop-blur-md p-2 flex items-center justify-center border border-white/20 shadow-inner shrink-0">
               <Image
-                src="/logo-masjid.png"
+                src="/logo-babul-khaer.png"
                 alt="Logo Masjid Babul Khaer"
                 width={36}
                 height={36}
@@ -248,7 +251,7 @@ export default function DatabaseBackupModal({
           </div>
           <button
             onClick={handleClose}
-            className="p-2 text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors shrink-0 ml-2"
+            className="p-2 text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors shrink-0 ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -612,7 +615,7 @@ export default function DatabaseBackupModal({
           </div>
           <button
             onClick={handleClose}
-            className="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-xl border border-slate-200 transition-colors shadow-sm text-center"
+            className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-xl border border-slate-200 transition-colors shadow-sm text-center flex items-center justify-center"
           >
             Tutup
           </button>

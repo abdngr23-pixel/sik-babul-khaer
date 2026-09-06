@@ -61,16 +61,19 @@ export default function CompleteAgendaModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
-      <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col max-h-[92dvh] animate-slide-up sm:animate-none">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
+      <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-slide-up md:animate-none">
+        {/* Mobile Drag Handle */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+
         {/* Header Modal */}
-        <div className="px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-emerald-800 to-teal-900 text-white flex items-center justify-between shrink-0">
+        <div className="px-4 md:px-6 py-4 md:py-5 bg-gradient-to-r from-emerald-800 to-teal-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="p-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 shrink-0">
               <CheckCircle2 className="w-5 h-5 text-emerald-200" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold tracking-tight truncate">Tandai Agenda Telah Selesai</h3>
+              <h3 className="text-sm md:text-base font-bold tracking-tight truncate">Tandai Agenda Telah Selesai</h3>
               <p className="text-xs text-emerald-100/80 truncate">
                 Dokumentasikan realisasi kehadiran & intisari materi.
               </p>
@@ -79,7 +82,7 @@ export default function CompleteAgendaModal({
           <button
             onClick={onClose}
             type="button"
-            className="p-1.5 rounded-lg text-emerald-100 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-2"
+            className="p-2 md:p-1.5 rounded-lg text-emerald-100 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-2 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -185,17 +188,17 @@ export default function CompleteAgendaModal({
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-4 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="pt-4 border-t border-slate-100 flex flex-col-reverse md:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors cursor-pointer text-center"
+              className="w-full md:w-auto px-4 py-2.5 min-h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors cursor-pointer text-center flex items-center justify-center"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-soft-sm flex items-center justify-center gap-2 transition-all cursor-pointer text-center"
+              className="w-full md:w-auto px-5 py-2.5 min-h-[44px] rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-soft-sm flex items-center justify-center gap-2 transition-all cursor-pointer text-center"
             >
               <Sparkles className="w-4 h-4" />
               <span>Simpan Laporan & Selesaikan</span>

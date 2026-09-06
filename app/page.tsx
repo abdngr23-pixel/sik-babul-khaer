@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Sidebar, { AppNavTab } from '@/components/layout/sidebar';
+import BottomNav from '@/components/layout/bottom-nav';
 import { TAB_LABELS } from '@/types/navigation';
 import Navbar from '@/components/layout/navbar';
 import { ModuleHeaderBanner } from '@/components/layout/module-header-banner';
@@ -510,7 +511,7 @@ export default function DashboardPage() {
           onOpenAuditLogs={() => setIsAuditLogModalOpen(true)}
         />
 
-        <main className="p-3.5 sm:p-5 md:p-8 space-y-4 sm:space-y-6 flex-1 max-w-7xl w-full mx-auto overflow-x-hidden">
+        <main className="p-3.5 sm:p-5 md:p-8 pb-24 md:pb-8 space-y-4 sm:space-y-6 flex-1 max-w-7xl w-full mx-auto overflow-x-hidden">
           {/* Indikator Persistensi Basis Data (Khusus Super Admin) */}
           {currentUser.role === 'SUPER_ADMIN' && (
             <PersistenceBanner onOpenBackupModal={() => setIsBackupModalOpen(true)} />
@@ -1042,6 +1043,22 @@ export default function DashboardPage() {
           )}
         </main>
       </div>
+
+      {/* ---------------------------------------------------- */}
+      {/* Mobile Fixed Bottom Navigation Bar (< md)            */}
+      {/* ---------------------------------------------------- */}
+      <BottomNav
+        activeTab={activeTab}
+        setActiveTab={handleNavigateTab}
+        onOpenCreateLetter={handleOpenCreateLetter}
+        onOpenCreateJamaah={handleOpenCreateJamaah}
+        onOpenCreateTransaction={handleOpenCreateTransaction}
+        onOpenCreateAsset={handleOpenCreateAsset}
+        onOpenSwitchRole={() => setIsLoginModalOpen(true)}
+        onOpenAuditLogs={() => setIsAuditLogModalOpen(true)}
+        onOpenBackupModal={() => setIsBackupModalOpen(true)}
+        pendingApprovalsCount={pendingApprovalsCount}
+      />
 
       {/* ---------------------------------------------------- */}
       {/* Modal Dialogs                                        */}

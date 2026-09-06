@@ -112,8 +112,11 @@ function TransactionModalContent({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 overflow-hidden">
-      <div className="bg-white w-full sm:max-w-xl rounded-t-3xl sm:rounded-2xl shadow-2xl border-t sm:border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+      <div className="bg-white w-full md:max-w-xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
+        {/* Drag Handle Bar (Mobile Only) */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+
         {/* Header */}
         <div className="bg-slate-900 text-white px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -129,7 +132,7 @@ function TransactionModalContent({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -152,7 +155,7 @@ function TransactionModalContent({
                 setType('INCOME');
                 if (category === 'KAS_OPERASIONAL') setCategory('INFAQ_JUMAT');
               }}
-              className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border ${
+              className={`min-h-[44px] py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border ${
                 type === 'INCOME'
                   ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                   : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
@@ -168,7 +171,7 @@ function TransactionModalContent({
                 setType('EXPENSE');
                 setCategory('KAS_OPERASIONAL');
               }}
-              className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border ${
+              className={`min-h-[44px] py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border ${
                 type === 'EXPENSE'
                   ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
                   : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
@@ -310,7 +313,7 @@ function TransactionModalContent({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer text-center"
+            className="min-h-[44px] px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer text-center flex items-center justify-center"
           >
             Batal
           </button>
@@ -318,7 +321,7 @@ function TransactionModalContent({
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className={`flex items-center justify-center gap-1.5 px-5 py-2.5 sm:py-2 text-white rounded-xl text-xs font-bold shadow-soft-sm transition-all cursor-pointer ${
+            className={`min-h-[44px] flex items-center justify-center gap-1.5 px-5 py-2.5 sm:py-2 text-white rounded-xl text-xs font-bold shadow-soft-sm transition-all cursor-pointer ${
               type === 'INCOME'
                 ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:bg-emerald-400'
                 : 'bg-rose-600 hover:bg-rose-700 active:bg-rose-800 disabled:bg-rose-400'

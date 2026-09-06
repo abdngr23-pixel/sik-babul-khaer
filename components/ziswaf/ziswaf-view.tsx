@@ -795,21 +795,24 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
       {/* MODAL: TAMBAH DISTRIBUSI KALENG SSS BARU                                  */}
       {/* ========================================================================= */}
       {isAddCanOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col max-h-[92dvh] animate-slide-up sm:animate-none">
-            <div className="px-4 sm:px-6 py-4 sm:py-5 bg-teal-900 text-white flex items-center justify-between shrink-0">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
+          <div className="bg-white w-full max-w-md rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-slide-up md:animate-none">
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+
+            <div className="px-4 md:px-6 py-4 md:py-5 bg-teal-900 text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="p-2 rounded-xl bg-white/10 border border-white/20 shrink-0">
                   <Coins className="w-5 h-5 text-amber-300" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold truncate">Distribusi Kaleng SSS Baru</h3>
+                  <h3 className="text-sm md:text-base font-bold truncate">Distribusi Kaleng SSS Baru</h3>
                   <p className="text-xs text-teal-200 truncate">Program Sedekah Seribu Sehari</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAddCanOpen(false)}
-                className="p-1 rounded-lg text-slate-300 hover:text-white shrink-0 ml-2"
+                className="p-2 md:p-1 rounded-lg text-slate-300 hover:text-white shrink-0 ml-2 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center cursor-pointer"
               >
                 ✕
               </button>
@@ -907,17 +910,17 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
                 </select>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <div className="pt-3 border-t border-slate-100 flex flex-col-reverse md:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <button
                   type="button"
                   onClick={() => setIsAddCanOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 text-center"
+                  className="w-full md:w-auto px-4 py-2.5 min-h-[44px] rounded-xl border border-slate-200 text-xs font-bold text-slate-600 text-center flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold text-center"
+                  className="w-full md:w-auto px-5 py-2.5 min-h-[44px] rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold text-center flex items-center justify-center cursor-pointer transition-colors shadow-soft-sm"
                 >
                   Daftarkan Kaleng SSS
                 </button>

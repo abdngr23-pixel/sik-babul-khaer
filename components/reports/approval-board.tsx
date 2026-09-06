@@ -371,8 +371,10 @@ export default function ApprovalBoard({
 
       {/* Modal Prompt Disposisi Ketua */}
       {activeActionItem && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 animate-slide-up sm:animate-none pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden animate-in fade-in">
+          <div className="bg-white rounded-t-3xl md:rounded-2xl max-w-md w-full p-5 md:p-6 shadow-2xl border border-slate-200 space-y-4 animate-slide-up md:animate-none pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-1 md:hidden shrink-0" />
             <div>
               <h3 className="text-sm font-bold text-slate-900">
                 {activeActionItem.action === 'DISETUJUI'
@@ -397,23 +399,23 @@ export default function ApprovalBoard({
                     ? 'Contoh: Disetujui untuk dicairkan segera dari pos anggaran terkait...'
                     : 'Contoh: Mohon koordinasikan ulang dengan Bendahara mengenai kwitansi pembanding...'
                 }
-                className="w-full text-xs p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
               />
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 pt-2">
+            <div className="flex flex-col-reverse md:flex-row items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => {
                   setActiveActionItem(null);
                   setDispositionNotes('');
                 }}
-                className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer text-center"
+                className="w-full md:w-auto px-4 py-2.5 min-h-[44px] text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer text-center flex items-center justify-center"
               >
                 Batal
               </button>
               <button
                 onClick={handleConfirmDisposition}
-                className={`w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs font-bold text-white rounded-lg shadow-xs cursor-pointer text-center ${
+                className={`w-full md:w-auto px-4 py-2.5 min-h-[44px] text-xs font-bold text-white rounded-xl shadow-xs cursor-pointer text-center flex items-center justify-center ${
                   activeActionItem.action === 'DISETUJUI'
                     ? 'bg-emerald-600 hover:bg-emerald-700'
                     : 'bg-rose-600 hover:bg-rose-700'
@@ -430,8 +432,10 @@ export default function ApprovalBoard({
 
       {/* Modal Ajukan Pengesahan Baru */}
       {isSubmitModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 animate-in fade-in">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[92dvh] overflow-y-auto overscroll-contain animate-slide-up sm:animate-none pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden animate-in fade-in">
+          <div className="bg-white rounded-t-3xl md:rounded-2xl max-w-lg w-full p-5 md:p-6 shadow-2xl border border-slate-200 space-y-4 h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] overflow-y-auto overscroll-contain animate-slide-up md:animate-none pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-1 md:hidden shrink-0" />
             <h3 className="text-base font-bold text-slate-900 border-b pb-2">
               Pengajuan Disposisi / Pengesahan Baru
             </h3>
@@ -451,7 +455,7 @@ export default function ApprovalBoard({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Jenis Pengajuan
@@ -481,7 +485,7 @@ export default function ApprovalBoard({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Nama Pengaju
@@ -535,17 +539,17 @@ export default function ApprovalBoard({
                 />
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 pt-3 border-t">
+              <div className="flex flex-col-reverse md:flex-row items-center justify-end gap-2 pt-3 border-t">
                 <button
                   type="button"
                   onClick={() => setIsSubmitModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer text-center"
+                  className="w-full md:w-auto px-4 py-2.5 min-h-[44px] text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer text-center flex items-center justify-center"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs font-bold bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg shadow-xs cursor-pointer text-center"
+                  className="w-full md:w-auto px-4 py-2.5 min-h-[44px] text-xs font-bold bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl shadow-xs cursor-pointer text-center flex items-center justify-center"
                 >
                   Kirim Pengajuan
                 </button>

@@ -48,8 +48,11 @@ export default function FridayReportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 overflow-hidden print:p-0 print:bg-white animate-in fade-in duration-150">
-      <div className="bg-white w-full sm:max-w-4xl rounded-t-3xl sm:rounded-2xl shadow-2xl border-t sm:border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[96dvh] text-slate-800 print:max-h-none print:shadow-none print:border-none print:rounded-none">
+    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden print:p-0 print:bg-white animate-in fade-in duration-150">
+      <div className="bg-white w-full md:max-w-4xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[96dvh] text-slate-800 print:max-h-none print:shadow-none print:border-none print:rounded-none animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
+        {/* Drag Handle Bar (Mobile Only) */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0 print:hidden" />
+
         {/* Top Control Bar (Hidden on Print) */}
         <div className="px-4 py-3 sm:px-6 sm:py-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 print:hidden shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3">
@@ -75,14 +78,14 @@ export default function FridayReportModal({
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all cursor-pointer shadow-soft-sm active:scale-95 shrink-0"
+              className="min-h-[44px] flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-all cursor-pointer shadow-soft-sm active:scale-95 shrink-0"
             >
               <Printer className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Cetak / Simpan PDF</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <X className="w-5 h-5" />
             </button>

@@ -139,8 +139,11 @@ function AssetFormModalContent({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 overflow-hidden">
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl sm:max-w-2xl w-full h-[95dvh] sm:h-auto sm:max-h-[90dvh] flex flex-col shadow-2xl border-t sm:border border-slate-200 overflow-hidden text-slate-800 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+      <div className="bg-white rounded-t-3xl md:rounded-2xl md:max-w-2xl w-full h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[90dvh] flex flex-col shadow-2xl border-t md:border border-slate-200 overflow-hidden text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
+        {/* Drag Handle Bar (Mobile Only) */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+
         {/* Header */}
         <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3">
@@ -158,7 +161,7 @@ function AssetFormModalContent({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -349,7 +352,7 @@ function AssetFormModalContent({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-center"
+              className="min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-center flex items-center justify-center"
             >
               Batal
             </button>
@@ -357,7 +360,7 @@ function AssetFormModalContent({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white rounded-xl shadow-soft-sm transition-all disabled:opacity-50 cursor-pointer"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white rounded-xl shadow-soft-sm transition-all disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <>

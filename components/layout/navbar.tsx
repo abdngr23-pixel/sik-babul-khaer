@@ -13,6 +13,7 @@ import {
   Menu,
   ArrowLeft,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { UserRole } from '@/types/auth';
 import { AppNavTab } from '@/types/navigation';
@@ -90,14 +91,16 @@ export default function Navbar({
     <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-2.5 sm:px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 shadow-soft-sm gap-1.5 sm:gap-3 max-w-full overflow-hidden">
       {/* Left: Islamic Greeting & Title */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink min-w-0 overflow-hidden">
-        <button
-          type="button"
-          onClick={onToggleMobileMenu}
-          className="md:hidden p-1.5 sm:p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer border border-slate-200/60 shrink-0"
-          aria-label="Buka Menu Navigasi"
-        >
-          <Menu className="w-5 h-5 text-emerald-800" />
-        </button>
+        {/* Mobile: Logo DKM (Gaya App Konsumen) */}
+        <div className="md:hidden w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200/80 p-1 flex items-center justify-center shrink-0">
+          <Image
+            src="/logo-babul-khaer.png"
+            alt="Logo Masjid Babul Khaer"
+            width={28}
+            height={28}
+            className="object-contain"
+          />
+        </div>
 
         {/* Back Button (Navbar) */}
         {onGoBack && activeTab !== 'dashboard' && (

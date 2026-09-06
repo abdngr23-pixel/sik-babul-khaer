@@ -41,8 +41,11 @@ export default function AidReceiptModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in print:p-0 print:bg-transparent print:static">
-      <div className="bg-white w-full max-w-2xl rounded-t-3xl sm:rounded-2xl shadow-soft-2xl border border-slate-200 overflow-hidden flex flex-col h-[95dvh] sm:h-auto sm:max-h-[92dvh] animate-slide-up sm:animate-none print:shadow-none print:border-none print:h-auto print:max-h-none print:rounded-none">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in print:p-0 print:bg-transparent print:static">
+      <div className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95 print:shadow-none print:border-none print:h-auto print:max-h-none print:rounded-none">
+        {/* Drag Handle Bar (Mobile Only) */}
+        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0 print:hidden" />
+
         {/* Top Control Bar (Hidden on print) */}
         <div className="px-4 sm:px-6 py-3 bg-slate-900 text-white flex items-center justify-between shrink-0 print:hidden">
           <div className="flex items-center gap-2 min-w-0">
@@ -52,16 +55,16 @@ export default function AidReceiptModal({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span className="hidden xs:inline">Cetak Bukti</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>

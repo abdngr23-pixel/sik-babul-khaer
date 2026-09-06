@@ -80,19 +80,17 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile Backdrop Overlay */}
+      {/* Mobile Backdrop Overlay - Sidebar hanya aktif di desktop, mobile menggunakan BottomNav */}
       {isMobileOpen && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-200"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden"
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed md:sticky top-0 inset-y-0 left-0 z-50 md:z-30 w-72 bg-white text-slate-800 flex flex-col border-r border-slate-200/80 shrink-0 h-screen overflow-y-auto shadow-2xl md:shadow-soft-sm transition-transform duration-300 ease-in-out ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        }`}
+        className="hidden md:flex md:sticky top-0 inset-y-0 left-0 z-30 w-72 bg-white text-slate-800 flex-col border-r border-slate-200/80 shrink-0 h-screen overflow-y-auto shadow-soft-sm"
       >
         {/* Brand Header: Official Logo + Mosque Identity */}
         <div className="p-5 border-b border-slate-100 bg-gradient-to-b from-emerald-50/50 via-white to-white">

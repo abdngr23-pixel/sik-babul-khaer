@@ -441,29 +441,32 @@ export default function FeatureLoginPortal({ onLoginSuccess }: FeatureLoginPorta
       {/* Modal Input PIN untuk Divisi yang Dipilih                    */}
       {/* ----------------------------------------------------------- */}
       {selectedPortal && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-hidden">
           <div
-            className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-soft-lg border border-slate-200 overflow-hidden animate-slide-up sm:animate-none flex flex-col max-h-[92dvh]"
+            className="bg-white w-full max-w-md rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden animate-slide-up md:animate-none flex flex-col max-h-[92dvh]"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+
             {/* Modal Header */}
-            <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/70 shrink-0">
+            <div className="p-4 md:p-6 border-b border-slate-100 bg-slate-50/70 shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-soft-sm ${selectedPortal.themeColor.iconBg}`}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-soft-sm shrink-0 ${selectedPortal.themeColor.iconBg}`}
                 >
                   <selectedPortal.icon className="w-6 h-6" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${selectedPortal.themeColor.badgeBg}`}
                   >
                     {selectedPortal.badge}
                   </span>
-                  <h3 className="text-base font-bold text-slate-900 mt-0.5">
+                  <h3 className="text-base font-bold text-slate-900 mt-0.5 truncate">
                     {selectedPortal.title}
                   </h3>
-                  <p className="text-xs text-slate-600 font-medium">
+                  <p className="text-xs text-slate-600 font-medium truncate">
                     {selectedPortal.officerName} ({selectedPortal.roleTitle})
                   </p>
                 </div>
@@ -471,7 +474,7 @@ export default function FeatureLoginPortal({ onLoginSuccess }: FeatureLoginPorta
             </div>
 
             {/* Modal Form Body */}
-            <form onSubmit={handleSubmitPin} className="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <form onSubmit={handleSubmitPin} className="p-4 md:p-6 space-y-4 flex-1 overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Masukkan PIN 6 Digit Pengurus
@@ -516,19 +519,19 @@ export default function FeatureLoginPortal({ onLoginSuccess }: FeatureLoginPorta
               )}
 
               {/* Action Buttons */}
-              <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-end gap-2">
+              <div className="pt-2 flex flex-col-reverse md:flex-row items-center justify-end gap-2">
                 <button
                   type="button"
                   disabled={isLoading}
                   onClick={handleCloseModal}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer text-center"
+                  className="w-full md:w-auto px-4 py-2.5 min-h-[44px] rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer text-center flex items-center justify-center"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || pin.length !== 6 || lockoutSeconds !== null}
-                  className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-soft-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center ${selectedPortal.themeColor.btnBg}`}
+                  className={`w-full md:w-auto px-5 py-2.5 min-h-[44px] rounded-xl text-xs font-bold text-white shadow-soft-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center ${selectedPortal.themeColor.btnBg}`}
                 >
                   {isLoading ? (
                     <>

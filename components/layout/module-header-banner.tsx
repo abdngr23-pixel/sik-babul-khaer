@@ -59,22 +59,148 @@ export function ModuleHeaderBanner({
   const isDakwahTab = activeTab === 'dakwah';
   const isJamaahTab = activeTab === 'jamaah' || activeTab === 'mustahiq';
 
+  const bannerGradient =
+    isReportsTab || isApprovalsTab
+      ? 'bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 shadow-indigo-950/20'
+      : isFinanceTab || isDonorsTab
+      ? 'bg-gradient-to-r from-amber-950 via-amber-900 to-slate-900 shadow-amber-950/20'
+      : isAssetTab
+      ? 'bg-gradient-to-r from-slate-900 via-teal-950 to-emerald-950 shadow-slate-950/20'
+      : isDakwahTab
+      ? 'bg-gradient-to-r from-teal-950 via-emerald-950 to-slate-900 shadow-teal-950/20'
+      : isJamaahTab
+      ? 'bg-gradient-to-r from-teal-950 via-teal-900 to-emerald-950 shadow-teal-950/20'
+      : 'bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 shadow-emerald-950/20';
+
+  const getMobileModuleInfo = () => {
+    if (isDashboardTab) {
+      return {
+        title: 'Pusat Kendali DKM',
+        subtitle: 'BTP Blok AE • Makassar',
+        actionLabel: canMutateTab('finance') ? 'Kas' : canMutateTab('archive') ? 'Surat' : null,
+        onAction: canMutateTab('finance') ? onOpenCreateTransaction : canMutateTab('archive') ? onOpenCreateLetter : undefined,
+      };
+    }
+    if (isFinanceTab) {
+      return {
+        title: 'Buku Kas Satu Pintu',
+        subtitle: 'Kas Operasional & PHBI',
+        actionLabel: 'Kas',
+        onAction: onOpenCreateTransaction,
+      };
+    }
+    if (isDonorsTab) {
+      return {
+        title: 'Donatur Rutin',
+        subtitle: 'Infaq Rutin Warga',
+        actionLabel: 'Donatur',
+        onAction: onOpenCreateDonor,
+      };
+    }
+    if (isJamaahTab) {
+      return {
+        title: activeTab === 'mustahiq' ? 'Mustahiq ZISWAF' : 'Basis Data Warga',
+        subtitle: 'Sensus Jamaah RT 01–05',
+        actionLabel: 'Warga',
+        onAction: onOpenCreateJamaah,
+      };
+    }
+    if (isAssetTab) {
+      return {
+        title: 'Sarana & Prasarana',
+        subtitle: 'Inventaris & Servis',
+        actionLabel: 'Aset',
+        onAction: onOpenCreateAsset,
+      };
+    }
+    if (isDakwahTab) {
+      return {
+        title: 'Peribadatan & Dakwah',
+        subtitle: 'Khatib & Imam Rawatib',
+        actionLabel: null,
+        onAction: undefined,
+      };
+    }
+    if (isReportsTab) {
+      return {
+        title: 'Evaluasi & LPJ 4 Pilar',
+        subtitle: 'Laporan Tahunan DKM',
+        actionLabel: null,
+        onAction: undefined,
+      };
+    }
+    if (isApprovalsTab) {
+      return {
+        title: 'Pengesahan Satu Pintu',
+        subtitle: 'Disposisi Ketua Umum',
+        actionLabel: null,
+        onAction: undefined,
+      };
+    }
+    return {
+      title: 'Administrasi Surat',
+      subtitle: 'E-Arsip Persuratan',
+      actionLabel: 'Surat',
+      onAction: onOpenCreateLetter,
+    };
+  };
+
+  const mobileInfo = getMobileModuleInfo();
+
   return (
-    <div
-      className={`text-white rounded-2xl p-6 md:p-8 shadow-lg relative overflow-hidden transition-all duration-300 ${
-        isReportsTab || isApprovalsTab
-          ? 'bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 shadow-indigo-950/20'
-          : isFinanceTab || isDonorsTab
-          ? 'bg-gradient-to-r from-amber-950 via-amber-900 to-slate-900 shadow-amber-950/20'
-          : isAssetTab
-          ? 'bg-gradient-to-r from-slate-900 via-teal-950 to-emerald-950 shadow-slate-950/20'
-          : isDakwahTab
-          ? 'bg-gradient-to-r from-teal-950 via-emerald-950 to-slate-900 shadow-teal-950/20'
-          : isJamaahTab
-          ? 'bg-gradient-to-r from-teal-950 via-teal-900 to-emerald-950 shadow-teal-950/20'
-          : 'bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 shadow-emerald-950/20'
-      }`}
-    >
+    <>
+      {/* -------------------------------------------------------- */}
+      {/* MOBILE COMPACT HEADER (< md) (Khusus Sub-Modul)          */}
+      {/* -------------------------------------------------------- */}
+      {!isDashboardTab && (
+        <div
+          className={`md:hidden text-white rounded-2xl p-3 sm:p-4 shadow-md relative overflow-hidden transition-all duration-300 ${bannerGradient}`}
+        >
+          <div className="flex items-center justify-between gap-2.5">
+            {/* Tombol Kembali */}
+            {onGoBack && (
+              <button
+                type="button"
+                onClick={onGoBack}
+                className="min-h-[44px] min-w-[44px] p-2 rounded-xl bg-white/20 hover:bg-white/30 active:bg-white/40 text-white flex items-center justify-center border border-white/25 shrink-0 transition-all cursor-pointer shadow-2xs"
+                title={`Kembali ke ${previousTabLabel || 'Menu Sebelumnya'}`}
+                aria-label="Kembali"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Judul & Sub-label Modul */}
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 block truncate">
+                {mobileInfo.subtitle}
+              </span>
+              <h2 className="text-sm sm:text-base font-extrabold text-white tracking-tight leading-tight truncate">
+                {mobileInfo.title}
+              </h2>
+            </div>
+
+            {/* Tombol Aksi Cepat (min-h-[44px]) */}
+            {!isReadOnly && mobileInfo.actionLabel && mobileInfo.onAction && (
+              <button
+                type="button"
+                onClick={mobileInfo.onAction}
+                className="min-h-[44px] px-3 py-2 rounded-xl bg-white text-emerald-950 font-bold text-xs shadow-md hover:bg-emerald-50 active:scale-95 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 text-emerald-700" />
+                <span>{mobileInfo.actionLabel}</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* -------------------------------------------------------- */}
+      {/* DESKTOP FULL BANNER (>= md): 100% Identik                */}
+      {/* -------------------------------------------------------- */}
+      <div
+        className={`hidden md:block text-white rounded-2xl p-6 md:p-8 shadow-lg relative overflow-hidden transition-all duration-300 ${bannerGradient}`}
+      >
       {/* Watermark Logo */}
       <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-15 pointer-events-none hidden md:block select-none">
         <Image
@@ -300,5 +426,6 @@ export function ModuleHeaderBanner({
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }
