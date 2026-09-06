@@ -94,7 +94,9 @@ export default function LPJPreviewModal({ report, onClose }: LPJPreviewModalProp
             {/* Document Header */}
             <div className="text-center mb-6 font-sans">
               <h2 className="text-base md:text-lg font-extrabold uppercase tracking-wide text-slate-900">
-                LAPORAN PERTANGGUNGJAWABAN (LPJ) TAHUNAN
+                {report.divisionScope && report.divisionScope !== 'ALL'
+                  ? report.title
+                  : 'LAPORAN PERTANGGUNGJAWABAN (LPJ) TAHUNAN'}
               </h2>
               <p className="text-xs font-bold text-indigo-900 uppercase tracking-wider mt-0.5">
                 {report.period}
@@ -131,9 +133,12 @@ export default function LPJPreviewModal({ report, onClose }: LPJPreviewModalProp
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 text-slate-700">
-                    <tr>
-                      <td className="py-2 px-3 font-semibold border-r border-slate-300 bg-slate-50/50">
+                    <tr className={report.divisionScope === 'KESEKRETARIATAN' ? 'bg-emerald-50/80 font-semibold' : ''}>
+                      <td className="py-2 px-3 font-semibold border-r border-slate-300">
                         I. Kesekretariatan & Administrasi
+                        {report.divisionScope === 'KESEKRETARIATAN' && (
+                          <span className="ml-1.5 text-[9px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded font-bold">Fokus LPJ</span>
+                        )}
                       </td>
                       <td className="py-2 px-3 border-r border-slate-300">
                         Surat Terbit & Tugas Pleno Selesai
@@ -145,9 +150,12 @@ export default function LPJPreviewModal({ report, onClose }: LPJPreviewModalProp
                         100% E-Arsip Digital
                       </td>
                     </tr>
-                    <tr>
-                      <td className="py-2 px-3 font-semibold border-r border-slate-300 bg-slate-50/50">
+                    <tr className={report.divisionScope === 'KEMASJIDAN_JAMAAH' ? 'bg-teal-50/80 font-semibold' : ''}>
+                      <td className="py-2 px-3 font-semibold border-r border-slate-300">
                         II. Dakwah & Kependudukan Jamaah
+                        {report.divisionScope === 'KEMASJIDAN_JAMAAH' && (
+                          <span className="ml-1.5 text-[9px] bg-teal-200 text-teal-900 px-1.5 py-0.5 rounded font-bold">Fokus LPJ</span>
+                        )}
                       </td>
                       <td className="py-2 px-3 border-r border-slate-300">
                         Sensus Warga BTP Blok AE & Mustahiq
@@ -159,9 +167,12 @@ export default function LPJPreviewModal({ report, onClose }: LPJPreviewModalProp
                         {report.metrics.mustahiqCount} Mustahiq Terverifikasi
                       </td>
                     </tr>
-                    <tr>
-                      <td className="py-2 px-3 font-semibold border-r border-slate-300 bg-slate-50/50">
+                    <tr className={report.divisionScope === 'KEUANGAN_PERBENDAHARAAN' ? 'bg-amber-50/80 font-semibold' : ''}>
+                      <td className="py-2 px-3 font-semibold border-r border-slate-300">
                         III. Keuangan & Dana Swadaya PHBI
+                        {report.divisionScope === 'KEUANGAN_PERBENDAHARAAN' && (
+                          <span className="ml-1.5 text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">Fokus LPJ</span>
+                        )}
                       </td>
                       <td className="py-2 px-3 border-r border-slate-300">
                         Saldo Kas Berjalan & Swadaya Satu Pintu
@@ -173,9 +184,12 @@ export default function LPJPreviewModal({ report, onClose }: LPJPreviewModalProp
                         Swadaya PHBI: {formatRupiah(report.metrics.phbiBalance)}
                       </td>
                     </tr>
-                    <tr>
-                      <td className="py-2 px-3 font-semibold border-r border-slate-300 bg-slate-50/50">
+                    <tr className={report.divisionScope === 'SARANA_PRASARANA' ? 'bg-blue-50/80 font-semibold' : ''}>
+                      <td className="py-2 px-3 font-semibold border-r border-slate-300">
                         IV. Sarana Prasarana & Pemeliharaan
+                        {report.divisionScope === 'SARANA_PRASARANA' && (
+                          <span className="ml-1.5 text-[9px] bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded font-bold">Fokus LPJ</span>
+                        )}
                       </td>
                       <td className="py-2 px-3 border-r border-slate-300">
                         Kesiapan Aset AC, Genset & Sound
@@ -228,7 +242,7 @@ export default function LPJPreviewModal({ report, onClose }: LPJPreviewModalProp
               </ul>
             </div>
 
-            {/* Lembar Tanda Tangan Tiga Pimpinan */}
+            {/* Lembar Tanda Tangan */}
             <div className="mt-8 pt-4 font-sans text-xs break-inside-avoid">
               <div className="text-right text-slate-700 mb-4">
                 Makassar, 4 September 2026
@@ -240,40 +254,78 @@ export default function LPJPreviewModal({ report, onClose }: LPJPreviewModalProp
                 KOMPLEKS BTP BLOK AE MAKASSAR
               </div>
 
-              <div className="grid grid-cols-3 gap-4 text-center">
-                {/* Sekretaris */}
-                <div>
-                  <p className="text-slate-600 mb-16">Sekretaris Umum,</p>
-                  <p className="font-bold text-slate-900 underline">
-                    {report.signatories.sekretarisUmum.name}
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    NIA: DKM-MBH-2026-002
-                  </p>
-                </div>
+              {/* Tanda tangan dinamis sesuai cakupan bidang */}
+              {!report.divisionScope || report.divisionScope === 'ALL' ? (
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  {/* Sekretaris */}
+                  <div>
+                    <p className="text-slate-600 mb-16">Sekretaris Umum,</p>
+                    <p className="font-bold text-slate-900 underline">
+                      {report.signatories.sekretarisUmum.name}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      NIA: DKM-MBH-2026-002
+                    </p>
+                  </div>
 
-                {/* Bendahara */}
-                <div>
-                  <p className="text-slate-600 mb-16">Bendahara Umum,</p>
-                  <p className="font-bold text-slate-900 underline">
-                    {report.signatories.bendaharaUmum.name}
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    NIA: DKM-MBH-2026-003
-                  </p>
-                </div>
+                  {/* Bendahara */}
+                  <div>
+                    <p className="text-slate-600 mb-16">Bendahara Umum,</p>
+                    <p className="font-bold text-slate-900 underline">
+                      {report.signatories.bendaharaUmum.name}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      NIA: DKM-MBH-2026-003
+                    </p>
+                  </div>
 
-                {/* Ketua Umum */}
-                <div>
-                  <p className="text-slate-600 mb-16">Mengetahui,<br />Ketua Umum DKM,</p>
-                  <p className="font-bold text-slate-900 underline">
-                    {report.signatories.ketuaUmum.name}
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    NIA: DKM-MBH-2026-001
-                  </p>
+                  {/* Ketua Umum */}
+                  <div>
+                    <p className="text-slate-600 mb-16">Mengetahui,<br />Ketua Umum DKM,</p>
+                    <p className="font-bold text-slate-900 underline">
+                      {report.signatories.ketuaUmum.name}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      NIA: DKM-MBH-2026-001
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-8 text-center max-w-lg mx-auto">
+                  {/* Pelapor / Koordinator Bidang Terkait */}
+                  <div>
+                    <p className="text-slate-600 mb-16">
+                      {report.divisionScope === 'KEUANGAN_PERBENDAHARAAN' && 'Bendahara Umum DKM (Pelapor),'}
+                      {report.divisionScope === 'SARANA_PRASARANA' && 'Koordinator Seksi Sarpras (Pelapor),'}
+                      {report.divisionScope === 'KEMASJIDAN_JAMAAH' && 'Koordinator Peribadatan & Dakwah (Pelapor),'}
+                      {report.divisionScope === 'KESEKRETARIATAN' && 'Sekretaris Umum DKM (Pelapor),'}
+                    </p>
+                    <p className="font-bold text-slate-900 underline">
+                      {report.divisionScope === 'KEUANGAN_PERBENDAHARAAN' && report.signatories.bendaharaUmum.name}
+                      {report.divisionScope === 'SARANA_PRASARANA' && 'Faisal T. Parussengi, S.S.'}
+                      {report.divisionScope === 'KEMASJIDAN_JAMAAH' && 'Drs. Manai, M.M.'}
+                      {report.divisionScope === 'KESEKRETARIATAN' && report.signatories.sekretarisUmum.name}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      {report.divisionScope === 'KEUANGAN_PERBENDAHARAAN' && 'NIA: DKM-MBH-2026-003'}
+                      {report.divisionScope === 'SARANA_PRASARANA' && 'NIA: DKM-MBH-2026-004'}
+                      {report.divisionScope === 'KEMASJIDAN_JAMAAH' && 'NIA: DKM-MBH-2026-005'}
+                      {report.divisionScope === 'KESEKRETARIATAN' && 'NIA: DKM-MBH-2026-002'}
+                    </p>
+                  </div>
+
+                  {/* Ketua Umum */}
+                  <div>
+                    <p className="text-slate-600 mb-16">Mengetahui,<br />Ketua Umum DKM,</p>
+                    <p className="font-bold text-slate-900 underline">
+                      {report.signatories.ketuaUmum.name}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      NIA: DKM-MBH-2026-001
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

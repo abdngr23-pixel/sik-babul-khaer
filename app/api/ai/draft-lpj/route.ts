@@ -6,6 +6,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       period = 'Tahun Anggaran 2026',
+      divisionScope = 'ALL',
+      authorRole = 'Sekretaris Umum',
+      authorName = '',
       totalLetters = 15,
       totalJamaah = 350,
       totalIncome = 125000000,
@@ -19,6 +22,9 @@ export async function POST(request: NextRequest) {
 
     const result = await generateLPJExecutiveSummary({
       period,
+      divisionScope,
+      authorRole,
+      authorName,
       totalLetters,
       totalJamaah,
       totalIncome,

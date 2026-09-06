@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { LPJReport } from '@/types/reports';
+import { LPJReport, FieldArea } from '@/types/reports';
 import { formatRupiah } from '@/components/finance/finance-stats';
+import { useAuth } from '@/lib/auth-context';
 import {
   FileText,
   Sparkles,
@@ -13,7 +14,10 @@ import {
   Calendar,
   Users,
   Wallet,
-  Wrench
+  Wrench,
+  Lock,
+  Layers,
+  Filter
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
@@ -28,6 +32,23 @@ export default function LPJGenerator({
   onPreviewLPJ,
   onRefreshData,
 }: LPJGeneratorProps) {
+  const { currentUser } = useAuth();
+
+  // Role checking for division scoping
+  const canAssembleAll = ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKRETARIS', 'DEWAN_PENGAWAS'].includes(currentUser.role);
+  
+  const roleToDivision: Record<string, FieldArea> = {
+    BENDAHARA: 'KEUANGAN_PERBENDAHARAAN',
+    SARPRAS: 'SARANA_PRASARANA',
+    KEMASJIDAN: 'KEMASJIDAN_JAMAAH',
+    SEKRETARIS: 'KESEKRETARIATAN',
+  };
+
+  const initialScope: 'ALL' | FieldArea = canAssembleAll
+    ? (initialReport?.divisionScope || 'ALL')
+    : (roleToDivision[currentUser.role] || 'ALL');
+
+  const [divisionScope, setDivisionScope] = useState<'ALL' | FieldArea>(initialScope);
   const [period, setPeriod] = useState(initialReport?.period || 'Tahun Anggaran 2026');
   const [executiveSummary, setExecutiveSummary] = useState(
     initialReport?.executiveSummary || ''
@@ -49,9 +70,26 @@ export default function LPJGenerator({
 
   if (!initialReport) return null;
 
+  const getScopeTitle = () => {
+    switch (divisionScope) {
+      case 'KEUANGAN_PERBENDAHARAAN':
+        return 'Laporan Pertanggungjawaban (LPJ) Bidang Keuangan & Perbendaharaan';
+      case 'SARANA_PRASARANA':
+        return 'Laporan Pertanggungjawaban (LPJ) Bidang Sarana & Prasarana';
+      case 'KEMASJIDAN_JAMAAH':
+        return 'Laporan Pertanggungjawaban (LPJ) Bidang Dakwah & Sensus Jamaah';
+      case 'KESEKRETARIATAN':
+        return 'Laporan Pertanggungjawaban (LPJ) Bidang Kesekretariatan & Persuratan';
+      default:
+        return 'Kompilasi Laporan Pertanggungjawaban (LPJ) Pleno Gabungan';
+    }
+  };
+
   const currentReport: LPJReport = {
     ...initialReport,
+    title: getScopeTitle(),
     period,
+    divisionScope,
     executiveSummary,
     keyAchievements: achievements,
     challengesAndSolutions: challenges,
@@ -68,6 +106,9 @@ export default function LPJGenerator({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           period,
+          divisionScope,
+          authorRole: currentUser.roleLabel || currentUser.title,
+          authorName: currentUser.name,
           totalLetters: initialReport.metrics.totalLetters,
           totalJamaah: initialReport.metrics.totalJamaah,
           totalIncome: initialReport.metrics.totalIncome,
@@ -86,7 +127,11 @@ export default function LPJGenerator({
         if (data.data.achievements?.length) setAchievements(data.data.achievements);
         if (data.data.challenges?.length) setChallenges(data.data.challenges);
         if (data.data.recommendations?.length) setRecommendations(data.data.recommendations);
-        setAiSuccessMessage('Narasi pertanggungjawaban berhasil disintesis oleh Gemini AI!');
+        setAiSuccessMessage(
+          divisionScope === 'ALL'
+            ? 'Narasi pertanggungjawaban pleno gabungan berhasil disintesis oleh Gemini AI!'
+            : `Narasi pertanggungjawaban khusus ${getScopeTitle()} berhasil disintesis oleh Gemini AI!`
+        );
       }
     } catch (err) {
       console.error('Failed to generate AI LPJ:', err);
@@ -97,7 +142,10 @@ export default function LPJGenerator({
 
   const handleExportExcel = () => {
     const metricsData = [
+      { Indikator: 'Judul Laporan', Nilai: getScopeTitle() },
+      { Indikator: 'Cakupan Bidang', Nilai: divisionScope },
       { Indikator: 'Periode Laporan', Nilai: period },
+      { Indikator: 'Penyusun / Akun Login', Nilai: `${currentUser.name} (${currentUser.roleLabel})` },
       { Indikator: 'Total Surat Resmi Terbit', Nilai: initialReport.metrics.totalLetters },
       { Indikator: 'Surat Undangan Kegiatan', Nilai: initialReport.metrics.invitationsCount },
       { Indikator: 'Tugas Rapat (Action Items) Tuntas', Nilai: `${initialReport.metrics.actionItemsCompleted} dari ${initialReport.metrics.actionItemsTotal}` },
@@ -119,7 +167,8 @@ export default function LPJGenerator({
 
     worksheet['!cols'] = [{ wch: 45 }, { wch: 30 }];
     const todayStr = new Date().toISOString().split('T')[0];
-    XLSX.writeFile(workbook, `Rekapitulasi_LPJ_DKM_Babul_Khaer_${todayStr}.xlsx`);
+    const scopeSlug = divisionScope.toLowerCase().replace(/_/g, '-');
+    XLSX.writeFile(workbook, `LPJ_DKM_Babul_Khaer_${scopeSlug}_${todayStr}.xlsx`);
   };
 
   return (
@@ -134,16 +183,52 @@ export default function LPJGenerator({
             <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold border border-indigo-200">
               Otomatis & Terintegrasi
             </span>
+            {!canAssembleAll ? (
+              <span className="text-[10px] bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full font-bold border border-amber-200 flex items-center gap-1">
+                <Lock className="w-2.5 h-2.5 text-amber-600" />
+                Lingkup Koordinator Terpilih
+              </span>
+            ) : (
+              <span className="text-[10px] bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded-full font-bold border border-emerald-200 flex items-center gap-1">
+                <Layers className="w-2.5 h-2.5 text-emerald-600" />
+                Hak Rakit Pleno Gabungan
+              </span>
+            )}
           </div>
           <h2 className="text-lg font-bold text-slate-900 mt-1">
-            Kompilasi Laporan Pertanggungjawaban (LPJ) Akhir Periode
+            {getScopeTitle()}
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Data statistik secara otomatis teragregasi dari modul Persuratan, Jamaah, Kas PHBI, dan Sarpras.
+            {divisionScope === 'ALL'
+              ? 'Data statistik teragregasi lengkap dari 4 pilar tata pamong DKM Babul Khaer BTP Blok AE.'
+              : `Laporan terfokus pada mandat operasional dan pertanggungjawaban ${getScopeTitle()}.`}
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Division Scope Selector */}
+          {canAssembleAll ? (
+            <div className="flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-slate-400" />
+              <select
+                value={divisionScope}
+                onChange={(e) => setDivisionScope(e.target.value as 'ALL' | FieldArea)}
+                className="text-xs py-2 px-3 rounded-lg border border-indigo-300 bg-indigo-50/50 font-bold text-indigo-900 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              >
+                <option value="ALL">📑 Semua Bidang (Pleno Gabungan)</option>
+                <option value="KESEKRETARIATAN">✉️ Bidang Kesekretariatan</option>
+                <option value="KEMASJIDAN_JAMAAH">👥 Bidang Dakwah & Jamaah</option>
+                <option value="KEUANGAN_PERBENDAHARAAN">💰 Bidang Keuangan & Kas</option>
+                <option value="SARANA_PRASARANA">🔧 Bidang Sarana & Prasarana</option>
+              </select>
+            </div>
+          ) : (
+            <div className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5">
+              <Lock className="w-3 h-3 text-slate-500" />
+              <span>{getScopeTitle().replace('Laporan Pertanggungjawaban (LPJ) ', '')}</span>
+            </div>
+          )}
+
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-slate-400" />
             <select
@@ -182,10 +267,24 @@ export default function LPJGenerator({
       {/* 4 Pillars Summary Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Pilar 1: Kesekretariatan */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
+        <div
+          onClick={() => canAssembleAll && setDivisionScope('KESEKRETARIATAN')}
+          className={`bg-white rounded-xl p-4 border transition-all ${
+            divisionScope === 'KESEKRETARIATAN'
+              ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md scale-[1.01]'
+              : divisionScope !== 'ALL'
+              ? 'border-slate-200 opacity-60 hover:opacity-100'
+              : 'border-slate-200 shadow-xs hover:border-slate-300'
+          } ${canAssembleAll ? 'cursor-pointer' : ''}`}
+        >
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="font-bold uppercase tracking-wider text-[10px]">Pilar I: Persuratan</span>
-            <FileText className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center gap-1.5">
+              {divisionScope === 'KESEKRETARIATAN' && (
+                <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Aktif</span>
+              )}
+              <FileText className="w-4 h-4 text-emerald-600" />
+            </div>
           </div>
           <div className="text-xl font-extrabold text-slate-900 mt-2">
             {initialReport.metrics.totalLetters}{' '}
@@ -197,10 +296,24 @@ export default function LPJGenerator({
         </div>
 
         {/* Pilar 2: Data Jamaah */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
+        <div
+          onClick={() => canAssembleAll && setDivisionScope('KEMASJIDAN_JAMAAH')}
+          className={`bg-white rounded-xl p-4 border transition-all ${
+            divisionScope === 'KEMASJIDAN_JAMAAH'
+              ? 'border-teal-500 ring-2 ring-teal-500/20 shadow-md scale-[1.01]'
+              : divisionScope !== 'ALL'
+              ? 'border-slate-200 opacity-60 hover:opacity-100'
+              : 'border-slate-200 shadow-xs hover:border-slate-300'
+          } ${canAssembleAll ? 'cursor-pointer' : ''}`}
+        >
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="font-bold uppercase tracking-wider text-[10px]">Pilar II: Umat & Sensus</span>
-            <Users className="w-4 h-4 text-teal-600" />
+            <div className="flex items-center gap-1.5">
+              {divisionScope === 'KEMASJIDAN_JAMAAH' && (
+                <span className="text-[9px] bg-teal-100 text-teal-800 px-1.5 py-0.5 rounded font-bold">Aktif</span>
+              )}
+              <Users className="w-4 h-4 text-teal-600" />
+            </div>
           </div>
           <div className="text-xl font-extrabold text-slate-900 mt-2">
             {initialReport.metrics.totalJamaah}{' '}
@@ -212,10 +325,24 @@ export default function LPJGenerator({
         </div>
 
         {/* Pilar 3: Keuangan & PHBI */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
+        <div
+          onClick={() => canAssembleAll && setDivisionScope('KEUANGAN_PERBENDAHARAAN')}
+          className={`bg-white rounded-xl p-4 border transition-all ${
+            divisionScope === 'KEUANGAN_PERBENDAHARAAN'
+              ? 'border-amber-500 ring-2 ring-amber-500/20 shadow-md scale-[1.01]'
+              : divisionScope !== 'ALL'
+              ? 'border-slate-200 opacity-60 hover:opacity-100'
+              : 'border-slate-200 shadow-xs hover:border-slate-300'
+          } ${canAssembleAll ? 'cursor-pointer' : ''}`}
+        >
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="font-bold uppercase tracking-wider text-[10px]">Pilar III: Kas & Swadaya</span>
-            <Wallet className="w-4 h-4 text-amber-600" />
+            <div className="flex items-center gap-1.5">
+              {divisionScope === 'KEUANGAN_PERBENDAHARAAN' && (
+                <span className="text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-bold">Aktif</span>
+              )}
+              <Wallet className="w-4 h-4 text-amber-600" />
+            </div>
           </div>
           <div className="text-xl font-extrabold text-slate-900 mt-2">
             {formatRupiah(initialReport.metrics.netBalance)}
@@ -226,10 +353,24 @@ export default function LPJGenerator({
         </div>
 
         {/* Pilar 4: Sarana Prasarana */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
+        <div
+          onClick={() => canAssembleAll && setDivisionScope('SARANA_PRASARANA')}
+          className={`bg-white rounded-xl p-4 border transition-all ${
+            divisionScope === 'SARANA_PRASARANA'
+              ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md scale-[1.01]'
+              : divisionScope !== 'ALL'
+              ? 'border-slate-200 opacity-60 hover:opacity-100'
+              : 'border-slate-200 shadow-xs hover:border-slate-300'
+          } ${canAssembleAll ? 'cursor-pointer' : ''}`}
+        >
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="font-bold uppercase tracking-wider text-[10px]">Pilar IV: Aset Sarpras</span>
-            <Wrench className="w-4 h-4 text-blue-600" />
+            <div className="flex items-center gap-1.5">
+              {divisionScope === 'SARANA_PRASARANA' && (
+                <span className="text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">Aktif</span>
+              )}
+              <Wrench className="w-4 h-4 text-blue-600" />
+            </div>
           </div>
           <div className="text-xl font-extrabold text-slate-900 mt-2">
             {initialReport.metrics.totalAssetsCount}{' '}

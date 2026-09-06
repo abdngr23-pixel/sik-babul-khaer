@@ -37,7 +37,7 @@ export default function ApprovalBoard({
   onSubmitNewApproval,
 }: ApprovalBoardProps) {
   const { currentUser, isReadOnly } = useAuth();
-  const canExecute = currentUser.role === 'KETUA_UMUM' && !isReadOnly;
+  const canExecute = (currentUser.role === 'KETUA_UMUM' || currentUser.role === 'SUPER_ADMIN') && !isReadOnly;
 
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);

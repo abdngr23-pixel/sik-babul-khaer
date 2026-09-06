@@ -4,6 +4,7 @@ export interface LPJReport {
   id: string;
   title: string;
   period: string; // e.g. "Tahun Anggaran 2026"
+  divisionScope?: 'ALL' | FieldArea;
   executiveSummary: string;
   compiledAt: string;
   compiledBy: string;

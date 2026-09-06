@@ -305,6 +305,9 @@ function parseFallbackMeetingNotes(notes: string): ExtractedMinutesResult {
 
 export interface GenerateLPJSummaryParams {
   period: string;
+  divisionScope?: 'ALL' | 'KESEKRETARIATAN' | 'KEMASJIDAN_JAMAAH' | 'KEUANGAN_PERBENDAHARAAN' | 'SARANA_PRASARANA';
+  authorRole?: string;
+  authorName?: string;
   theme?: string;
   totalLetters: number;
   totalJamaah: number;
@@ -326,6 +329,9 @@ export async function generateLPJExecutiveSummary(params: GenerateLPJSummaryPara
 }> {
   const {
     period,
+    divisionScope = 'ALL',
+    authorRole = 'Sekretaris Umum',
+    authorName = '',
     totalLetters,
     totalJamaah,
     totalIncome,
@@ -337,19 +343,32 @@ export async function generateLPJExecutiveSummary(params: GenerateLPJSummaryPara
     userPrompt = '',
   } = params;
 
+  const divisionTitles: Record<string, string> = {
+    ALL: 'Kompilasi Pleno Gabungan Seluruh Bidang DKM Babul Khaer',
+    KESEKRETARIATAN: 'Bidang Kesekretariatan & Tata Usaha Administrasi',
+    KEMASJIDAN_JAMAAH: 'Bidang Keagamaan, Dakwah & Sensus Kependudukan Jamaah',
+    KEUANGAN_PERBENDAHARAAN: 'Bidang Keuangan, Perbendaharaan & Kas Swadaya PHBI',
+    SARANA_PRASARANA: 'Bidang Pembangunan, Sarana Prasarana & Fasilitas Fisik',
+  };
+
+  const targetTitle = divisionTitles[divisionScope] || divisionTitles.ALL;
+
   if (aiClient && apiKey) {
     try {
-      const systemInstruction = `Anda adalah Sekretaris Jenderal Dewan Kemakmuran Masjid (DKM) Babul Khaer Kompleks BTP Blok AE Makassar.
-Tugas Anda adalah menyusun narasi pengantar Laporan Pertanggungjawaban (LPJ) resmi bernuansa Islami, formal, khidmat, akuntabel, dan transparan.
+      const systemInstruction = `Anda adalah ${authorRole || 'Pengurus Harian'} Dewan Kemakmuran Masjid (DKM) Babul Khaer Kompleks BTP Blok AE Makassar.
+Tugas Anda adalah menyusun narasi Laporan Pertanggungjawaban (LPJ) resmi bernuansa Islami, formal, khidmat, akuntabel, dan transparan.
+Cakupan Laporan: ${targetTitle} (Lingkup: ${divisionScope}).
 Keluarkan output dalam format JSON valid dengan struktur:
 {
-  "executiveSummary": "paragraf panjang (2-3 paragraf) mukadimah dan evaluasi kepengurusan",
+  "executiveSummary": "paragraf panjang (2-3 paragraf) mukadimah dan evaluasi kinerja spesifik bidang tersebut",
   "achievements": ["poin capaian 1", "poin capaian 2", "poin capaian 3", "poin capaian 4"],
   "challenges": ["kendala dan solusi 1", "kendala dan solusi 2", "kendala dan solusi 3"],
   "recommendations": ["rekomendasi masa depan 1", "rekomendasi masa depan 2", "rekomendasi masa depan 3"]
 }`;
 
-      const prompt = `Data Ringkasan DKM Babul Khaer Periode: ${period}
+      const prompt = `Data Statistik DKM Babul Khaer Periode: ${period}
+- Lingkup Bidang: ${targetTitle}
+${authorName ? `- Penyusun / Penanggung Jawab: ${authorName} (${authorRole})` : ''}
 - Total Surat Dinas Terbit: ${totalLetters} surat
 - Basis Data Jamaah Terdata: ${totalJamaah} warga (BTP Blok AE RT 01-05)
 - Arus Kas Masuk: Rp ${totalIncome.toLocaleString('id-ID')}
@@ -359,7 +378,7 @@ Keluarkan output dalam format JSON valid dengan struktur:
 - Sarana Prasarana Terkelola: ${totalAssetsCount} unit aset (Kesiapan ${maintenanceCompliancePercent}%)
 Instruksi Tambahan Pengurus: "${userPrompt}"
 
-Tolong susun narasi draf LPJ tahunan yang resmi dan berkualitas tinggi.`;
+Tolong susun narasi LPJ yang fokus, berbobot, dan merefleksikan akuntabilitas amanah umat Islam.`;
 
       const response = await aiClient.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -384,7 +403,100 @@ Tolong susun narasi draf LPJ tahunan yang resmi dan berkualitas tinggi.`;
     }
   }
 
-  // Algorithmic Fallback
+  // Algorithmic Fallbacks per Division Scope
+  if (divisionScope === 'KEUANGAN_PERBENDAHARAAN') {
+    return {
+      executiveSummary: `Bismillahi ar-Rahman ar-Rahim. Segala puji bagi Allah Subhanahu Wa Ta'ala atas limpahan berkah dan taufiq-Nya, sehingga Bidang Keuangan dan Perbendaharaan DKM Babul Khaer BTP Blok AE dapat menyampaikan Laporan Pertanggungjawaban Keuangan untuk periode ${period}. Sesuai amanah Rapat Kerja 2026 dan ketentuan ART Pasal 7, pengelolaan kas masjid dijalankan dengan prinsip transparansi mutlak, pembukuan terverifikasi, dan pemisahan tegas rekening kas rutin dengan pos dana swadaya PHBI satu pintu. Kebijakan ini terbukti efektif menjaga kestabilan likuiditas operasional dan meminimalisir risiko tumpang-tindih anggaran kegiatan syiar.`,
+      achievements: [
+        `Pengelolaan saldo kas operasional berjalan sebesar Rp ${netBalance.toLocaleString('id-ID')} dengan pembukuan real-time terdistribusi.`,
+        `Penyelenggaraan pos dana swadaya PHBI satu pintu dengan akumulasi saldo Rp ${phbiBalance.toLocaleString('id-ID')}, mendukung seluruh peringatan hari besar Islam secara mandiri.`,
+        `Akumulasi penerimaan kas masuk sebesar Rp ${totalIncome.toLocaleString('id-ID')} dan realisasi belanja tepat sasaran sebesar Rp ${totalExpense.toLocaleString('id-ID')}.`,
+        `Pelaporan berkala saldo kas mimbar Sholat Jumat secara terbuka dan tertib setiap pekan kepada jamaah BTP Blok AE.`,
+      ],
+      challenges: [
+        'Optimalisasi pencatatan infak digital QRIS masjid memerlukan koordinasi sinkronisasi settlement bank syariah secara harian.',
+        'Fluktuasi kebutuhan taktis belanja logistik Ramadhan dan Idul Adha diantisipasi melalui penetapan plafon persetujuan bertingkat.',
+        'Penyesuaian tertib administrasi nota belanja fisik oleh panitia kegiatan kini diperketat sebelum proses reimbursement disetujui.',
+      ],
+      recommendations: [
+        'Mempertahankan audit independen berkala bersama Koordinator Dewan Pengawas & Pemeriksa Keuangan DKM.',
+        'Memperluas edukasi literasi sedekah nontunai (QRIS & transfer bank) kepada jamaah Kompleks BTP Blok AE.',
+        'Menyusun proyeksi anggaran kas operasional triwulanan sebagai mitigasi dini inflasi biaya perawatan sarana ibadah.',
+      ],
+      isAiGenerated: false,
+    };
+  }
+
+  if (divisionScope === 'SARANA_PRASARANA') {
+    return {
+      executiveSummary: `Alhamdulillah, puji dan syukur kita persembahkan ke hadirat Allah Ta'ala, Koordinator Bidang Sarana dan Prasarana DKM Babul Khaer mempersembahkan Laporan Pertanggungjawaban Fisik dan Inventaris untuk periode ${period}. Di bawah arahan Ketua II Bidang Pembangunan, seksi sarpras telah menginventarisasi seluruh kekayaan fisik masjid, memelihara kelayakan utilitas listrik, sistem tata suara (sound system), pendingin ruangan (AC Daikin), serta memastikan kelaikan mesin genset otomatis agar ibadah sholat berjamaah senantiasa berlangsung khusyuk, aman, dan nyaman.`,
+      achievements: [
+        `Terkelolanya ${totalAssetsCount} unit aset fisik utama masjid dengan indeks kepatuhan perawatan preventif mencapai ${maintenanceCompliancePercent}%.`,
+        `Penyelesaian relokasi modul otomatis genset dan instalasi jalur distribusi listrik cadangan berdaya tinggi hasil rekomendasi Raker 2026.`,
+        `Pembersihan dan servis kimia berkala pada seluruh unit AC ruang sholat utama ikhwan dan serambi akhwat tanpa jeda operasional.`,
+        `Penataan gudang inventaris perlengkapan jenazah, sound outdoor, dan tenda kegiatan warga Kompleks BTP Blok AE secara rapi dan tercatat.`,
+      ],
+      challenges: [
+        'Kerapuhan frekuensi mikrofon nirkabel di ruang serambi luar akibat interferensi frekuensi diselesaikan dengan penggantian modul UHF.',
+        'Penurunan efisiensi pendingin udara saat sholat Jumat dihadapi dengan penyusunan SOP buka-tutup pintu kaca otomatis.',
+        'Tingginya kelembaban dinding belakang mihrab memerlukan pengecatan anti-bocor berkala sebelum musim hujan.',
+      ],
+      recommendations: [
+        'Menerapkan sistem pelabelan kode inventaris digital QR Code pada setiap unit aset untuk memudahkan inspeksi lapangan.',
+        'Menyiapkan cadangan suku cadang primer (lampu LED hemat daya, kabel XLR, filter AC) dalam stok gudang sarpras.',
+        'Merencanakan pengadaan sistem tata suara digital terintegrasi untuk memperluas jangkauan suara ke area parkir dan lantai dua.',
+      ],
+      isAiGenerated: false,
+    };
+  }
+
+  if (divisionScope === 'KEMASJIDAN_JAMAAH') {
+    return {
+      executiveSummary: `Segala puji bagi Allah Subhanahu Wa Ta'ala, Rabb semesta alam. Bidang Keagamaan, Peribadatan, dan Dakwah DKM Babul Khaer mempersembahkan Laporan Pertanggungjawaban Program Keumatan periode ${period}. Di bawah naungan Ketua I, bidang kemasjidan telah mengawal kelancaran sholat fardhu lima waktu, jadwal imam dan khatib Jumat, penyelenggaraan tarhib dan pesantren kilat Ramadhan, pemutakhiran sensus jamaah RT 01-05 BTP Blok AE, serta verifikasi mustahiq penerima zakat dan santunan sosial kemasjidan.`,
+      achievements: [
+        `Pemutakhiran basis data sensus kependudukan jamaah sebanyak ${totalJamaah} warga Muslim Kompleks BTP Blok AE.`,
+        `Penyusunan dan kepatuhan 100% jadwal khatib Jumat, muadzin, dan imam rawatib dengan dukungan insentif tetap hasil keputusan Raker 2026.`,
+        `Verifikasi data mustahiq fakir miskin dan dhuafa di lingkungan sekitar masjid guna penyaluran bantuan sosial tepat sasaran.`,
+        `Pengaktifan majelis ta'lim pekanan jamaah akhwat dan pembinaan kepengurusan Ikatan Remaja Masjid Babul Khaer (IRMBH).`,
+      ],
+      challenges: [
+        'Penyesuaian mendadak jadwal khatib tamu karena agenda luar kota dimitigasi dengan kesiapan imam cadangan internal pengurus.',
+        'Pendataan warga baru dan mahasiswa penghuni kos di area RT 04-05 membutuhkan pendekatan koordinasi ekstra bersama Ketua RT.',
+        'Optimalisasi kehadiran jamaah sholat subuh berjamaah terus dimotivasi melalui gerakan subuh berkah sarapan bersama.',
+      ],
+      recommendations: [
+        'Menggelar program kaderisasi imam muda dan muadzin dari kalangan remaja masjid binaan IRMBH.',
+        'Mempersiapkan buku panduan dakwah tematik bulanan yang kontekstual dengan dinamika kehidupan warga perkotaan.',
+        'Memperkuat sinergi sosial bersama lembaga amil zakat resmi untuk program pemberdayaan ekonomi mustahiq mandiri.',
+      ],
+      isAiGenerated: false,
+    };
+  }
+
+  if (divisionScope === 'KESEKRETARIATAN') {
+    return {
+      executiveSummary: `Bismillahi ar-Rahman ar-Rahim. Puji syukur kita haturkan ke hadirat Allah SWT, Sekretariat Umum DKM Babul Khaer Kompleks BTP Blok AE menyampaikan Laporan Pertanggungjawaban Administrasi dan Tata Usaha Organisasi periode ${period}. Mengacu pada ART Bagian Kelima Pasal 6, seksi kesekretariatan bertugas menegakkan tertib korespondensi dinas, penyimpanan e-arsip digital, penyelenggaraan rapat kerja dan rapat pleno berkala, penyusunan notulensi cerdas, serta penyiapan draf kebijakan kelembagaan demi mewujudkan tata pamong masjid yang profesional.`,
+      achievements: [
+        `Penerbitan dan penomoran resmi ${totalLetters} surat dinas DKM (surat keputusan, undangan rapat, permohonan, dan pemberitahuan) dengan nomor surat otomatis SIK-MBH.`,
+        `Digitalisasi 100% dokumen kesekretariatan dan notulensi rapat pleno, lengkap dengan ekstraksi tindak lanjut keputusan.`,
+        `Penyusunan draf Surat Keputusan kepanitiaan PHBI (Maulid, Isra Mi'raj, Panitia Ramadhan) tepat waktu sebelum pelaksanaan agenda.`,
+        `Integrasi lembar disposisi satu pintu bersama Ketua Umum untuk percepatan izin kegiatan dan administrasi jamaah.`,
+      ],
+      challenges: [
+        'Transisi pengurus dari pencatatan manual fisik ke format e-arsip digital memerlukan sosialisasi berkala.',
+        'Sinkronisasi jadwal rapat pleno antar seksi yang memiliki kesibukan profesi diatasi dengan sistem pengingat digital.',
+        'Pengarsipan surat masuk dari instansi luar yang masih berformat kertas fisik kini secara rutin dipindai ke format digital.',
+      ],
+      recommendations: [
+        'Melakukan digital backup berkala atas seluruh dokumen persuratan dan notulensi pada penyimpanan cloud ganda.',
+        'Menyempurnakan template persuratan resmi dan SOP penerbitan rekomendasi nikah atau keterangan jamaah.',
+        'Menyediakan loket informasi sekretariat digital yang dapat diakses oleh warga BTP Blok AE secara daring.',
+      ],
+      isAiGenerated: false,
+    };
+  }
+
+  // Fallback Gabungan Pleno (ALL)
   return {
     executiveSummary: `Segala puji dan syukur senantiasa kita panjatkan ke hadirat Allah Subhanahu Wa Ta'ala atas taufiq dan hidayah-Nya, sehingga Dewan Kemakmuran Masjid (DKM) Babul Khaer Kompleks BTP Blok AE dapat menuntaskan amanah pelaksanaan program kerja pada periode ${period} dengan tertib, transparan, dan penuh rasa tanggung jawab. Melalui pemanfaatan platform SIK-MBH, kepengurusan telah mengukuhkan akuntabilitas tata pamong masjid, mulai dari penomoran surat otomatis, pemutakhiran data jamaah, hingga pemisahan tegas dana swadaya PHBI satu pintu demi menjaga kepercayaan umat.`,
     achievements: [
