@@ -7,6 +7,7 @@ import { FinanceSummary } from '@/types/finance';
 import { JamaahStats } from '@/types/jamaah';
 import { AssetStats } from '@/types/asset';
 import { AppNavTab } from '@/components/layout/sidebar';
+import { useAuth } from '@/lib/auth-context';
 
 interface DashboardSummaryGridProps {
   totalLetters: number;
@@ -33,9 +34,30 @@ export default function DashboardSummaryGrid({
   overallScore,
   onNavigateTab,
 }: DashboardSummaryGridProps) {
+  const { canAccessTab } = useAuth();
+
+  const showLetters = canAccessTab('archive');
+  const showJamaah = canAccessTab('jamaah');
+  const showFinance = canAccessTab('finance');
+  const showAssets = canAccessTab('assets');
+  const showReports = canAccessTab('reports');
+
+  // Hitung jumlah kartu yang aktif untuk grid layout yang proporsional
+  const activeCardsCount = [showLetters, showJamaah, showFinance, showAssets].filter(Boolean).length;
+
+  const gridColsClass =
+    activeCardsCount === 1
+      ? 'grid-cols-1 max-w-md'
+      : activeCardsCount === 2
+      ? 'grid-cols-1 sm:grid-cols-2'
+      : activeCardsCount === 3
+      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+      : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className={`grid ${gridColsClass} gap-4`}>
       {/* 1. Administrasi & Surat */}
+      {showLetters && (
       <div
         onClick={() => onNavigateTab('archive')}
         className="bg-white rounded-2xl p-4 border border-slate-200 shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer group flex flex-col justify-between"
@@ -61,8 +83,10 @@ export default function DashboardSummaryGrid({
           <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
+      )}
 
       {/* 2. Kependudukan Jamaah */}
+      {showJamaah && (
       <div
         onClick={() => onNavigateTab('jamaah')}
         className="bg-white rounded-2xl p-4 border border-slate-200 shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer group flex flex-col justify-between"
@@ -88,8 +112,10 @@ export default function DashboardSummaryGrid({
           <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
+      )}
 
       {/* 3. Keuangan & Swadaya Kas */}
+      {showFinance && (
       <div
         onClick={() => onNavigateTab('finance')}
         className="bg-white rounded-2xl p-4 border border-slate-200 shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer group flex flex-col justify-between"
@@ -115,8 +141,10 @@ export default function DashboardSummaryGrid({
           <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
+      )}
 
-      {/* 4. Sarpras & Kinerja DKM */}
+      {/* 4. Sarpras & Fasilitas */}
+      {showAssets && (
       <div
         onClick={() => onNavigateTab('assets')}
         className="bg-white rounded-2xl p-4 border border-slate-200 shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer group flex flex-col justify-between"
@@ -124,7 +152,7 @@ export default function DashboardSummaryGrid({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Sarpras & Kinerja DKM
+              Sarana & Prasarana
             </p>
             <p className="text-2xl font-black text-slate-900 mt-1 group-hover:text-indigo-700 transition-colors">
               {totalAssets} <span className="text-xs font-semibold text-slate-500">Unit</span>
@@ -143,6 +171,36 @@ export default function DashboardSummaryGrid({
           <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>
+      )}
+
+      {/* 5. Khusus Dewan Pengawas: Evaluasi & Audit */}
+      {activeCardsCount === 0 && showReports && (
+        <div
+          onClick={() => onNavigateTab('reports')}
+          className="bg-white rounded-2xl p-4 border border-purple-200 shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer group flex flex-col justify-between"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">
+                Evaluasi Kinerja 4 Pilar
+              </p>
+              <p className="text-2xl font-black text-slate-900 mt-1 group-hover:text-purple-700 transition-colors">
+                {overallScore !== null ? `${overallScore}%` : <span className="animate-pulse text-purple-400">...</span>}
+              </p>
+              <p className="text-[11px] text-purple-700 font-semibold mt-0.5">
+                Pengawasan Syariah & LPJ AD/ART 2020
+              </p>
+            </div>
+            <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center border border-purple-100 group-hover:scale-105 transition-transform shadow-2xs">
+              <Package className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="pt-3 mt-3 border-t border-purple-100 flex items-center justify-between text-[11px] font-semibold text-purple-700">
+            <span>Buka Evaluasi Kinerja & LPJ</span>
+            <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

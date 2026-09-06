@@ -10,6 +10,7 @@ interface AuthContextType {
   users: SafeUser[];
   permissions: RolePermission;
   isReadOnly: boolean;
+  isAuthenticated: boolean;
   switchRole: (role: UserRole) => Promise<void>;
   loginUser: (userId: string) => Promise<void>;
   loginWithPin: (userId: string, pin: string) => Promise<{ success: boolean; error?: string; remainingAttempts?: number; remainingSeconds?: number }>;
@@ -30,6 +31,18 @@ const LOCAL_STORAGE_KEY = 'sik_mbh_active_user_id';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<SafeUser[]>(() => getSafeOfficials());
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const storedId = localStorage.getItem(LOCAL_STORAGE_KEY);
+        return Boolean(storedId);
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
+
   const [currentUser, setCurrentUser] = useState<SafeUser>(() => {
     const defaultUsers = getSafeOfficials();
     if (typeof window !== 'undefined') {
@@ -43,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Ignore localStorage errors
       }
     }
-    return defaultUsers[0]; // Default to Ketua Umum
+    return defaultUsers[0]; // Default to Ketua Umum jika ada
   });
 
   // Sinkronkan daftar akun aman dari /api/auth dan cek sesi aktif dari /api/auth/me saat awal render
@@ -67,11 +80,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const dataMe = await resMe.json();
           if (dataMe.success && dataMe.user && isMounted) {
             setCurrentUser(dataMe.user);
+            setIsAuthenticated(true);
             try {
               localStorage.setItem(LOCAL_STORAGE_KEY, dataMe.user.id);
             } catch {
               // Ignore storage errors
             }
+          }
+        } else if (resMe.status === 401 && isMounted) {
+          // Tidak ada sesi cookie aktif
+          setIsAuthenticated(false);
+          try {
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+          } catch {
+            // Ignore
           }
         }
       } catch (err) {
@@ -143,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (data.user) {
           setCurrentUser(data.user);
+          setIsAuthenticated(true);
           try {
             localStorage.setItem(LOCAL_STORAGE_KEY, data.user.id);
           } catch {
@@ -170,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const defaultUser = users[0] || getSafeOfficials()[0];
     setCurrentUser(defaultUser);
+    setIsAuthenticated(false);
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } catch {
@@ -183,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!targetUser) return;
 
       setCurrentUser(targetUser);
+      setIsAuthenticated(true);
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, targetUser.id);
       } catch {
@@ -205,6 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!targetUser) return;
 
       setCurrentUser(targetUser);
+      setIsAuthenticated(true);
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, targetUser.id);
       } catch {
@@ -223,48 +249,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const canAccessTab = useCallback(
     (tab: AppNavTab): boolean => {
-      // Ketua Umum and Dewan Pengawas have visual oversight of all modules
-      if (currentUser.role === 'KETUA_UMUM' || currentUser.role === 'DEWAN_PENGAWAS') {
+      // Menu utama Dashboard selalu dapat diakses oleh semua peran yang login
+      if (tab === 'dashboard') {
         return true;
       }
 
+      // Ketua Umum memiliki hak supervisi & akses penuh ke seluruh modul
+      if (currentUser.role === 'KETUA_UMUM') {
+        return true;
+      }
+
+      // Dewan Pengawas hanya memiliki hak akses pengawasan evaluasi kinerja (Laporan & LPJ)
+      if (currentUser.role === 'DEWAN_PENGAWAS') {
+        return tab === 'reports';
+      }
+
       switch (tab) {
+        // Modul Kesekretariatan & Persuratan (Hanya Sekretaris)
         case 'archive':
         case 'create':
         case 'minutes':
           return currentUser.role === 'SEKRETARIS';
 
+        // Modul Basis Data Warga & Dakwah (Hanya Kemasjidan)
         case 'jamaah':
         case 'mustahiq':
-          return (
-            currentUser.role === 'KEMASJIDAN' ||
-            currentUser.role === 'SEKRETARIS' ||
-            currentUser.role === 'BENDAHARA'
-          );
+          return currentUser.role === 'KEMASJIDAN';
 
+        // Modul Keuangan & Kas (Hanya Bendahara)
         case 'finance':
         case 'donors':
-          return (
-            currentUser.role === 'BENDAHARA' ||
-            currentUser.role === 'SEKRETARIS' ||
-            currentUser.role === 'KEMASJIDAN'
-          );
+          return currentUser.role === 'BENDAHARA';
 
+        // Modul Sarana & Prasarana (Hanya Sarpras)
         case 'assets':
-          return (
-            currentUser.role === 'SARPRAS' ||
-            currentUser.role === 'SEKRETARIS' ||
-            currentUser.role === 'BENDAHARA'
-          );
+          return currentUser.role === 'SARPRAS';
 
+        // Modul Evaluasi Kinerja & LPJ (Dapat dilihat oleh semua divisi untuk laporannya)
         case 'reports':
-          return true; // All roles can see high-level reports & evaluation
+          return true;
 
+        // Modul Pengesahan Satu Pintu (Eksklusif Ketua Umum, sudah ditangani di atas)
         case 'approvals':
-          return false; // Ketua Umum dan Dewan Pengawas sudah ditangani pada pengecekan awal di atas
+          return false;
 
         default:
-          return true;
+          return false;
       }
     },
     [currentUser.role]
@@ -319,6 +349,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         users,
         permissions,
         isReadOnly,
+        isAuthenticated,
         switchRole,
         loginUser,
         loginWithPin,

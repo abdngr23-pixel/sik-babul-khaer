@@ -41,6 +41,7 @@ import RoleBanner from '@/components/auth/role-banner';
 import LoginModal from '@/components/auth/login-modal';
 import AuditLogModal from '@/components/auth/audit-log-modal';
 import DatabaseBackupModal from '@/components/auth/database-backup-modal';
+import FeatureLoginPortal from '@/components/auth/feature-login-portal';
 
 // Modular Dashboard Components (Refactor Prioritas 4)
 import PersistenceBanner from '@/components/dashboard/persistence-banner';
@@ -77,13 +78,20 @@ import {
   BarChart3,
   ShieldCheck,
   Eye,
-  ArrowRightLeft,
   LayoutDashboard,
   Archive,
+  LogOut,
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { currentUser, isReadOnly, canAccessTab, canMutateTab } = useAuth();
+  const {
+    currentUser,
+    isReadOnly,
+    canAccessTab,
+    canMutateTab,
+    isAuthenticated,
+    logout,
+  } = useAuth();
   const [requestedTab, setActiveTab] = useState<AppNavTab>('dashboard');
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [isFridayReportOpen, setIsFridayReportOpen] = useState(false);
@@ -415,6 +423,10 @@ export default function DashboardPage() {
     }
   };
 
+  if (!isAuthenticated) {
+    return <FeatureLoginPortal onLoginSuccess={() => refreshAll()} />;
+  }
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Toast Notification */}
@@ -443,7 +455,7 @@ export default function DashboardPage() {
         {/* Top Navbar */}
         <Navbar
           onOpenCreate={handleOpenCreateLetter}
-          onOpenSwitchRole={() => setIsLoginModalOpen(true)}
+          onOpenSwitchRole={() => logout()}
           onOpenAuditLogs={() => setIsAuditLogModalOpen(true)}
           pendingApprovalsCount={pendingApprovalsCount}
           globalSearchQuery={globalSearchQuery}
@@ -556,27 +568,42 @@ export default function DashboardPage() {
                   </div>
                 ) : isDashboardTab ? (
                   <>
-                    <button
-                      onClick={handleOpenCreateLetter}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
-                    >
-                      <Plus className="w-4 h-4 text-emerald-700" />
-                      <span>Buat Surat Dinas</span>
-                    </button>
-                    <button
-                      onClick={handleOpenCreateJamaah}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4 text-teal-950" />
-                      <span>Registrasi Warga</span>
-                    </button>
-                    <button
-                      onClick={handleOpenCreateTransaction}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4 text-amber-950" />
-                      <span>Catat Kas Masuk/Keluar</span>
-                    </button>
+                    {canMutateTab('archive') && (
+                      <button
+                        onClick={handleOpenCreateLetter}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
+                      >
+                        <Plus className="w-4 h-4 text-emerald-700" />
+                        <span>Buat Surat Dinas</span>
+                      </button>
+                    )}
+                    {canMutateTab('jamaah') && (
+                      <button
+                        onClick={handleOpenCreateJamaah}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4 text-teal-950" />
+                        <span>Registrasi Warga</span>
+                      </button>
+                    )}
+                    {canMutateTab('finance') && (
+                      <button
+                        onClick={handleOpenCreateTransaction}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4 text-amber-950" />
+                        <span>Catat Kas Masuk/Keluar</span>
+                      </button>
+                    )}
+                    {canMutateTab('assets') && (
+                      <button
+                        onClick={handleOpenCreateAsset}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4 text-emerald-950" />
+                        <span>Daftarkan Aset</span>
+                      </button>
+                    )}
                   </>
                 ) : isFinanceTab ? (
                   <>
@@ -1004,12 +1031,12 @@ export default function DashboardPage() {
             {/* Akses & Keamanan */}
             <div className="ml-auto flex items-center gap-1.5 pl-2">
               <button
-                onClick={() => setIsLoginModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-purple-700 bg-purple-50/80 hover:bg-purple-100 border border-purple-200/60 transition-all cursor-pointer flex items-center gap-1.5"
-                title="Beralih Akun / Peran Pengurus"
+                onClick={() => logout()}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-700 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/60 transition-all cursor-pointer flex items-center gap-1.5"
+                title="Keluar / Ganti Divisi Fitur"
               >
-                <ArrowRightLeft className="w-3.5 h-3.5 text-purple-600" />
-                <span className="hidden md:inline">Ganti Akun</span>
+                <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                <span className="hidden md:inline">Ganti Divisi</span>
               </button>
 
               {(currentUser.role === 'DEWAN_PENGAWAS' || currentUser.role === 'KETUA_UMUM') && (
@@ -1039,17 +1066,21 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Left Column (8 of 12 cols): Recent Activities & Operations */}
                     <div className="lg:col-span-8 space-y-6">
-                      <DashboardSekretariatCard
-                        letters={letters}
-                        minutes={minutes}
-                        onNavigateTab={(tab) => setActiveTab(tab)}
-                        onPreviewLetter={(l) => setPreviewLetter(l)}
-                      />
+                      {canAccessTab('archive') && (
+                        <DashboardSekretariatCard
+                          letters={letters}
+                          minutes={minutes}
+                          onNavigateTab={(tab) => setActiveTab(tab)}
+                          onPreviewLetter={(l) => setPreviewLetter(l)}
+                        />
+                      )}
 
-                      <DashboardKeuanganCard
-                        financeSummary={financeSummary}
-                        onOpenFridayReport={() => setIsFridayReportOpen(true)}
-                      />
+                      {canAccessTab('finance') && (
+                        <DashboardKeuanganCard
+                          financeSummary={financeSummary}
+                          onOpenFridayReport={() => setIsFridayReportOpen(true)}
+                        />
+                      )}
                     </div>
 
                     {/* Right Column (4 of 12 cols): Quick Actions & System Highlights */}
@@ -1065,16 +1096,20 @@ export default function DashboardPage() {
                         onPreviewLPJ={(rep) => setPreviewLPJ(rep)}
                       />
 
-                      <DashboardSarprasCard
-                        assets={assets}
-                        assetStats={assetStats}
-                        onNavigateTab={(tab) => setActiveTab(tab)}
-                      />
+                      {canAccessTab('assets') && (
+                        <DashboardSarprasCard
+                          assets={assets}
+                          assetStats={assetStats}
+                          onNavigateTab={(tab) => setActiveTab(tab)}
+                        />
+                      )}
 
-                      <DashboardKpiCard
-                        overallScore={overallScore}
-                        overallGrade={overallGrade}
-                      />
+                      {canAccessTab('reports') && (
+                        <DashboardKpiCard
+                          overallScore={overallScore}
+                          overallGrade={overallGrade}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

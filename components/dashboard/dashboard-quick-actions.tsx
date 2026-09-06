@@ -4,6 +4,7 @@ import React from 'react';
 import { Sparkles, ArrowUpRight } from 'lucide-react';
 import { AppNavTab } from '@/components/layout/sidebar';
 import { LPJReport } from '@/types/reports';
+import { useAuth } from '@/lib/auth-context';
 
 interface DashboardQuickActionsProps {
   onOpenCreateLetter: () => void;
@@ -26,158 +27,194 @@ export default function DashboardQuickActions({
   lpjReport,
   onPreviewLPJ,
 }: DashboardQuickActionsProps) {
+  const { canAccessTab, canMutateTab, isReadOnly, currentUser } = useAuth();
+
+  const showLetterActions = canMutateTab('archive') && !isReadOnly;
+  const showJamaahActions = canMutateTab('jamaah') && !isReadOnly;
+  const showFinanceActions = canMutateTab('finance') && !isReadOnly;
+  const showDonorAction = canAccessTab('donors');
+  const showLpjAction = canAccessTab('reports');
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-soft-sm p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="w-4 h-4 text-amber-500" />
-        <h3 className="font-bold text-sm text-slate-900">
-          Pusat Aksi Cepat Pengurus
-        </h3>
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-amber-500" />
+          <h3 className="font-bold text-sm text-slate-900">
+            Pusat Aksi Cepat
+          </h3>
+        </div>
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+          {currentUser.roleLabel}
+        </span>
       </div>
 
       <div className="space-y-2">
-        <button
-          onClick={onOpenCreateLetter}
-          className="w-full p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              ✉️
+        {showLetterActions && (
+          <button
+            onClick={onOpenCreateLetter}
+            className="w-full p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                ✉️
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-900 block group-hover:text-emerald-900">
+                  Buat Draf Surat Dinas
+                </span>
+                <span className="text-[11px] text-slate-500 block">
+                  Template cepat & bantuan AI
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-xs text-slate-900 block group-hover:text-emerald-900">
-                Buat Draf Surat Dinas
-              </span>
-              <span className="text-[11px] text-slate-500 block">
-                Template cepat & bantuan AI
-              </span>
-            </div>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-colors" />
-        </button>
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-colors" />
+          </button>
+        )}
 
-        <button
-          onClick={onOpenCreateJamaah}
-          className="w-full p-3 rounded-xl bg-teal-50 hover:bg-teal-100/80 border border-teal-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              👥
+        {showJamaahActions && (
+          <button
+            onClick={onOpenCreateJamaah}
+            className="w-full p-3 rounded-xl bg-teal-50 hover:bg-teal-100/80 border border-teal-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                👥
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-900 block group-hover:text-teal-900">
+                  Registrasi Warga Baru
+                </span>
+                <span className="text-[11px] text-slate-500 block">
+                  Input profil sensus jamaah RT 01-06
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-xs text-slate-900 block group-hover:text-teal-900">
-                Registrasi Warga Baru
-              </span>
-              <span className="text-[11px] text-slate-500 block">
-                Input profil sensus jamaah RT 01-06
-              </span>
-            </div>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-teal-700 transition-colors" />
-        </button>
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-teal-700 transition-colors" />
+          </button>
+        )}
 
-        <button
-          onClick={onOpenCreateTransaction}
-          className="w-full p-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              💰
+        {showFinanceActions && (
+          <button
+            onClick={onOpenCreateTransaction}
+            className="w-full p-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                💰
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-900 block group-hover:text-amber-900">
+                  Catat Mutasi Kas Masuk/Keluar
+                </span>
+                <span className="text-[11px] text-slate-500 block">
+                  Input transaksi buku kas harian
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-xs text-slate-900 block group-hover:text-amber-900">
-                Catat Mutasi Kas Masuk/Keluar
-              </span>
-              <span className="text-[11px] text-slate-500 block">
-                Input transaksi buku kas harian
-              </span>
-            </div>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-amber-700 transition-colors" />
-        </button>
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-amber-700 transition-colors" />
+          </button>
+        )}
 
-        <button
-          onClick={onOpenFridayReport}
-          className="w-full p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-slate-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              🕌
+        {showFinanceActions && (
+          <button
+            onClick={onOpenFridayReport}
+            className="w-full p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-slate-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                🕌
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-900 block">
+                  Laporan Kas Mimbar Jumat
+                </span>
+                <span className="text-[11px] text-slate-500 block">
+                  Format siap cetak A4 & PDF
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-xs text-slate-900 block">
-                Laporan Kas Mimbar Jumat
-              </span>
-              <span className="text-[11px] text-slate-500 block">
-                Format siap cetak A4 & PDF
-              </span>
-            </div>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-slate-800 transition-colors" />
-        </button>
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-slate-800 transition-colors" />
+          </button>
+        )}
 
-        <button
-          onClick={() => {
-            if (lpjReport) onPreviewLPJ(lpjReport);
-            else onNavigateTab('reports');
-          }}
-          className="w-full p-3 rounded-xl bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              📑
+        {showLpjAction && (
+          <button
+            onClick={() => {
+              if (lpjReport) onPreviewLPJ(lpjReport);
+              else onNavigateTab('reports');
+            }}
+            className="w-full p-3 rounded-xl bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                📑
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-900 block group-hover:text-indigo-900">
+                  Draf Dokumen LPJ Tahunan
+                </span>
+                <span className="text-[11px] text-slate-500 block">
+                  Kompilasi 4 pilar bidang A4
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-xs text-slate-900 block group-hover:text-indigo-900">
-                Draf Dokumen LPJ Tahunan
-              </span>
-              <span className="text-[11px] text-slate-500 block">
-                Kompilasi 4 pilar bidang A4
-              </span>
-            </div>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-700 transition-colors" />
-        </button>
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-700 transition-colors" />
+          </button>
+        )}
 
-        <button
-          onClick={onOpenArchiveLetterModal}
-          className="w-full p-3 rounded-xl bg-orange-50/80 hover:bg-orange-100/80 border border-orange-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              📁
+        {showLetterActions && (
+          <button
+            onClick={onOpenArchiveLetterModal}
+            className="w-full p-3 rounded-xl bg-orange-50/80 hover:bg-orange-100/80 border border-orange-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                📁
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-900 block group-hover:text-amber-900">
+                  Catat Arsip Keluar (Fisik)
+                </span>
+                <span className="text-[11px] text-slate-500 block">
+                  Rekam surat lampau ke E-Arsip
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-xs text-slate-900 block group-hover:text-amber-900">
-                Catat Arsip Keluar (Fisik)
-              </span>
-              <span className="text-[11px] text-slate-500 block">
-                Rekam surat lampau ke E-Arsip
-              </span>
-            </div>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-amber-700 transition-colors" />
-        </button>
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-amber-700 transition-colors" />
+          </button>
+        )}
 
-        <button
-          onClick={() => onNavigateTab('donors')}
-          className="w-full p-3 rounded-xl bg-teal-50/80 hover:bg-teal-100/80 border border-teal-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-teal-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              🤝
+        {showDonorAction && (
+          <button
+            onClick={() => onNavigateTab('donors')}
+            className="w-full p-3 rounded-xl bg-teal-50/80 hover:bg-teal-100/80 border border-teal-200/80 flex items-center justify-between text-left transition-all cursor-pointer group shadow-2xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-teal-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                🤝
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-900 block group-hover:text-teal-900">
+                  Kelola Donatur Tetap
+                </span>
+                <span className="text-[11px] text-slate-500 block">
+                  Infaq rutin & 1-klik setor kas
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-xs text-slate-900 block group-hover:text-teal-900">
-                Kelola Donatur Tetap
-              </span>
-              <span className="text-[11px] text-slate-500 block">
-                Infaq rutin & 1-klik setor kas
-              </span>
-            </div>
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-teal-700 transition-colors" />
+          </button>
+        )}
+
+        {isReadOnly && (
+          <div className="p-3.5 rounded-xl bg-purple-50/80 border border-purple-200/80 text-purple-900 text-xs">
+            <span className="font-bold block">Mode Pengawas Terverifikasi</span>
+            <span className="text-[11px] text-purple-700 mt-0.5 block">
+              Akun Anda memiliki kewenangan inspeksi independen, evaluasi KPI, dan audit transparansi DKM.
+            </span>
           </div>
-          <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-teal-700 transition-colors" />
-        </button>
+        )}
       </div>
     </div>
   );
