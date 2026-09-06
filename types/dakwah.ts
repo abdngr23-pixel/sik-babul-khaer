@@ -1,5 +1,19 @@
 export type FridayConfirmationStatus = 'TERKONFIRMASI' | 'MENUNGGU' | 'SELESAI';
 
+export interface KhatibItem {
+  id: string;
+  name: string;
+  title: string;
+  specialization: string; // Fiqih, Tafsir, Aqidah, Muamalah, Tarbiyah, Remaja
+  institution: string; // PC DMI Biringkanaya, Kemenag, Pesantren, UIN/Kampus
+  phone: string;
+  address: string;
+  totalAppearances: number;
+  status: 'AKTIF' | 'CADANGAN';
+  notes?: string;
+  createdAt: string;
+}
+
 export interface FridayScheduleItem {
   id: string;
   date: string; // Format YYYY-MM-DD
@@ -12,6 +26,11 @@ export interface FridayScheduleItem {
   status: FridayConfirmationStatus;
   incentiveAmount: number;
   notes?: string;
+  isCompleted?: boolean;
+  attendanceCount?: number;
+  actualHonorDisbursed?: number;
+  summaryNotes?: string;
+  completedAt?: string;
 }
 
 export interface RawatibScheduleItem {
@@ -40,6 +59,11 @@ export interface KajianScheduleItem {
   fundingSource: 'SWADAYA_JAMAAH' | 'KAS_MASJID' | 'SPONSOR_DONATUR';
   contactPerson: string;
   notes?: string;
+  isCompleted?: boolean;
+  attendanceCount?: number;
+  actualHonorDisbursed?: number;
+  summaryNotes?: string;
+  completedAt?: string;
 }
 
 export interface RamadhanScheduleItem {
@@ -54,4 +78,9 @@ export interface RamadhanScheduleItem {
   bukberHost: string; // Swadaya Warga / Donatur RT
   bukberPax: number;
   itikafStatus?: 'TERJADWAL' | 'TERBUKA' | 'TIDAK_ADA';
+  isCompleted?: boolean;
+  attendanceCount?: number;
+  actualHonorDisbursed?: number;
+  summaryNotes?: string;
+  completedAt?: string;
 }
