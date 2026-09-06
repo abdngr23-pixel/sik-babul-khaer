@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Database, CloudCheck, AlertTriangle, Download, X } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 interface PersistenceBannerProps {
   onOpenBackupModal?: () => void;
 }
 
 export default function PersistenceBanner({ onOpenBackupModal }: PersistenceBannerProps) {
+  const { currentUser } = useAuth();
   const [engine, setEngine] = useState<string | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ export default function PersistenceBanner({ onOpenBackupModal }: PersistenceBann
     };
   }, []);
 
-  if (loading || isDismissed) return null;
+  if (loading || isDismissed || currentUser.role !== 'SUPER_ADMIN') return null;
 
   const isTursoCloud = engine === 'turso_cloud';
   const isVercelTmp = engine === 'vercel_tmp';

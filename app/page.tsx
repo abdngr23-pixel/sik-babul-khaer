@@ -476,8 +476,10 @@ export default function DashboardPage() {
         />
 
         <main className="p-6 md:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
-          {/* Prioritas 3: Indikator Persistensi Basis Data */}
-          <PersistenceBanner onOpenBackupModal={() => setIsBackupModalOpen(true)} />
+          {/* Indikator Persistensi Basis Data (Khusus Super Admin) */}
+          {currentUser.role === 'SUPER_ADMIN' && (
+            <PersistenceBanner onOpenBackupModal={() => setIsBackupModalOpen(true)} />
+          )}
 
           {/* Dynamic Module Header Banner */}
           <div

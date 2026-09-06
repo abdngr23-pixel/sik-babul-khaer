@@ -76,13 +76,13 @@ export default function Navbar({
   };
 
   return (
-    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-5 md:px-7 flex items-center justify-between sticky top-0 z-20 shadow-soft-sm">
+    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 shadow-soft-sm gap-3">
       {/* Left: Islamic Greeting & Title */}
-      <div className="flex items-center gap-4 min-w-0">
+      <div className="flex items-center gap-3 shrink-0 min-w-0">
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium">Assalamu&apos;alaikum,</span>
-            <span className="text-xs font-bold text-slate-900 truncate max-w-[180px] sm:max-w-xs">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">Assalamu&apos;alaikum,</span>
+            <span className="text-xs font-bold text-slate-900 truncate max-w-[130px] sm:max-w-[180px] xl:max-w-xs block">
               {currentUser.name}
             </span>
           </div>
@@ -90,29 +90,29 @@ export default function Navbar({
             SIK-MBH • Kompleks BTP Blok AE Makassar
           </p>
         </div>
-
-        {/* Global Smart Search Capsule (ui-style.md Section 5.B) */}
-        <div className="relative hidden md:block w-48 lg:w-64 ml-2">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            value={globalSearchQuery}
-            onChange={(e) => onGlobalSearchChange?.(e.target.value)}
-            placeholder="Cari surat, jamaah, kas..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-full bg-[#F1F5F9] text-xs text-slate-800 placeholder-slate-400 border border-transparent focus:border-[#059669] focus:bg-white focus:outline-none transition-all shadow-2xs"
-          />
-        </div>
       </div>
 
-      {/* Middle & Right: Prayer Schedule & Control Actions */}
-      <div className="flex items-center gap-2.5">
+      {/* Center: Global Smart Search Capsule */}
+      <div className="relative hidden md:block max-w-[200px] lg:max-w-[240px] w-full mx-1 shrink">
+        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <input
+          type="text"
+          value={globalSearchQuery}
+          onChange={(e) => onGlobalSearchChange?.(e.target.value)}
+          placeholder="Cari surat, jamaah, kas..."
+          className="w-full pl-8 pr-3 py-1.5 rounded-full bg-[#F1F5F9] text-xs text-slate-800 placeholder-slate-400 border border-transparent focus:border-[#059669] focus:bg-white focus:outline-none transition-all shadow-2xs"
+        />
+      </div>
+
+      {/* Right: Prayer Schedule & Control Actions */}
+      <div className="flex items-center gap-2 shrink-0">
         {/* Dynamic Prayer Schedule Widget (Makassar WITA) */}
         <PrayerWidget />
 
-        {/* Date Display */}
-        <div className="hidden lg:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/70 shadow-2xs">
+        {/* Date Display (Visible on 2xl screens to prevent navbar crowding) */}
+        <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200/70 shadow-2xs">
           <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-          <span className="text-[11px] font-semibold">{currentDateStr}</span>
+          <span className="text-[11px] font-semibold whitespace-nowrap">{currentDateStr}</span>
         </div>
 
         {/* Notification Bell (Pemberitahuan Disposisi Pending) */}
@@ -149,7 +149,7 @@ export default function Navbar({
         >
           {getRoleIcon(currentUser.role)}
           <div className="flex flex-col text-left">
-            <span className="font-bold text-[11px] leading-tight">
+            <span className="font-bold text-[11px] leading-tight whitespace-nowrap">
               {currentUser.roleLabel}
             </span>
           </div>
@@ -160,7 +160,7 @@ export default function Navbar({
         {!hideCreateButton && (
           <button
             onClick={onOpenCreate}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-semibold shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-semibold shadow-soft-sm hover:shadow-soft-md transition-all cursor-pointer active:scale-95 whitespace-nowrap"
           >
             <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">{createButtonLabel}</span>
