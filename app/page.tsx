@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Sidebar, { AppNavTab } from '@/components/layout/sidebar';
-import BottomNav from '@/components/layout/bottom-nav';
+import BottomNavBar from '@/components/layout/bottom-nav-bar';
 import { TAB_LABELS } from '@/types/navigation';
 import Navbar from '@/components/layout/navbar';
 import { ModuleHeaderBanner } from '@/components/layout/module-header-banner';
@@ -1047,7 +1047,7 @@ export default function DashboardPage() {
       {/* ---------------------------------------------------- */}
       {/* Mobile Fixed Bottom Navigation Bar (< md)            */}
       {/* ---------------------------------------------------- */}
-      <BottomNav
+      <BottomNavBar
         activeTab={activeTab}
         setActiveTab={handleNavigateTab}
         onOpenCreateLetter={handleOpenCreateLetter}
