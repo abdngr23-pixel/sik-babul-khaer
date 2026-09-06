@@ -17,8 +17,25 @@ export interface User {
   avatarUrl?: string;
   department: string;
   isReadOnly: boolean;
-  pin: string;
+  pinHash?: string;
   bio?: string;
+}
+
+/**
+ * Data publik pengguna yang aman dikirim ke client (tanpa pinHash, email, atau nomor HP)
+ */
+export type SafeUser = Pick<
+  User,
+  'id' | 'name' | 'title' | 'role' | 'roleLabel' | 'avatarUrl' | 'department' | 'isReadOnly' | 'bio'
+>;
+
+export interface AuthSessionPayload {
+  userId: string;
+  name: string;
+  role: UserRole;
+  roleLabel: string;
+  iat: number;
+  exp: number;
 }
 
 export type AuditActionType =

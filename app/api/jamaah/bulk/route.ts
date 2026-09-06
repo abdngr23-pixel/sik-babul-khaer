@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
 import { Jamaah } from '@/types/jamaah';
+import { authorizeMutation } from '@/lib/auth-session';
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'KEMASJIDAN'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
     const { jamaahList } = body;
 

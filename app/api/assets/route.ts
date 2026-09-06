@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
 import { AssetCategory, AssetCondition } from '@/types/asset';
+import { authorizeMutation } from '@/lib/auth-session';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,6 +36,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'SARPRAS'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
 
     if (!body.name || !body.category || !body.location) {
@@ -77,6 +85,13 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'SARPRAS'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
     const { id, action, notes, ...updates } = body;
 
@@ -128,6 +143,13 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'SARPRAS'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
     let id = searchParams.get('id');
 

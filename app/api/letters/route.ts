@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
 import { LetterStatus } from '@/types/letter';
+import { authorizeMutation } from '@/lib/auth-session';
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,6 +27,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'SEKRETARIS'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
 
     if (!body.category || !body.recipientName || !body.subject || !body.content) {
@@ -77,6 +85,13 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'SEKRETARIS'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
     const { id, status } = body;
 

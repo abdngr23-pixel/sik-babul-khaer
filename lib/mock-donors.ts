@@ -4,7 +4,7 @@ export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-001',
     donorName: 'H. Abdul Rahman, S.E.',
-    phone: '08124119881',
+    phone: '0812-0002-0001',
     rt: 'RT 01',
     address: 'Kompleks BTP Blok AE No. 04',
     category: 'KAS_OPERASIONAL',
@@ -21,7 +21,7 @@ export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-002',
     donorName: 'Ir. H. Syamsuddin Noor',
-    phone: '08135520199',
+    phone: '0812-0002-0002',
     rt: 'RT 02',
     address: 'Kompleks BTP Blok AE No. 12',
     category: 'BEASISWA_YATIM',
@@ -38,7 +38,7 @@ export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-003',
     donorName: 'Dra. Hj. Nurhayati Basri',
-    phone: '08529944123',
+    phone: '0812-0002-0003',
     rt: 'RT 03',
     address: 'Kompleks BTP Blok AE No. 28',
     category: 'ZISWAF_INFAQ',
@@ -55,7 +55,7 @@ export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-004',
     donorName: 'drg. Muhammad Farhan, Sp.KG',
-    phone: '08218876543',
+    phone: '0812-0002-0004',
     rt: 'RT 04',
     address: 'Kompleks BTP Blok AE No. 45',
     category: 'KAS_OPERASIONAL',
@@ -72,7 +72,7 @@ export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-005',
     donorName: 'H. Amiruddin Daeng Naba',
-    phone: '08114455667',
+    phone: '0812-0002-0005',
     rt: 'RT 05',
     address: 'Kompleks BTP Blok AE No. 62',
     category: 'SWADAYA_PHBI',
@@ -89,7 +89,7 @@ export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-006',
     donorName: 'Hamba Allah (Keluarga Alm. H. Basir)',
-    phone: '08139988771',
+    phone: '0812-0002-0006',
     rt: 'RT 01',
     address: 'Kompleks BTP Blok AE No. 09',
     category: 'ZISWAF_ZAKAT',
@@ -106,7 +106,7 @@ export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-007',
     donorName: 'Baharuddin, S.Pd. (Guru SMAN)',
-    phone: '08531122334',
+    phone: '0812-0002-0007',
     rt: 'RT 02',
     address: 'Kompleks BTP Blok AE No. 19',
     category: 'BEASISWA_YATIM',
@@ -123,7 +123,7 @@ export const INITIAL_DONORS: DonorItem[] = [
   {
     id: 'dnr-008',
     donorName: 'Muh. Ihsan Pratama, S.T.',
-    phone: '08223344556',
+    phone: '0812-0002-0008',
     rt: 'Luar Blok AE',
     address: 'Perintis Kemerdekaan KM 10 Makassar',
     category: 'KAS_OPERASIONAL',

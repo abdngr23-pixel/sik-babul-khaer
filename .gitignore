@@ -50,3 +50,7 @@ scratch/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local credentials & secrets
+*.local.txt
+credentials-*.txt

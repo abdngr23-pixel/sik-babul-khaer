@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { restoreDatabaseSnapshot } from '@/lib/db';
 import { store } from '@/lib/store';
+import { authorizeMutation } from '@/lib/auth-session';
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
     const snapshot = body.data ? body : (body.snapshot && body.snapshot.data ? body.snapshot : null);
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
 import { FinanceCategory, TransactionType, PaymentMethod } from '@/types/finance';
+import { authorizeMutation } from '@/lib/auth-session';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,6 +30,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'BENDAHARA'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
 
     if (!body.description || !body.amount || !body.category || !body.type) {
@@ -69,6 +77,13 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'BENDAHARA'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
     const { id, ...updates } = body;
 
@@ -105,6 +120,13 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'BENDAHARA'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
     let id = searchParams.get('id');
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
+import { authorizeMutation } from '@/lib/auth-session';
 
 export async function GET() {
   try {
@@ -20,6 +21,13 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'SEKRETARIS'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
     const { title, date, location, attendees, summary, decisions, actionItems, rawNotes } = body;
 
@@ -57,6 +65,13 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const authResult = await authorizeMutation(request, {
+      allowedRoles: ['KETUA_UMUM', 'SEKRETARIS'],
+    });
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
     const { minuteId, actionId } = body;
 

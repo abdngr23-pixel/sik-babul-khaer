@@ -1,17 +1,19 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { User, UserRole, RolePermission, AuditActionType, AuditModule } from '@/types/auth';
-import { OFFICIAL_USERS, ROLE_PERMISSIONS } from '@/lib/mock-auth';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { SafeUser, UserRole, RolePermission, AuditActionType, AuditModule } from '@/types/auth';
+import { ROLE_PERMISSIONS, getSafeOfficials } from '@/lib/mock-auth';
 import { AppNavTab } from '@/components/layout/sidebar';
 
 interface AuthContextType {
-  currentUser: User;
-  users: User[];
+  currentUser: SafeUser;
+  users: SafeUser[];
   permissions: RolePermission;
   isReadOnly: boolean;
   switchRole: (role: UserRole) => Promise<void>;
   loginUser: (userId: string) => Promise<void>;
+  loginWithPin: (userId: string, pin: string) => Promise<{ success: boolean; error?: string; remainingAttempts?: number; remainingSeconds?: number }>;
+  logout: () => Promise<void>;
   canAccessTab: (tab: AppNavTab) => boolean;
   canMutateTab: (tab: AppNavTab) => boolean;
   logAction: (
@@ -27,21 +29,61 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const LOCAL_STORAGE_KEY = 'sik_mbh_active_user_id';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [users] = useState<User[]>(OFFICIAL_USERS);
-  const [currentUser, setCurrentUser] = useState<User>(() => {
+  const [users, setUsers] = useState<SafeUser[]>(() => getSafeOfficials());
+  const [currentUser, setCurrentUser] = useState<SafeUser>(() => {
+    const defaultUsers = getSafeOfficials();
     if (typeof window !== 'undefined') {
       try {
         const storedId = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (storedId) {
-          const found = OFFICIAL_USERS.find((u) => u.id === storedId);
+          const found = defaultUsers.find((u) => u.id === storedId);
           if (found) return found;
         }
       } catch {
         // Ignore localStorage errors
       }
     }
-    return OFFICIAL_USERS[0]; // Default to Ketua Umum
+    return defaultUsers[0]; // Default to Ketua Umum
   });
+
+  // Sinkronkan daftar akun aman dari /api/auth dan cek sesi aktif dari /api/auth/me saat awal render
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initAuth() {
+      try {
+        // 1. Ambil daftar user aman dari server
+        const resUsers = await fetch('/api/auth');
+        if (resUsers.ok) {
+          const data = await resUsers.json();
+          if (data.success && Array.isArray(data.users) && isMounted) {
+            setUsers(data.users);
+          }
+        }
+
+        // 2. Periksa sesi aktif (cookie httpOnly)
+        const resMe = await fetch('/api/auth/me');
+        if (resMe.ok) {
+          const dataMe = await resMe.json();
+          if (dataMe.success && dataMe.user && isMounted) {
+            setCurrentUser(dataMe.user);
+            try {
+              localStorage.setItem(LOCAL_STORAGE_KEY, dataMe.user.id);
+            } catch {
+              // Ignore storage errors
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Gagal menginisialisasi sesi auth:', err);
+      }
+    }
+
+    initAuth();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const permissions = ROLE_PERMISSIONS[currentUser.role] || ROLE_PERMISSIONS.KETUA_UMUM;
   const isReadOnly = currentUser.isReadOnly || permissions.isReadOnly;
@@ -75,6 +117,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     [currentUser]
   );
+
+  /**
+   * Login aman dengan verifikasi PIN di backend (/api/auth)
+   */
+  const loginWithPin = useCallback(
+    async (userId: string, pin: string) => {
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, pin, action: 'LOGIN' }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          return {
+            success: false,
+            error: data.error || 'PIN otentikasi tidak valid',
+            remainingAttempts: data.remainingAttempts,
+            remainingSeconds: data.remainingSeconds,
+          };
+        }
+
+        if (data.user) {
+          setCurrentUser(data.user);
+          try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, data.user.id);
+          } catch {
+            // Ignore
+          }
+        }
+
+        return { success: true };
+      } catch (err) {
+        console.error('Error saat login PIN:', err);
+        return { success: false, error: 'Koneksi ke server gagal' };
+      }
+    },
+    []
+  );
+
+  /**
+   * Keluar sesi (hapus cookie dan reset state)
+   */
+  const logout = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // Ignore
+    }
+    const defaultUser = users[0] || getSafeOfficials()[0];
+    setCurrentUser(defaultUser);
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+  }, [users]);
 
   const switchRole = useCallback(
     async (role: UserRole) => {
@@ -220,6 +321,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isReadOnly,
         switchRole,
         loginUser,
+        loginWithPin,
+        logout,
         canAccessTab,
         canMutateTab,
         logAction,

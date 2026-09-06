@@ -1,4 +1,4 @@
-import { User, UserRole, RolePermission, AuditLogEntry } from '@/types/auth';
+import { User, SafeUser, UserRole, RolePermission, AuditLogEntry } from '@/types/auth';
 
 export const OFFICIAL_USERS: User[] = [
   {
@@ -8,10 +8,10 @@ export const OFFICIAL_USERS: User[] = [
     role: 'KETUA_UMUM',
     roleLabel: 'Ketua Umum DKM',
     email: 'ketua@babulkhaer.or.id',
-    phone: '0812-4112-9901',
+    phone: '0812-4000-0001',
     department: 'Badan Pimpinan Harian (Eksekutif)',
     isReadOnly: false,
-    pin: '123456',
+    pinHash: '$2b$10$l1f.XTyVNrI0wRVdxMV7fO8mIRDNiAs/FbLVNNoPBfe9eV17Ti3US',
     bio: 'Pimpinan tertinggi operasional DKM Babul Khaer BTP Blok AE periode 2026-2029. Pemegang hak otorisasi dan disposisi satu pintu pengesahan surat dinas dan pencairan kas perbendaharaan.',
   },
   {
@@ -21,10 +21,10 @@ export const OFFICIAL_USERS: User[] = [
     role: 'SEKRETARIS',
     roleLabel: 'Sekretaris Umum',
     email: 'sekretaris@babulkhaer.or.id',
-    phone: '0813-5521-8842',
+    phone: '0812-4000-0002',
     department: 'Bidang Kesekretariatan & Tata Usaha',
     isReadOnly: false,
-    pin: '123456',
+    pinHash: '$2b$10$KSMIStsUtv.i6zX2bn5YxeggtVy1cNh9yCaGseZLJV8eSBJ2ZMpRm',
     bio: 'Penanggung jawab administrasi umum, tata persuratan dinas resmi, e-arsip berkas digital, dan ekstraksi notulensi rapat pleno AI DKM.',
   },
   {
@@ -34,10 +34,10 @@ export const OFFICIAL_USERS: User[] = [
     role: 'BENDAHARA',
     roleLabel: 'Bendahara Umum',
     email: 'bendahara@babulkhaer.or.id',
-    phone: '0852-9934-7711',
+    phone: '0812-4000-0003',
     department: 'Bidang Keuangan & Perbendaharaan',
     isReadOnly: false,
-    pin: '123456',
+    pinHash: '$2b$10$l7Kn/0INn.rXfyVG.6t8Mem0CKqUKYPnPn8XpOuIPMlcdMHM6CGWq',
     bio: 'Pengelola kas operasional harian, pemisahan pos dana swadaya jamaah PHBI satu pintu, penerimaan ZISWAF, dan laporan realisasi cashflow.',
   },
   {
@@ -47,10 +47,10 @@ export const OFFICIAL_USERS: User[] = [
     role: 'SARPRAS',
     roleLabel: 'Koordinator Sarpras',
     email: 'sarpras@babulkhaer.or.id',
-    phone: '0821-8876-5533',
+    phone: '0812-4000-0004',
     department: 'Bidang Sarana & Prasarana Fisik',
     isReadOnly: false,
-    pin: '123456',
+    pinHash: '$2b$10$11gnRncGONxwI9dFmNuUCO6/A24wq5pPCaH2KjhXCCo/F1XyFqpVS',
     bio: 'Penanggung jawab kelayakan fasilitas fisik masjid, inventarisasi AC Daikin, genset cadangan, sound system utama, dan jadwal servis berkala.',
   },
   {
@@ -60,10 +60,10 @@ export const OFFICIAL_USERS: User[] = [
     role: 'KEMASJIDAN',
     roleLabel: 'Kemasjidan & Dakwah',
     email: 'kemasjidan@babulkhaer.or.id',
-    phone: '0812-7788-3321',
+    phone: '0812-4000-0005',
     department: 'Bidang Kemasjidan, Dakwah & Jamaah',
     isReadOnly: false,
-    pin: '123456',
+    pinHash: '$2b$10$7y.aiA4ZO3/yB5qBcS6v4eSqXxY2Nreuesr57BI7hi7IIcoL0xa9q',
     bio: 'Penanggung jawab sensus jamaah RT 01-05 BTP Blok AE, pendataan mustahiq zakat dan penyaluran bansos dhuafa, serta impor data Excel massal.',
   },
   {
@@ -73,13 +73,30 @@ export const OFFICIAL_USERS: User[] = [
     role: 'DEWAN_PENGAWAS',
     roleLabel: 'Dewan Penasehat / Pengawas',
     email: 'pengawas@babulkhaer.or.id',
-    phone: '0811-4433-2211',
+    phone: '0812-4000-0006',
     department: 'Badan Pengawas & Penasehat Syariah',
     isReadOnly: true,
-    pin: '123456',
+    pinHash: '$2b$10$u9CdOJFgT5Hy18p5RlUdFeUViqZR5CuGYhjN0V4PidC4g7tVFbTeG',
     bio: 'Pengawas independen jalannya amanah kepengurusan DKM Babul Khaer sesuai AD/ART MBH 2020. Memiliki hak akses khusus Read-Only untuk evaluasi KPI 4 pilar dan inspeksi log audit aktivitas.',
   },
 ];
+
+/**
+ * Mengembalikan data pengurus yang aman dikirim ke publik (tanpa pinHash, phone, email)
+ */
+export function getSafeOfficials(): SafeUser[] {
+  return OFFICIAL_USERS.map((u) => ({
+    id: u.id,
+    name: u.name,
+    title: u.title,
+    role: u.role,
+    roleLabel: u.roleLabel,
+    avatarUrl: u.avatarUrl,
+    department: u.department,
+    isReadOnly: u.isReadOnly,
+    bio: u.bio,
+  }));
+}
 
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
   KETUA_UMUM: {
