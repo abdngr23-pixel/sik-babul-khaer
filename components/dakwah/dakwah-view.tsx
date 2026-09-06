@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Calendar,
   Clock,
@@ -101,6 +101,21 @@ export default function DakwahView() {
 
   const [copiedMessage, setCopiedMessage] = useState<string | null>(null);
 
+  // Sync from Cloud Turso / SQLite on mount and when year changes
+  useEffect(() => {
+    fetch(`/api/dakwah?year=${selectedYear}`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          if (res.data.khatibList) setKhatibList(res.data.khatibList);
+          if (res.data.fridaySchedules) setFridaySchedules(res.data.fridaySchedules);
+          if (res.data.ramadhanSchedules) setRamadhanSchedules(res.data.ramadhanSchedules);
+          if (res.data.kajianSchedules) setKajianSchedules(res.data.kajianSchedules);
+        }
+      })
+      .catch((err) => console.warn('Gagal sinkronisasi data dakwah dari server:', err));
+  }, [selectedYear]);
+
   // Helper filter by Year
   const getFridayItemYear = (item: FridayScheduleItem) => {
     if (item.year) return item.year;
@@ -121,22 +136,37 @@ export default function DakwahView() {
   const ramadhanForSelectedYear = ramadhanSchedules.filter((r) => getRamadhanItemYear(r) === selectedYear);
 
   // Handler tambah khatib baru
-  const handleSaveKhatib = (newKhatibData: Omit<KhatibItem, 'id' | 'createdAt' | 'totalAppearances'>) => {
-    const newKhatib: KhatibItem = {
+  const handleSaveKhatib = async (newKhatibData: Omit<KhatibItem, 'id' | 'createdAt' | 'totalAppearances'>) => {
+    const tempKhatib: KhatibItem = {
       ...newKhatibData,
       id: `ktb-${Date.now()}`,
       totalAppearances: 0,
       createdAt: new Date().toISOString(),
     };
-    setKhatibList((prev) => [newKhatib, ...prev]);
-    setCopiedMessage(`Asatidz/Khatib "${newKhatib.name}" berhasil ditambahkan ke database!`);
+    setKhatibList((prev) => [tempKhatib, ...prev]);
+    setCopiedMessage(`Asatidz/Khatib "${tempKhatib.name}" berhasil ditambahkan ke database!`);
+
+    try {
+      const res = await fetch('/api/dakwah', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create-khatib', ...newKhatibData }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setKhatibList((prev) => prev.map((k) => (k.id === tempKhatib.id ? data.data : k)));
+      }
+    } catch (err) {
+      console.error('Gagal menyimpan khatib ke database:', err);
+    }
+
     setTimeout(() => {
       setCopiedMessage(null);
     }, 4000);
   };
 
   // Handler import jadwal Jumat dari Excel
-  const handleImportFriday = (items: FridayScheduleItem[], mode: 'APPEND' | 'REPLACE') => {
+  const handleImportFriday = async (items: FridayScheduleItem[], mode: 'APPEND' | 'REPLACE') => {
     if (mode === 'REPLACE') {
       setFridaySchedules((prev) => [
         ...prev.filter((f) => getFridayItemYear(f) !== selectedYear),
@@ -147,11 +177,22 @@ export default function DakwahView() {
       setFridaySchedules((prev) => [...prev, ...items]);
       setCopiedMessage(`Alhamdulillah! Berhasil menambahkan ${items.length} sesi jadwal Jumat ke tahun ${selectedYear}.`);
     }
+
+    try {
+      await fetch('/api/dakwah', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'bulk-friday', items }),
+      });
+    } catch (err) {
+      console.error('Gagal menyimpan jadwal Jumat ke server:', err);
+    }
+
     setTimeout(() => setCopiedMessage(null), 4000);
   };
 
   // Handler import jadwal Ramadhan dari Excel
-  const handleImportRamadhan = (items: RamadhanScheduleItem[], mode: 'APPEND' | 'REPLACE') => {
+  const handleImportRamadhan = async (items: RamadhanScheduleItem[], mode: 'APPEND' | 'REPLACE') => {
     if (mode === 'REPLACE') {
       setRamadhanSchedules((prev) => [
         ...prev.filter((r) => getRamadhanItemYear(r) !== selectedYear),
@@ -162,11 +203,22 @@ export default function DakwahView() {
       setRamadhanSchedules((prev) => [...prev, ...items]);
       setCopiedMessage(`Alhamdulillah! Berhasil mengimpor ${items.length} jadwal malam Ramadhan.`);
     }
+
+    try {
+      await fetch('/api/dakwah', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'bulk-ramadhan', items }),
+      });
+    } catch (err) {
+      console.error('Gagal menyimpan jadwal ramadhan ke server:', err);
+    }
+
     setTimeout(() => setCopiedMessage(null), 4000);
   };
 
   // Handler selesaikan agenda dakwah
-  const handleSaveCompletedAgenda = (realization: {
+  const handleSaveCompletedAgenda = async (realization: {
     attendanceCount: number;
     actualHonorDisbursed: number;
     summaryNotes: string;
@@ -238,6 +290,21 @@ export default function DakwahView() {
       setCopiedMessage(`Agenda Ramadhan "${completeModalTarget.title}" berhasil dicatat sebagai agenda terlaksana!`);
     }
 
+    try {
+      await fetch('/api/dakwah', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'complete-agenda',
+          type: completeModalTarget.type,
+          id: completeModalTarget.id,
+          ...realization,
+        }),
+      });
+    } catch (err) {
+      console.error('Gagal menyimpan penyelesaian agenda ke database:', err);
+    }
+
     setTimeout(() => {
       setCopiedMessage(null);
     }, 4000);
@@ -245,11 +312,25 @@ export default function DakwahView() {
   };
 
   // Handler update status konfirmasi Jumat
-  const handleToggleStatus = (id: string, newStatus: FridayConfirmationStatus) => {
+  const handleToggleStatus = async (id: string, newStatus: FridayConfirmationStatus) => {
     if (isReadOnly) return;
     setFridaySchedules((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
     );
+
+    try {
+      await fetch('/api/dakwah', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update-friday',
+          id,
+          updates: { status: newStatus },
+        }),
+      });
+    } catch (err) {
+      console.error('Gagal menyimpan status jadwal ke database:', err);
+    }
   };
 
   // Handler salin ke clipboard untuk WhatsApp

@@ -8,6 +8,14 @@ import { INITIAL_DONORS } from './mock-donors';
 import { INITIAL_ASSETS } from './mock-assets';
 import { INITIAL_APPROVALS, INITIAL_FIELD_KPIS } from './mock-reports';
 import { INITIAL_AUDIT_LOGS } from './mock-auth';
+import {
+  INITIAL_KHATIB_DATABASE,
+  INITIAL_FRIDAY_SCHEDULES,
+  INITIAL_RAMADHAN_SCHEDULES,
+  INITIAL_KAJIAN_SCHEDULES,
+} from './mock-dakwah';
+import { INITIAL_PHYSICAL_PROJECTS } from './mock-projects';
+import { INITIAL_SSS_CANS, INITIAL_SSS_RECORDS, INITIAL_ZISWAF_AIDS } from './mock-ziswaf';
 
 // Types
 import { OfficialLetter, MeetingMinutes, LetterStatus } from '@/types/letter';
@@ -17,6 +25,14 @@ import { DonorItem } from '@/types/donor';
 import { AssetItem } from '@/types/asset';
 import { ApprovalItem, FieldKPI } from '@/types/reports';
 import { AuditLogEntry } from '@/types/auth';
+import {
+  KhatibItem,
+  FridayScheduleItem,
+  RamadhanScheduleItem,
+  KajianScheduleItem,
+} from '@/types/dakwah';
+import { PhysicalProjectItem } from '@/types/project';
+import { SSSCanItem, SSSCollectionRecord, ZiswafAidItem } from '@/types/ziswaf';
 
 const globalForTurso = globalThis as unknown as {
   tursoClient?: Client;
@@ -250,6 +266,171 @@ export async function initTursoSchema(client: Client): Promise<void> {
     CREATE TABLE IF NOT EXISTS meta_kv (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
+    );
+  `);
+
+  // 11. Khatib Database Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS khatib_database (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      title TEXT NOT NULL,
+      specialization TEXT NOT NULL,
+      institution TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      address TEXT NOT NULL,
+      totalAppearances INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL,
+      notes TEXT,
+      createdAt TEXT NOT NULL
+    );
+  `);
+
+  // 12. Friday Schedules Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS friday_schedules (
+      id TEXT PRIMARY KEY,
+      year INTEGER,
+      date TEXT NOT NULL,
+      dateHijri TEXT NOT NULL,
+      khatibName TEXT NOT NULL,
+      khatibTitle TEXT,
+      imamName TEXT NOT NULL,
+      khutbahTopic TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      status TEXT NOT NULL,
+      incentiveAmount REAL NOT NULL DEFAULT 0,
+      notes TEXT,
+      isCompleted INTEGER NOT NULL DEFAULT 0,
+      attendanceCount INTEGER,
+      actualHonorDisbursed REAL,
+      summaryNotes TEXT,
+      completedAt TEXT
+    );
+  `);
+
+  // 13. Ramadhan Schedules Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS ramadhan_schedules (
+      id TEXT PRIMARY KEY,
+      year INTEGER,
+      hijriYear TEXT,
+      nightNumber INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      penceramahTarawih TEXT NOT NULL,
+      topicKultum TEXT NOT NULL,
+      honorPenceramah REAL NOT NULL DEFAULT 0,
+      imamTarawih TEXT NOT NULL,
+      honorImamTarawih REAL NOT NULL DEFAULT 0,
+      bukberHost TEXT NOT NULL,
+      bukberPax INTEGER NOT NULL DEFAULT 0,
+      itikafStatus TEXT,
+      isCompleted INTEGER NOT NULL DEFAULT 0,
+      attendanceCount INTEGER,
+      actualHonorDisbursed REAL,
+      summaryNotes TEXT,
+      completedAt TEXT
+    );
+  `);
+
+  // 14. Kajian Schedules Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS kajian_schedules (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      type TEXT NOT NULL,
+      speakerName TEXT NOT NULL,
+      speakerTitle TEXT,
+      bookOrTopic TEXT NOT NULL,
+      dayTime TEXT NOT NULL,
+      location TEXT NOT NULL,
+      fundingSource TEXT NOT NULL,
+      contactPerson TEXT NOT NULL,
+      notes TEXT,
+      isCompleted INTEGER NOT NULL DEFAULT 0,
+      attendanceCount INTEGER,
+      actualHonorDisbursed REAL,
+      summaryNotes TEXT,
+      completedAt TEXT
+    );
+  `);
+
+  // 15. Physical Projects Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS physical_projects (
+      id TEXT PRIMARY KEY,
+      code TEXT NOT NULL,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL,
+      allocatedBudget REAL NOT NULL DEFAULT 0,
+      realizedBudget REAL NOT NULL DEFAULT 0,
+      progressPercentage REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL,
+      urgencyLevel TEXT NOT NULL,
+      responsiblePerson TEXT NOT NULL,
+      contractorVendor TEXT,
+      startDate TEXT NOT NULL,
+      targetEndDate TEXT NOT NULL,
+      description TEXT NOT NULL,
+      milestones TEXT NOT NULL,
+      notes TEXT,
+      updatedAt TEXT NOT NULL
+    );
+  `);
+
+  // 16. SSS Cans Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS sss_cans (
+      id TEXT PRIMARY KEY,
+      canCode TEXT NOT NULL,
+      rt TEXT NOT NULL,
+      houseNumber TEXT NOT NULL,
+      holderName TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      distributionDate TEXT NOT NULL,
+      lastCollectionDate TEXT NOT NULL,
+      lastAmount REAL NOT NULL DEFAULT 0,
+      totalCollected REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL,
+      collectorOfficer TEXT NOT NULL,
+      notes TEXT NOT NULL
+    );
+  `);
+
+  // 17. SSS Records Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS sss_records (
+      id TEXT PRIMARY KEY,
+      canId TEXT NOT NULL,
+      canCode TEXT NOT NULL,
+      collectionDate TEXT NOT NULL,
+      amount REAL NOT NULL DEFAULT 0,
+      rt TEXT NOT NULL,
+      collector TEXT NOT NULL,
+      depositedToCash INTEGER NOT NULL DEFAULT 0,
+      notes TEXT
+    );
+  `);
+
+  // 18. Ziswaf Aids Table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS ziswaf_aids (
+      id TEXT PRIMARY KEY,
+      aidNumber TEXT NOT NULL,
+      jamaahId TEXT,
+      recipientName TEXT NOT NULL,
+      recipientCategory TEXT NOT NULL,
+      rt TEXT NOT NULL,
+      address TEXT NOT NULL,
+      phone TEXT,
+      aidType TEXT NOT NULL,
+      amountValue REAL NOT NULL DEFAULT 0,
+      goodsDescription TEXT,
+      distributionDate TEXT NOT NULL,
+      disbursedBy TEXT NOT NULL,
+      status TEXT NOT NULL,
+      receiptNumber TEXT,
+      notes TEXT NOT NULL
     );
   `);
 
@@ -545,6 +726,263 @@ async function seedTursoIfEmpty(client: Client): Promise<void> {
     await client.batch(stmts, 'write');
   }
 
+  // 11. Khatib Database
+  const ktbRes = await client.execute('SELECT COUNT(*) as count FROM khatib_database');
+  const ktbCount = Number(ktbRes.rows[0]?.count || 0);
+  if (ktbCount === 0 && INITIAL_KHATIB_DATABASE.length > 0) {
+    const stmts: InStatement[] = INITIAL_KHATIB_DATABASE.map((k) => ({
+      sql: `
+        INSERT INTO khatib_database (
+          id, name, title, specialization, institution, phone, address,
+          totalAppearances, status, notes, createdAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        k.id,
+        k.name,
+        k.title,
+        k.specialization,
+        k.institution,
+        k.phone,
+        k.address,
+        k.totalAppearances || 0,
+        k.status,
+        k.notes || null,
+        k.createdAt,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
+  // 12. Friday Schedules
+  const friRes = await client.execute('SELECT COUNT(*) as count FROM friday_schedules');
+  const friCount = Number(friRes.rows[0]?.count || 0);
+  if (friCount === 0 && INITIAL_FRIDAY_SCHEDULES.length > 0) {
+    const stmts: InStatement[] = INITIAL_FRIDAY_SCHEDULES.map((f) => ({
+      sql: `
+        INSERT INTO friday_schedules (
+          id, year, date, dateHijri, khatibName, khatibTitle, imamName, khutbahTopic,
+          phone, status, incentiveAmount, notes, isCompleted, attendanceCount,
+          actualHonorDisbursed, summaryNotes, completedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        f.id,
+        f.year || 2026,
+        f.date,
+        f.dateHijri,
+        f.khatibName,
+        f.khatibTitle || null,
+        f.imamName,
+        f.khutbahTopic,
+        f.phone,
+        f.status,
+        f.incentiveAmount || 0,
+        f.notes || null,
+        f.isCompleted ? 1 : 0,
+        f.attendanceCount || null,
+        f.actualHonorDisbursed || null,
+        f.summaryNotes || null,
+        f.completedAt || null,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
+  // 13. Ramadhan Schedules
+  const ramRes = await client.execute('SELECT COUNT(*) as count FROM ramadhan_schedules');
+  const ramCount = Number(ramRes.rows[0]?.count || 0);
+  if (ramCount === 0 && INITIAL_RAMADHAN_SCHEDULES.length > 0) {
+    const stmts: InStatement[] = INITIAL_RAMADHAN_SCHEDULES.map((r) => ({
+      sql: `
+        INSERT INTO ramadhan_schedules (
+          id, year, hijriYear, nightNumber, date, penceramahTarawih, topicKultum,
+          honorPenceramah, imamTarawih, honorImamTarawih, bukberHost, bukberPax,
+          itikafStatus, isCompleted, attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        r.id,
+        r.year || 2026,
+        r.hijriYear || '1448 H',
+        r.nightNumber,
+        r.date,
+        r.penceramahTarawih,
+        r.topicKultum,
+        r.honorPenceramah || 0,
+        r.imamTarawih,
+        r.honorImamTarawih || 0,
+        r.bukberHost,
+        r.bukberPax || 0,
+        r.itikafStatus || null,
+        r.isCompleted ? 1 : 0,
+        r.attendanceCount || null,
+        r.actualHonorDisbursed || null,
+        r.summaryNotes || null,
+        r.completedAt || null,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
+  // 14. Kajian Schedules
+  const kajRes = await client.execute('SELECT COUNT(*) as count FROM kajian_schedules');
+  const kajCount = Number(kajRes.rows[0]?.count || 0);
+  if (kajCount === 0 && INITIAL_KAJIAN_SCHEDULES.length > 0) {
+    const stmts: InStatement[] = INITIAL_KAJIAN_SCHEDULES.map((k) => ({
+      sql: `
+        INSERT INTO kajian_schedules (
+          id, title, type, speakerName, speakerTitle, bookOrTopic, dayTime,
+          location, fundingSource, contactPerson, notes, isCompleted,
+          attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        k.id,
+        k.title,
+        k.type,
+        k.speakerName,
+        k.speakerTitle || null,
+        k.bookOrTopic,
+        k.dayTime,
+        k.location,
+        k.fundingSource,
+        k.contactPerson,
+        k.notes || null,
+        k.isCompleted ? 1 : 0,
+        k.attendanceCount || null,
+        k.actualHonorDisbursed || null,
+        k.summaryNotes || null,
+        k.completedAt || null,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
+  // 15. Physical Projects
+  const prjRes = await client.execute('SELECT COUNT(*) as count FROM physical_projects');
+  const prjCount = Number(prjRes.rows[0]?.count || 0);
+  if (prjCount === 0 && INITIAL_PHYSICAL_PROJECTS.length > 0) {
+    const stmts: InStatement[] = INITIAL_PHYSICAL_PROJECTS.map((p) => ({
+      sql: `
+        INSERT INTO physical_projects (
+          id, code, title, category, allocatedBudget, realizedBudget, progressPercentage,
+          status, urgencyLevel, responsiblePerson, contractorVendor, startDate,
+          targetEndDate, description, milestones, notes, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        p.id,
+        p.code,
+        p.title,
+        p.category,
+        p.allocatedBudget || 0,
+        p.realizedBudget || 0,
+        p.progressPercentage || 0,
+        p.status,
+        p.urgencyLevel,
+        p.responsiblePerson,
+        p.contractorVendor || null,
+        p.startDate,
+        p.targetEndDate,
+        p.description,
+        JSON.stringify(p.milestones || []),
+        p.notes || null,
+        p.updatedAt,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
+  // 16. SSS Cans
+  const sssRes = await client.execute('SELECT COUNT(*) as count FROM sss_cans');
+  const sssCount = Number(sssRes.rows[0]?.count || 0);
+  if (sssCount === 0 && INITIAL_SSS_CANS.length > 0) {
+    const stmts: InStatement[] = INITIAL_SSS_CANS.map((s) => ({
+      sql: `
+        INSERT INTO sss_cans (
+          id, canCode, rt, houseNumber, holderName, phone, distributionDate,
+          lastCollectionDate, lastAmount, totalCollected, status, collectorOfficer, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        s.id,
+        s.canCode,
+        s.rt,
+        s.houseNumber,
+        s.holderName,
+        s.phone,
+        s.distributionDate,
+        s.lastCollectionDate,
+        s.lastAmount || 0,
+        s.totalCollected || 0,
+        s.status,
+        s.collectorOfficer,
+        s.notes,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
+  // 17. SSS Records
+  const recRes = await client.execute('SELECT COUNT(*) as count FROM sss_records');
+  const recCount = Number(recRes.rows[0]?.count || 0);
+  if (recCount === 0 && INITIAL_SSS_RECORDS.length > 0) {
+    const stmts: InStatement[] = INITIAL_SSS_RECORDS.map((r) => ({
+      sql: `
+        INSERT INTO sss_records (
+          id, canId, canCode, collectionDate, amount, rt, collector, depositedToCash, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        r.id,
+        r.canId,
+        r.canCode,
+        r.collectionDate,
+        r.amount,
+        r.rt,
+        r.collector,
+        r.depositedToCash ? 1 : 0,
+        r.notes || null,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
+  // 18. Ziswaf Aids
+  const aidRes = await client.execute('SELECT COUNT(*) as count FROM ziswaf_aids');
+  const aidCount = Number(aidRes.rows[0]?.count || 0);
+  if (aidCount === 0 && INITIAL_ZISWAF_AIDS.length > 0) {
+    const stmts: InStatement[] = INITIAL_ZISWAF_AIDS.map((a) => ({
+      sql: `
+        INSERT INTO ziswaf_aids (
+          id, aidNumber, jamaahId, recipientName, recipientCategory, rt, address,
+          phone, aidType, amountValue, goodsDescription, distributionDate,
+          disbursedBy, status, receiptNumber, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        a.id,
+        a.aidNumber,
+        a.jamaahId || null,
+        a.recipientName,
+        a.recipientCategory,
+        a.rt,
+        a.address,
+        a.phone || null,
+        a.aidType,
+        a.amountValue || 0,
+        a.goodsDescription || null,
+        a.distributionDate,
+        a.disbursedBy,
+        a.status,
+        a.receiptNumber || null,
+        a.notes,
+      ],
+    }));
+    await client.batch(stmts, 'write');
+  }
+
   await client.execute({
     sql: 'INSERT OR REPLACE INTO meta_kv (key, value) VALUES (?, ?)',
     args: ['turso_initialized_at', new Date().toISOString()],
@@ -707,6 +1145,147 @@ const parseAudit = (r: Record<string, unknown>): AuditLogEntry => ({
   status: r.status as AuditLogEntry['status'],
 });
 
+const parseKhatib = (r: Record<string, unknown>): KhatibItem => ({
+  id: r.id as string,
+  name: r.name as string,
+  title: r.title as string,
+  specialization: r.specialization as string,
+  institution: r.institution as string,
+  phone: r.phone as string,
+  address: r.address as string,
+  totalAppearances: Number(r.totalAppearances || 0),
+  status: r.status as KhatibItem['status'],
+  notes: (r.notes as string) || undefined,
+  createdAt: r.createdAt as string,
+});
+
+const parseFridaySchedule = (r: Record<string, unknown>): FridayScheduleItem => ({
+  id: r.id as string,
+  year: r.year ? Number(r.year) : undefined,
+  date: r.date as string,
+  dateHijri: r.dateHijri as string,
+  khatibName: r.khatibName as string,
+  khatibTitle: (r.khatibTitle as string) || undefined,
+  imamName: r.imamName as string,
+  khutbahTopic: r.khutbahTopic as string,
+  phone: r.phone as string,
+  status: r.status as FridayScheduleItem['status'],
+  incentiveAmount: Number(r.incentiveAmount || 0),
+  notes: (r.notes as string) || undefined,
+  isCompleted: Boolean(r.isCompleted),
+  attendanceCount: r.attendanceCount ? Number(r.attendanceCount) : undefined,
+  actualHonorDisbursed: r.actualHonorDisbursed ? Number(r.actualHonorDisbursed) : undefined,
+  summaryNotes: (r.summaryNotes as string) || undefined,
+  completedAt: (r.completedAt as string) || undefined,
+});
+
+const parseRamadhanSchedule = (r: Record<string, unknown>): RamadhanScheduleItem => ({
+  id: r.id as string,
+  year: r.year ? Number(r.year) : undefined,
+  hijriYear: (r.hijriYear as string) || undefined,
+  nightNumber: Number(r.nightNumber || 0),
+  date: r.date as string,
+  penceramahTarawih: r.penceramahTarawih as string,
+  topicKultum: r.topicKultum as string,
+  honorPenceramah: Number(r.honorPenceramah || 0),
+  imamTarawih: r.imamTarawih as string,
+  honorImamTarawih: Number(r.honorImamTarawih || 0),
+  bukberHost: r.bukberHost as string,
+  bukberPax: Number(r.bukberPax || 0),
+  itikafStatus: (r.itikafStatus as RamadhanScheduleItem['itikafStatus']) || undefined,
+  isCompleted: Boolean(r.isCompleted),
+  attendanceCount: r.attendanceCount ? Number(r.attendanceCount) : undefined,
+  actualHonorDisbursed: r.actualHonorDisbursed ? Number(r.actualHonorDisbursed) : undefined,
+  summaryNotes: (r.summaryNotes as string) || undefined,
+  completedAt: (r.completedAt as string) || undefined,
+});
+
+const parseKajianSchedule = (r: Record<string, unknown>): KajianScheduleItem => ({
+  id: r.id as string,
+  title: r.title as string,
+  type: r.type as KajianScheduleItem['type'],
+  speakerName: r.speakerName as string,
+  speakerTitle: (r.speakerTitle as string) || undefined,
+  bookOrTopic: r.bookOrTopic as string,
+  dayTime: r.dayTime as string,
+  location: r.location as string,
+  fundingSource: r.fundingSource as KajianScheduleItem['fundingSource'],
+  contactPerson: r.contactPerson as string,
+  notes: (r.notes as string) || undefined,
+  isCompleted: Boolean(r.isCompleted),
+  attendanceCount: r.attendanceCount ? Number(r.attendanceCount) : undefined,
+  actualHonorDisbursed: r.actualHonorDisbursed ? Number(r.actualHonorDisbursed) : undefined,
+  summaryNotes: (r.summaryNotes as string) || undefined,
+  completedAt: (r.completedAt as string) || undefined,
+});
+
+const parsePhysicalProject = (r: Record<string, unknown>): PhysicalProjectItem => ({
+  id: r.id as string,
+  code: r.code as string,
+  title: r.title as string,
+  category: r.category as PhysicalProjectItem['category'],
+  allocatedBudget: Number(r.allocatedBudget || 0),
+  realizedBudget: Number(r.realizedBudget || 0),
+  progressPercentage: Number(r.progressPercentage || 0),
+  status: r.status as PhysicalProjectItem['status'],
+  urgencyLevel: r.urgencyLevel as PhysicalProjectItem['urgencyLevel'],
+  responsiblePerson: r.responsiblePerson as string,
+  contractorVendor: (r.contractorVendor as string) || undefined,
+  startDate: r.startDate as string,
+  targetEndDate: r.targetEndDate as string,
+  description: r.description as string,
+  milestones: JSON.parse((r.milestones as string) || '[]'),
+  notes: (r.notes as string) || undefined,
+  updatedAt: r.updatedAt as string,
+});
+
+const parseSSSCan = (r: Record<string, unknown>): SSSCanItem => ({
+  id: r.id as string,
+  canCode: r.canCode as string,
+  rt: r.rt as SSSCanItem['rt'],
+  houseNumber: r.houseNumber as string,
+  holderName: r.holderName as string,
+  phone: r.phone as string,
+  distributionDate: r.distributionDate as string,
+  lastCollectionDate: r.lastCollectionDate as string,
+  lastAmount: Number(r.lastAmount || 0),
+  totalCollected: Number(r.totalCollected || 0),
+  status: r.status as SSSCanItem['status'],
+  collectorOfficer: r.collectorOfficer as string,
+  notes: (r.notes as string) || '',
+});
+
+const parseSSSRecord = (r: Record<string, unknown>): SSSCollectionRecord => ({
+  id: r.id as string,
+  canId: r.canId as string,
+  canCode: r.canCode as string,
+  collectionDate: r.collectionDate as string,
+  amount: Number(r.amount || 0),
+  rt: r.rt as SSSCollectionRecord['rt'],
+  collector: r.collector as string,
+  depositedToCash: Boolean(r.depositedToCash),
+  notes: (r.notes as string) || undefined,
+});
+
+const parseZiswafAid = (r: Record<string, unknown>): ZiswafAidItem => ({
+  id: r.id as string,
+  aidNumber: r.aidNumber as string,
+  jamaahId: (r.jamaahId as string) || undefined,
+  recipientName: r.recipientName as string,
+  recipientCategory: r.recipientCategory as ZiswafAidItem['recipientCategory'],
+  rt: r.rt as ZiswafAidItem['rt'],
+  address: r.address as string,
+  phone: (r.phone as string) || undefined,
+  aidType: r.aidType as ZiswafAidItem['aidType'],
+  amountValue: Number(r.amountValue || 0),
+  goodsDescription: (r.goodsDescription as string) || undefined,
+  distributionDate: r.distributionDate as string,
+  disbursedBy: r.disbursedBy as string,
+  status: r.status as ZiswafAidItem['status'],
+  receiptNumber: (r.receiptNumber as string) || undefined,
+  notes: (r.notes as string) || '',
+});
+
 // ---------------- QUERY ALL DATA ----------------
 export async function tursoLoadAllData(client: Client) {
   await initTursoSchema(client);
@@ -721,6 +1300,14 @@ export async function tursoLoadAllData(client: Client) {
     approvalsRes,
     kpisRes,
     auditRes,
+    khatibRes,
+    fridayRes,
+    ramadhanRes,
+    kajianRes,
+    projectsRes,
+    cansRes,
+    recordsRes,
+    aidsRes,
   ] = await Promise.all([
     client.execute('SELECT * FROM letters ORDER BY sequenceNumber DESC'),
     client.execute('SELECT * FROM minutes ORDER BY date DESC'),
@@ -731,6 +1318,14 @@ export async function tursoLoadAllData(client: Client) {
     client.execute('SELECT * FROM approvals ORDER BY submittedAt DESC'),
     client.execute('SELECT * FROM field_kpis'),
     client.execute('SELECT * FROM audit_logs ORDER BY timestamp DESC'),
+    client.execute('SELECT * FROM khatib_database ORDER BY name ASC'),
+    client.execute('SELECT * FROM friday_schedules ORDER BY date ASC'),
+    client.execute('SELECT * FROM ramadhan_schedules ORDER BY nightNumber ASC'),
+    client.execute('SELECT * FROM kajian_schedules ORDER BY id ASC'),
+    client.execute('SELECT * FROM physical_projects ORDER BY code ASC'),
+    client.execute('SELECT * FROM sss_cans ORDER BY canCode ASC'),
+    client.execute('SELECT * FROM sss_records ORDER BY collectionDate DESC'),
+    client.execute('SELECT * FROM ziswaf_aids ORDER BY distributionDate DESC'),
   ]);
 
   return {
@@ -743,6 +1338,14 @@ export async function tursoLoadAllData(client: Client) {
     approvals: approvalsRes.rows.map((r) => parseApproval(r as unknown as Record<string, unknown>)),
     fieldKPIs: kpisRes.rows.map((r) => parseKpi(r as unknown as Record<string, unknown>)),
     auditLogs: auditRes.rows.map((r) => parseAudit(r as unknown as Record<string, unknown>)),
+    khatibList: khatibRes.rows.map((r) => parseKhatib(r as unknown as Record<string, unknown>)),
+    fridaySchedules: fridayRes.rows.map((r) => parseFridaySchedule(r as unknown as Record<string, unknown>)),
+    ramadhanSchedules: ramadhanRes.rows.map((r) => parseRamadhanSchedule(r as unknown as Record<string, unknown>)),
+    kajianSchedules: kajianRes.rows.map((r) => parseKajianSchedule(r as unknown as Record<string, unknown>)),
+    physicalProjects: projectsRes.rows.map((r) => parsePhysicalProject(r as unknown as Record<string, unknown>)),
+    sssCans: cansRes.rows.map((r) => parseSSSCan(r as unknown as Record<string, unknown>)),
+    sssRecords: recordsRes.rows.map((r) => parseSSSRecord(r as unknown as Record<string, unknown>)),
+    ziswafAids: aidsRes.rows.map((r) => parseZiswafAid(r as unknown as Record<string, unknown>)),
   };
 }
 
@@ -1217,6 +1820,536 @@ export async function tursoInsertAuditLog(client: Client, al: AuditLogEntry): Pr
   });
 }
 
+// ---------------- DAKWAH MUTATIONS ----------------
+
+export async function tursoInsertKhatib(client: Client, k: KhatibItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      INSERT INTO khatib_database (
+        id, name, title, specialization, institution, phone, address,
+        totalAppearances, status, notes, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      k.id,
+      k.name,
+      k.title,
+      k.specialization,
+      k.institution,
+      k.phone,
+      k.address,
+      k.totalAppearances || 0,
+      k.status,
+      k.notes || null,
+      k.createdAt,
+    ],
+  });
+}
+
+export async function tursoUpdateKhatib(client: Client, k: KhatibItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      UPDATE khatib_database SET
+        name = ?, title = ?, specialization = ?, institution = ?,
+        phone = ?, address = ?, totalAppearances = ?, status = ?, notes = ?
+      WHERE id = ?
+    `,
+    args: [
+      k.name,
+      k.title,
+      k.specialization,
+      k.institution,
+      k.phone,
+      k.address,
+      k.totalAppearances || 0,
+      k.status,
+      k.notes || null,
+      k.id,
+    ],
+  });
+}
+
+export async function tursoDeleteKhatib(client: Client, id: string): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: 'DELETE FROM khatib_database WHERE id = ?',
+    args: [id],
+  });
+}
+
+export async function tursoInsertFridaySchedule(client: Client, f: FridayScheduleItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      INSERT INTO friday_schedules (
+        id, year, date, dateHijri, khatibName, khatibTitle, imamName, khutbahTopic,
+        phone, status, incentiveAmount, notes, isCompleted, attendanceCount,
+        actualHonorDisbursed, summaryNotes, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      f.id,
+      f.year || 2026,
+      f.date,
+      f.dateHijri,
+      f.khatibName,
+      f.khatibTitle || null,
+      f.imamName,
+      f.khutbahTopic,
+      f.phone,
+      f.status,
+      f.incentiveAmount || 0,
+      f.notes || null,
+      f.isCompleted ? 1 : 0,
+      f.attendanceCount || null,
+      f.actualHonorDisbursed || null,
+      f.summaryNotes || null,
+      f.completedAt || null,
+    ],
+  });
+}
+
+export async function tursoUpdateFridaySchedule(client: Client, f: FridayScheduleItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      UPDATE friday_schedules SET
+        year = ?, date = ?, dateHijri = ?, khatibName = ?, khatibTitle = ?,
+        imamName = ?, khutbahTopic = ?, phone = ?, status = ?, incentiveAmount = ?,
+        notes = ?, isCompleted = ?, attendanceCount = ?, actualHonorDisbursed = ?,
+        summaryNotes = ?, completedAt = ?
+      WHERE id = ?
+    `,
+    args: [
+      f.year || 2026,
+      f.date,
+      f.dateHijri,
+      f.khatibName,
+      f.khatibTitle || null,
+      f.imamName,
+      f.khutbahTopic,
+      f.phone,
+      f.status,
+      f.incentiveAmount || 0,
+      f.notes || null,
+      f.isCompleted ? 1 : 0,
+      f.attendanceCount || null,
+      f.actualHonorDisbursed || null,
+      f.summaryNotes || null,
+      f.completedAt || null,
+      f.id,
+    ],
+  });
+}
+
+export async function tursoInsertBulkFridaySchedules(client: Client, list: FridayScheduleItem[]): Promise<void> {
+  await initTursoSchema(client);
+  const stmts: InStatement[] = list.map((f) => ({
+    sql: `
+      INSERT OR REPLACE INTO friday_schedules (
+        id, year, date, dateHijri, khatibName, khatibTitle, imamName, khutbahTopic,
+        phone, status, incentiveAmount, notes, isCompleted, attendanceCount,
+        actualHonorDisbursed, summaryNotes, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      f.id,
+      f.year || 2026,
+      f.date,
+      f.dateHijri,
+      f.khatibName,
+      f.khatibTitle || null,
+      f.imamName,
+      f.khutbahTopic,
+      f.phone,
+      f.status,
+      f.incentiveAmount || 0,
+      f.notes || null,
+      f.isCompleted ? 1 : 0,
+      f.attendanceCount || null,
+      f.actualHonorDisbursed || null,
+      f.summaryNotes || null,
+      f.completedAt || null,
+    ],
+  }));
+  await client.batch(stmts, 'write');
+}
+
+export async function tursoInsertRamadhanSchedule(client: Client, r: RamadhanScheduleItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      INSERT INTO ramadhan_schedules (
+        id, year, hijriYear, nightNumber, date, penceramahTarawih, topicKultum,
+        honorPenceramah, imamTarawih, honorImamTarawih, bukberHost, bukberPax,
+        itikafStatus, isCompleted, attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      r.id,
+      r.year || 2026,
+      r.hijriYear || '1448 H',
+      r.nightNumber,
+      r.date,
+      r.penceramahTarawih,
+      r.topicKultum,
+      r.honorPenceramah || 0,
+      r.imamTarawih,
+      r.honorImamTarawih || 0,
+      r.bukberHost,
+      r.bukberPax || 0,
+      r.itikafStatus || null,
+      r.isCompleted ? 1 : 0,
+      r.attendanceCount || null,
+      r.actualHonorDisbursed || null,
+      r.summaryNotes || null,
+      r.completedAt || null,
+    ],
+  });
+}
+
+export async function tursoUpdateRamadhanSchedule(client: Client, r: RamadhanScheduleItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      UPDATE ramadhan_schedules SET
+        year = ?, hijriYear = ?, nightNumber = ?, date = ?, penceramahTarawih = ?,
+        topicKultum = ?, honorPenceramah = ?, imamTarawih = ?, honorImamTarawih = ?,
+        bukberHost = ?, bukberPax = ?, itikafStatus = ?, isCompleted = ?,
+        attendanceCount = ?, actualHonorDisbursed = ?, summaryNotes = ?, completedAt = ?
+      WHERE id = ?
+    `,
+    args: [
+      r.year || 2026,
+      r.hijriYear || '1448 H',
+      r.nightNumber,
+      r.date,
+      r.penceramahTarawih,
+      r.topicKultum,
+      r.honorPenceramah || 0,
+      r.imamTarawih,
+      r.honorImamTarawih || 0,
+      r.bukberHost,
+      r.bukberPax || 0,
+      r.itikafStatus || null,
+      r.isCompleted ? 1 : 0,
+      r.attendanceCount || null,
+      r.actualHonorDisbursed || null,
+      r.summaryNotes || null,
+      r.completedAt || null,
+      r.id,
+    ],
+  });
+}
+
+export async function tursoInsertBulkRamadhanSchedules(client: Client, list: RamadhanScheduleItem[]): Promise<void> {
+  await initTursoSchema(client);
+  const stmts: InStatement[] = list.map((r) => ({
+    sql: `
+      INSERT OR REPLACE INTO ramadhan_schedules (
+        id, year, hijriYear, nightNumber, date, penceramahTarawih, topicKultum,
+        honorPenceramah, imamTarawih, honorImamTarawih, bukberHost, bukberPax,
+        itikafStatus, isCompleted, attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      r.id,
+      r.year || 2026,
+      r.hijriYear || '1448 H',
+      r.nightNumber,
+      r.date,
+      r.penceramahTarawih,
+      r.topicKultum,
+      r.honorPenceramah || 0,
+      r.imamTarawih,
+      r.honorImamTarawih || 0,
+      r.bukberHost,
+      r.bukberPax || 0,
+      r.itikafStatus || null,
+      r.isCompleted ? 1 : 0,
+      r.attendanceCount || null,
+      r.actualHonorDisbursed || null,
+      r.summaryNotes || null,
+      r.completedAt || null,
+    ],
+  }));
+  await client.batch(stmts, 'write');
+}
+
+export async function tursoInsertKajianSchedule(client: Client, k: KajianScheduleItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      INSERT INTO kajian_schedules (
+        id, title, type, speakerName, speakerTitle, bookOrTopic, dayTime,
+        location, fundingSource, contactPerson, notes, isCompleted,
+        attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      k.id,
+      k.title,
+      k.type,
+      k.speakerName,
+      k.speakerTitle || null,
+      k.bookOrTopic,
+      k.dayTime,
+      k.location,
+      k.fundingSource,
+      k.contactPerson,
+      k.notes || null,
+      k.isCompleted ? 1 : 0,
+      k.attendanceCount || null,
+      k.actualHonorDisbursed || null,
+      k.summaryNotes || null,
+      k.completedAt || null,
+    ],
+  });
+}
+
+export async function tursoUpdateKajianSchedule(client: Client, k: KajianScheduleItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      UPDATE kajian_schedules SET
+        title = ?, type = ?, speakerName = ?, speakerTitle = ?, bookOrTopic = ?,
+        dayTime = ?, location = ?, fundingSource = ?, contactPerson = ?, notes = ?,
+        isCompleted = ?, attendanceCount = ?, actualHonorDisbursed = ?,
+        summaryNotes = ?, completedAt = ?
+      WHERE id = ?
+    `,
+    args: [
+      k.title,
+      k.type,
+      k.speakerName,
+      k.speakerTitle || null,
+      k.bookOrTopic,
+      k.dayTime,
+      k.location,
+      k.fundingSource,
+      k.contactPerson,
+      k.notes || null,
+      k.isCompleted ? 1 : 0,
+      k.attendanceCount || null,
+      k.actualHonorDisbursed || null,
+      k.summaryNotes || null,
+      k.completedAt || null,
+      k.id,
+    ],
+  });
+}
+
+// ---------------- PROJECTS MUTATIONS ----------------
+
+export async function tursoInsertPhysicalProject(client: Client, p: PhysicalProjectItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      INSERT INTO physical_projects (
+        id, code, title, category, allocatedBudget, realizedBudget, progressPercentage,
+        status, urgencyLevel, responsiblePerson, contractorVendor, startDate,
+        targetEndDate, description, milestones, notes, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      p.id,
+      p.code,
+      p.title,
+      p.category,
+      p.allocatedBudget || 0,
+      p.realizedBudget || 0,
+      p.progressPercentage || 0,
+      p.status,
+      p.urgencyLevel,
+      p.responsiblePerson,
+      p.contractorVendor || null,
+      p.startDate,
+      p.targetEndDate,
+      p.description,
+      JSON.stringify(p.milestones || []),
+      p.notes || null,
+      p.updatedAt,
+    ],
+  });
+}
+
+export async function tursoUpdatePhysicalProject(client: Client, p: PhysicalProjectItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      UPDATE physical_projects SET
+        code = ?, title = ?, category = ?, allocatedBudget = ?, realizedBudget = ?,
+        progressPercentage = ?, status = ?, urgencyLevel = ?, responsiblePerson = ?,
+        contractorVendor = ?, startDate = ?, targetEndDate = ?, description = ?,
+        milestones = ?, notes = ?, updatedAt = ?
+      WHERE id = ?
+    `,
+    args: [
+      p.code,
+      p.title,
+      p.category,
+      p.allocatedBudget || 0,
+      p.realizedBudget || 0,
+      p.progressPercentage || 0,
+      p.status,
+      p.urgencyLevel,
+      p.responsiblePerson,
+      p.contractorVendor || null,
+      p.startDate,
+      p.targetEndDate,
+      p.description,
+      JSON.stringify(p.milestones || []),
+      p.notes || null,
+      p.updatedAt,
+      p.id,
+    ],
+  });
+}
+
+// ---------------- ZISWAF MUTATIONS ----------------
+
+export async function tursoInsertSSSCan(client: Client, s: SSSCanItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      INSERT INTO sss_cans (
+        id, canCode, rt, houseNumber, holderName, phone, distributionDate,
+        lastCollectionDate, lastAmount, totalCollected, status, collectorOfficer, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      s.id,
+      s.canCode,
+      s.rt,
+      s.houseNumber,
+      s.holderName,
+      s.phone,
+      s.distributionDate,
+      s.lastCollectionDate,
+      s.lastAmount || 0,
+      s.totalCollected || 0,
+      s.status,
+      s.collectorOfficer,
+      s.notes,
+    ],
+  });
+}
+
+export async function tursoUpdateSSSCan(client: Client, s: SSSCanItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      UPDATE sss_cans SET
+        canCode = ?, rt = ?, houseNumber = ?, holderName = ?, phone = ?,
+        distributionDate = ?, lastCollectionDate = ?, lastAmount = ?,
+        totalCollected = ?, status = ?, collectorOfficer = ?, notes = ?
+      WHERE id = ?
+    `,
+    args: [
+      s.canCode,
+      s.rt,
+      s.houseNumber,
+      s.holderName,
+      s.phone,
+      s.distributionDate,
+      s.lastCollectionDate,
+      s.lastAmount || 0,
+      s.totalCollected || 0,
+      s.status,
+      s.collectorOfficer,
+      s.notes,
+      s.id,
+    ],
+  });
+}
+
+export async function tursoInsertSSSRecord(client: Client, r: SSSCollectionRecord): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      INSERT INTO sss_records (
+        id, canId, canCode, collectionDate, amount, rt, collector, depositedToCash, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      r.id,
+      r.canId,
+      r.canCode,
+      r.collectionDate,
+      r.amount,
+      r.rt,
+      r.collector,
+      r.depositedToCash ? 1 : 0,
+      r.notes || null,
+    ],
+  });
+}
+
+export async function tursoInsertZiswafAid(client: Client, a: ZiswafAidItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      INSERT INTO ziswaf_aids (
+        id, aidNumber, jamaahId, recipientName, recipientCategory, rt, address,
+        phone, aidType, amountValue, goodsDescription, distributionDate,
+        disbursedBy, status, receiptNumber, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      a.id,
+      a.aidNumber,
+      a.jamaahId || null,
+      a.recipientName,
+      a.recipientCategory,
+      a.rt,
+      a.address,
+      a.phone || null,
+      a.aidType,
+      a.amountValue || 0,
+      a.goodsDescription || null,
+      a.distributionDate,
+      a.disbursedBy,
+      a.status,
+      a.receiptNumber || null,
+      a.notes,
+    ],
+  });
+}
+
+export async function tursoUpdateZiswafAid(client: Client, a: ZiswafAidItem): Promise<void> {
+  await initTursoSchema(client);
+  await client.execute({
+    sql: `
+      UPDATE ziswaf_aids SET
+        aidNumber = ?, jamaahId = ?, recipientName = ?, recipientCategory = ?,
+        rt = ?, address = ?, phone = ?, aidType = ?, amountValue = ?,
+        goodsDescription = ?, distributionDate = ?, disbursedBy = ?,
+        status = ?, receiptNumber = ?, notes = ?
+      WHERE id = ?
+    `,
+    args: [
+      a.aidNumber,
+      a.jamaahId || null,
+      a.recipientName,
+      a.recipientCategory,
+      a.rt,
+      a.address,
+      a.phone || null,
+      a.aidType,
+      a.amountValue || 0,
+      a.goodsDescription || null,
+      a.distributionDate,
+      a.disbursedBy,
+      a.status,
+      a.receiptNumber || null,
+      a.notes,
+      a.id,
+    ],
+  });
+}
+
 // ---------------- DATABASE STATS HELPER ----------------
 export async function tursoGetDatabaseStats(client: Client) {
   await initTursoSchema(client);
@@ -1239,6 +2372,14 @@ export async function tursoGetDatabaseStats(client: Client) {
     totalAssets,
     totalApprovals,
     totalAuditLogs,
+    totalKhatib,
+    totalFridaySchedules,
+    totalRamadhanSchedules,
+    totalKajianSchedules,
+    totalPhysicalProjects,
+    totalSssCans,
+    totalSssRecords,
+    totalZiswafAids,
   ] = await Promise.all([
     getCount('letters'),
     getCount('minutes'),
@@ -1248,6 +2389,14 @@ export async function tursoGetDatabaseStats(client: Client) {
     getCount('assets'),
     getCount('approvals'),
     getCount('audit_logs'),
+    getCount('khatib_database'),
+    getCount('friday_schedules'),
+    getCount('ramadhan_schedules'),
+    getCount('kajian_schedules'),
+    getCount('physical_projects'),
+    getCount('sss_cans'),
+    getCount('sss_records'),
+    getCount('ziswaf_aids'),
   ]);
 
   const rawUrl = process.env.TURSO_DATABASE_URL || '';
@@ -1267,6 +2416,15 @@ export async function tursoGetDatabaseStats(client: Client) {
     totalAssets,
     totalApprovals,
     totalAuditLogs,
+    totalKhatib,
+    totalFridaySchedules,
+    totalRamadhanSchedules,
+    totalKajianSchedules,
+    totalPhysicalProjects,
+    totalSssCans,
+    totalSssRecords,
+    totalZiswafAids,
+    managedTablesCount: 18,
   };
 }
 
@@ -1296,6 +2454,14 @@ export async function tursoRestoreDatabaseSnapshot(
       approvals?: ApprovalItem[];
       fieldKPIs?: FieldKPI[];
       auditLogs?: AuditLogEntry[];
+      khatibList?: KhatibItem[];
+      fridaySchedules?: FridayScheduleItem[];
+      ramadhanSchedules?: RamadhanScheduleItem[];
+      kajianSchedules?: KajianScheduleItem[];
+      physicalProjects?: PhysicalProjectItem[];
+      sssCans?: SSSCanItem[];
+      sssRecords?: SSSCollectionRecord[];
+      ziswafAids?: ZiswafAidItem[];
     };
   }
 ): Promise<{ success: boolean; message: string }> {
@@ -1583,6 +2749,263 @@ export async function tursoRestoreDatabaseSnapshot(
             al.description,
             al.ipAddress || null,
             al.status,
+          ],
+        });
+      }
+    }
+
+    // Khatib Database
+    if (snapshot.data.khatibList && Array.isArray(snapshot.data.khatibList)) {
+      batchStatements.push({ sql: 'DELETE FROM khatib_database;', args: [] });
+      for (const k of snapshot.data.khatibList) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO khatib_database (
+              id, name, title, specialization, institution, phone, address,
+              totalAppearances, status, notes, createdAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            k.id,
+            k.name,
+            k.title,
+            k.specialization,
+            k.institution,
+            k.phone,
+            k.address,
+            k.totalAppearances || 0,
+            k.status,
+            k.notes || null,
+            k.createdAt,
+          ],
+        });
+      }
+    }
+
+    // Friday Schedules
+    if (snapshot.data.fridaySchedules && Array.isArray(snapshot.data.fridaySchedules)) {
+      batchStatements.push({ sql: 'DELETE FROM friday_schedules;', args: [] });
+      for (const f of snapshot.data.fridaySchedules) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO friday_schedules (
+              id, year, date, dateHijri, khatibName, khatibTitle, imamName, khutbahTopic,
+              phone, status, incentiveAmount, notes, isCompleted, attendanceCount,
+              actualHonorDisbursed, summaryNotes, completedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            f.id,
+            f.year || 2026,
+            f.date,
+            f.dateHijri,
+            f.khatibName,
+            f.khatibTitle || null,
+            f.imamName,
+            f.khutbahTopic,
+            f.phone,
+            f.status,
+            f.incentiveAmount || 0,
+            f.notes || null,
+            f.isCompleted ? 1 : 0,
+            f.attendanceCount || null,
+            f.actualHonorDisbursed || null,
+            f.summaryNotes || null,
+            f.completedAt || null,
+          ],
+        });
+      }
+    }
+
+    // Ramadhan Schedules
+    if (snapshot.data.ramadhanSchedules && Array.isArray(snapshot.data.ramadhanSchedules)) {
+      batchStatements.push({ sql: 'DELETE FROM ramadhan_schedules;', args: [] });
+      for (const r of snapshot.data.ramadhanSchedules) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO ramadhan_schedules (
+              id, year, hijriYear, nightNumber, date, penceramahTarawih, topicKultum,
+              honorPenceramah, imamTarawih, honorImamTarawih, bukberHost, bukberPax,
+              itikafStatus, isCompleted, attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            r.id,
+            r.year || 2026,
+            r.hijriYear || '1448 H',
+            r.nightNumber,
+            r.date,
+            r.penceramahTarawih,
+            r.topicKultum,
+            r.honorPenceramah || 0,
+            r.imamTarawih,
+            r.honorImamTarawih || 0,
+            r.bukberHost,
+            r.bukberPax || 0,
+            r.itikafStatus || null,
+            r.isCompleted ? 1 : 0,
+            r.attendanceCount || null,
+            r.actualHonorDisbursed || null,
+            r.summaryNotes || null,
+            r.completedAt || null,
+          ],
+        });
+      }
+    }
+
+    // Kajian Schedules
+    if (snapshot.data.kajianSchedules && Array.isArray(snapshot.data.kajianSchedules)) {
+      batchStatements.push({ sql: 'DELETE FROM kajian_schedules;', args: [] });
+      for (const k of snapshot.data.kajianSchedules) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO kajian_schedules (
+              id, title, type, speakerName, speakerTitle, bookOrTopic, dayTime,
+              location, fundingSource, contactPerson, notes, isCompleted,
+              attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            k.id,
+            k.title,
+            k.type,
+            k.speakerName,
+            k.speakerTitle || null,
+            k.bookOrTopic,
+            k.dayTime,
+            k.location,
+            k.fundingSource,
+            k.contactPerson,
+            k.notes || null,
+            k.isCompleted ? 1 : 0,
+            k.attendanceCount || null,
+            k.actualHonorDisbursed || null,
+            k.summaryNotes || null,
+            k.completedAt || null,
+          ],
+        });
+      }
+    }
+
+    // Physical Projects
+    if (snapshot.data.physicalProjects && Array.isArray(snapshot.data.physicalProjects)) {
+      batchStatements.push({ sql: 'DELETE FROM physical_projects;', args: [] });
+      for (const p of snapshot.data.physicalProjects) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO physical_projects (
+              id, code, title, category, allocatedBudget, realizedBudget, progressPercentage,
+              status, urgencyLevel, responsiblePerson, contractorVendor, startDate,
+              targetEndDate, description, milestones, notes, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            p.id,
+            p.code,
+            p.title,
+            p.category,
+            p.allocatedBudget || 0,
+            p.realizedBudget || 0,
+            p.progressPercentage || 0,
+            p.status,
+            p.urgencyLevel,
+            p.responsiblePerson,
+            p.contractorVendor || null,
+            p.startDate,
+            p.targetEndDate,
+            p.description,
+            JSON.stringify(p.milestones || []),
+            p.notes || null,
+            p.updatedAt,
+          ],
+        });
+      }
+    }
+
+    // SSS Cans
+    if (snapshot.data.sssCans && Array.isArray(snapshot.data.sssCans)) {
+      batchStatements.push({ sql: 'DELETE FROM sss_cans;', args: [] });
+      for (const s of snapshot.data.sssCans) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO sss_cans (
+              id, canCode, rt, houseNumber, holderName, phone, distributionDate,
+              lastCollectionDate, lastAmount, totalCollected, status, collectorOfficer, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            s.id,
+            s.canCode,
+            s.rt,
+            s.houseNumber,
+            s.holderName,
+            s.phone,
+            s.distributionDate,
+            s.lastCollectionDate,
+            s.lastAmount || 0,
+            s.totalCollected || 0,
+            s.status,
+            s.collectorOfficer,
+            s.notes,
+          ],
+        });
+      }
+    }
+
+    // SSS Records
+    if (snapshot.data.sssRecords && Array.isArray(snapshot.data.sssRecords)) {
+      batchStatements.push({ sql: 'DELETE FROM sss_records;', args: [] });
+      for (const r of snapshot.data.sssRecords) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO sss_records (
+              id, canId, canCode, collectionDate, amount, rt, collector, depositedToCash, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            r.id,
+            r.canId,
+            r.canCode,
+            r.collectionDate,
+            r.amount,
+            r.rt,
+            r.collector,
+            r.depositedToCash ? 1 : 0,
+            r.notes || null,
+          ],
+        });
+      }
+    }
+
+    // Ziswaf Aids
+    if (snapshot.data.ziswafAids && Array.isArray(snapshot.data.ziswafAids)) {
+      batchStatements.push({ sql: 'DELETE FROM ziswaf_aids;', args: [] });
+      for (const a of snapshot.data.ziswafAids) {
+        batchStatements.push({
+          sql: `
+            INSERT INTO ziswaf_aids (
+              id, aidNumber, jamaahId, recipientName, recipientCategory, rt, address,
+              phone, aidType, amountValue, goodsDescription, distributionDate,
+              disbursedBy, status, receiptNumber, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            a.id,
+            a.aidNumber,
+            a.jamaahId || null,
+            a.recipientName,
+            a.recipientCategory,
+            a.rt,
+            a.address,
+            a.phone || null,
+            a.aidType,
+            a.amountValue || 0,
+            a.goodsDescription || null,
+            a.distributionDate,
+            a.disbursedBy,
+            a.status,
+            a.receiptNumber || null,
+            a.notes,
           ],
         });
       }

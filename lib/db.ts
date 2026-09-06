@@ -10,6 +10,14 @@ import { INITIAL_DONORS } from './mock-donors';
 import { INITIAL_ASSETS } from './mock-assets';
 import { INITIAL_APPROVALS, INITIAL_FIELD_KPIS } from './mock-reports';
 import { INITIAL_AUDIT_LOGS } from './mock-auth';
+import {
+  INITIAL_KHATIB_DATABASE,
+  INITIAL_FRIDAY_SCHEDULES,
+  INITIAL_RAMADHAN_SCHEDULES,
+  INITIAL_KAJIAN_SCHEDULES,
+} from './mock-dakwah';
+import { INITIAL_PHYSICAL_PROJECTS } from './mock-projects';
+import { INITIAL_SSS_CANS, INITIAL_SSS_RECORDS, INITIAL_ZISWAF_AIDS } from './mock-ziswaf';
 
 // Types
 import { OfficialLetter, MeetingMinutes, LetterStatus } from '@/types/letter';
@@ -19,6 +27,14 @@ import { DonorItem } from '@/types/donor';
 import { AssetItem } from '@/types/asset';
 import { ApprovalItem, FieldKPI } from '@/types/reports';
 import { AuditLogEntry } from '@/types/auth';
+import {
+  KhatibItem,
+  FridayScheduleItem,
+  RamadhanScheduleItem,
+  KajianScheduleItem,
+} from '@/types/dakwah';
+import { PhysicalProjectItem } from '@/types/project';
+import { SSSCanItem, SSSCollectionRecord, ZiswafAidItem } from '@/types/ziswaf';
 
 // Turso Cloud SQLite
 import {
@@ -262,6 +278,171 @@ function initializeDatabase(db: DatabaseSync) {
     CREATE TABLE IF NOT EXISTS meta_kv (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
+    );
+  `);
+
+  // 11. Khatib Database Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS khatib_database (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      title TEXT NOT NULL,
+      specialization TEXT NOT NULL,
+      institution TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      address TEXT NOT NULL,
+      totalAppearances INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL,
+      notes TEXT,
+      createdAt TEXT NOT NULL
+    );
+  `);
+
+  // 12. Friday Schedules Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS friday_schedules (
+      id TEXT PRIMARY KEY,
+      year INTEGER,
+      date TEXT NOT NULL,
+      dateHijri TEXT NOT NULL,
+      khatibName TEXT NOT NULL,
+      khatibTitle TEXT,
+      imamName TEXT NOT NULL,
+      khutbahTopic TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      status TEXT NOT NULL,
+      incentiveAmount REAL NOT NULL DEFAULT 0,
+      notes TEXT,
+      isCompleted INTEGER NOT NULL DEFAULT 0,
+      attendanceCount INTEGER,
+      actualHonorDisbursed REAL,
+      summaryNotes TEXT,
+      completedAt TEXT
+    );
+  `);
+
+  // 13. Ramadhan Schedules Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ramadhan_schedules (
+      id TEXT PRIMARY KEY,
+      year INTEGER,
+      hijriYear TEXT,
+      nightNumber INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      penceramahTarawih TEXT NOT NULL,
+      topicKultum TEXT NOT NULL,
+      honorPenceramah REAL NOT NULL DEFAULT 0,
+      imamTarawih TEXT NOT NULL,
+      honorImamTarawih REAL NOT NULL DEFAULT 0,
+      bukberHost TEXT NOT NULL,
+      bukberPax INTEGER NOT NULL DEFAULT 0,
+      itikafStatus TEXT,
+      isCompleted INTEGER NOT NULL DEFAULT 0,
+      attendanceCount INTEGER,
+      actualHonorDisbursed REAL,
+      summaryNotes TEXT,
+      completedAt TEXT
+    );
+  `);
+
+  // 14. Kajian Schedules Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS kajian_schedules (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      type TEXT NOT NULL,
+      speakerName TEXT NOT NULL,
+      speakerTitle TEXT,
+      bookOrTopic TEXT NOT NULL,
+      dayTime TEXT NOT NULL,
+      location TEXT NOT NULL,
+      fundingSource TEXT NOT NULL,
+      contactPerson TEXT NOT NULL,
+      notes TEXT,
+      isCompleted INTEGER NOT NULL DEFAULT 0,
+      attendanceCount INTEGER,
+      actualHonorDisbursed REAL,
+      summaryNotes TEXT,
+      completedAt TEXT
+    );
+  `);
+
+  // 15. Physical Projects Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS physical_projects (
+      id TEXT PRIMARY KEY,
+      code TEXT NOT NULL,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL,
+      allocatedBudget REAL NOT NULL DEFAULT 0,
+      realizedBudget REAL NOT NULL DEFAULT 0,
+      progressPercentage REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL,
+      urgencyLevel TEXT NOT NULL,
+      responsiblePerson TEXT NOT NULL,
+      contractorVendor TEXT,
+      startDate TEXT NOT NULL,
+      targetEndDate TEXT NOT NULL,
+      description TEXT NOT NULL,
+      milestones TEXT NOT NULL,
+      notes TEXT,
+      updatedAt TEXT NOT NULL
+    );
+  `);
+
+  // 16. SSS Cans Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS sss_cans (
+      id TEXT PRIMARY KEY,
+      canCode TEXT NOT NULL,
+      rt TEXT NOT NULL,
+      houseNumber TEXT NOT NULL,
+      holderName TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      distributionDate TEXT NOT NULL,
+      lastCollectionDate TEXT NOT NULL,
+      lastAmount REAL NOT NULL DEFAULT 0,
+      totalCollected REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL,
+      collectorOfficer TEXT NOT NULL,
+      notes TEXT NOT NULL
+    );
+  `);
+
+  // 17. SSS Records Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS sss_records (
+      id TEXT PRIMARY KEY,
+      canId TEXT NOT NULL,
+      canCode TEXT NOT NULL,
+      collectionDate TEXT NOT NULL,
+      amount REAL NOT NULL DEFAULT 0,
+      rt TEXT NOT NULL,
+      collector TEXT NOT NULL,
+      depositedToCash INTEGER NOT NULL DEFAULT 0,
+      notes TEXT
+    );
+  `);
+
+  // 18. Ziswaf Aids Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ziswaf_aids (
+      id TEXT PRIMARY KEY,
+      aidNumber TEXT NOT NULL,
+      jamaahId TEXT,
+      recipientName TEXT NOT NULL,
+      recipientCategory TEXT NOT NULL,
+      rt TEXT NOT NULL,
+      address TEXT NOT NULL,
+      phone TEXT,
+      aidType TEXT NOT NULL,
+      amountValue REAL NOT NULL DEFAULT 0,
+      goodsDescription TEXT,
+      distributionDate TEXT NOT NULL,
+      disbursedBy TEXT NOT NULL,
+      status TEXT NOT NULL,
+      receiptNumber TEXT,
+      notes TEXT NOT NULL
     );
   `);
 
@@ -563,6 +744,263 @@ function seedIfEmpty(db: DatabaseSync) {
     }
   }
 
+  // 11. Khatib Database
+  const ktbCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM khatib_database').get() as { count: number | bigint }).count
+  );
+  if (ktbCount === 0 && INITIAL_KHATIB_DATABASE.length > 0) {
+    const insertKtb = db.prepare(`
+      INSERT INTO khatib_database (
+        id, name, title, specialization, institution, phone, address,
+        totalAppearances, status, notes, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const k of INITIAL_KHATIB_DATABASE) {
+      insertKtb.run(
+        k.id,
+        k.name,
+        k.title,
+        k.specialization,
+        k.institution,
+        k.phone,
+        k.address,
+        k.totalAppearances || 0,
+        k.status,
+        k.notes || null,
+        k.createdAt
+      );
+    }
+  }
+
+  // 12. Friday Schedules
+  const friCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM friday_schedules').get() as { count: number | bigint }).count
+  );
+  if (friCount === 0 && INITIAL_FRIDAY_SCHEDULES.length > 0) {
+    const insertFri = db.prepare(`
+      INSERT INTO friday_schedules (
+        id, year, date, dateHijri, khatibName, khatibTitle, imamName, khutbahTopic,
+        phone, status, incentiveAmount, notes, isCompleted, attendanceCount,
+        actualHonorDisbursed, summaryNotes, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const f of INITIAL_FRIDAY_SCHEDULES) {
+      insertFri.run(
+        f.id,
+        f.year || 2026,
+        f.date,
+        f.dateHijri,
+        f.khatibName,
+        f.khatibTitle || null,
+        f.imamName,
+        f.khutbahTopic,
+        f.phone,
+        f.status,
+        f.incentiveAmount || 0,
+        f.notes || null,
+        f.isCompleted ? 1 : 0,
+        f.attendanceCount || null,
+        f.actualHonorDisbursed || null,
+        f.summaryNotes || null,
+        f.completedAt || null
+      );
+    }
+  }
+
+  // 13. Ramadhan Schedules
+  const ramCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM ramadhan_schedules').get() as { count: number | bigint }).count
+  );
+  if (ramCount === 0 && INITIAL_RAMADHAN_SCHEDULES.length > 0) {
+    const insertRam = db.prepare(`
+      INSERT INTO ramadhan_schedules (
+        id, year, hijriYear, nightNumber, date, penceramahTarawih, topicKultum,
+        honorPenceramah, imamTarawih, honorImamTarawih, bukberHost, bukberPax,
+        itikafStatus, isCompleted, attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const r of INITIAL_RAMADHAN_SCHEDULES) {
+      insertRam.run(
+        r.id,
+        r.year || 2026,
+        r.hijriYear || '1448 H',
+        r.nightNumber,
+        r.date,
+        r.penceramahTarawih,
+        r.topicKultum,
+        r.honorPenceramah || 0,
+        r.imamTarawih,
+        r.honorImamTarawih || 0,
+        r.bukberHost,
+        r.bukberPax || 0,
+        r.itikafStatus || null,
+        r.isCompleted ? 1 : 0,
+        r.attendanceCount || null,
+        r.actualHonorDisbursed || null,
+        r.summaryNotes || null,
+        r.completedAt || null
+      );
+    }
+  }
+
+  // 14. Kajian Schedules
+  const kajCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM kajian_schedules').get() as { count: number | bigint }).count
+  );
+  if (kajCount === 0 && INITIAL_KAJIAN_SCHEDULES.length > 0) {
+    const insertKaj = db.prepare(`
+      INSERT INTO kajian_schedules (
+        id, title, type, speakerName, speakerTitle, bookOrTopic, dayTime,
+        location, fundingSource, contactPerson, notes, isCompleted,
+        attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const k of INITIAL_KAJIAN_SCHEDULES) {
+      insertKaj.run(
+        k.id,
+        k.title,
+        k.type,
+        k.speakerName,
+        k.speakerTitle || null,
+        k.bookOrTopic,
+        k.dayTime,
+        k.location,
+        k.fundingSource,
+        k.contactPerson,
+        k.notes || null,
+        k.isCompleted ? 1 : 0,
+        k.attendanceCount || null,
+        k.actualHonorDisbursed || null,
+        k.summaryNotes || null,
+        k.completedAt || null
+      );
+    }
+  }
+
+  // 15. Physical Projects
+  const prjCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM physical_projects').get() as { count: number | bigint }).count
+  );
+  if (prjCount === 0 && INITIAL_PHYSICAL_PROJECTS.length > 0) {
+    const insertPrj = db.prepare(`
+      INSERT INTO physical_projects (
+        id, code, title, category, allocatedBudget, realizedBudget, progressPercentage,
+        status, urgencyLevel, responsiblePerson, contractorVendor, startDate,
+        targetEndDate, description, milestones, notes, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const p of INITIAL_PHYSICAL_PROJECTS) {
+      insertPrj.run(
+        p.id,
+        p.code,
+        p.title,
+        p.category,
+        p.allocatedBudget || 0,
+        p.realizedBudget || 0,
+        p.progressPercentage || 0,
+        p.status,
+        p.urgencyLevel,
+        p.responsiblePerson,
+        p.contractorVendor || null,
+        p.startDate,
+        p.targetEndDate,
+        p.description,
+        JSON.stringify(p.milestones || []),
+        p.notes || null,
+        p.updatedAt
+      );
+    }
+  }
+
+  // 16. SSS Cans
+  const sssCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM sss_cans').get() as { count: number | bigint }).count
+  );
+  if (sssCount === 0 && INITIAL_SSS_CANS.length > 0) {
+    const insertCan = db.prepare(`
+      INSERT INTO sss_cans (
+        id, canCode, rt, houseNumber, holderName, phone, distributionDate,
+        lastCollectionDate, lastAmount, totalCollected, status, collectorOfficer, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const s of INITIAL_SSS_CANS) {
+      insertCan.run(
+        s.id,
+        s.canCode,
+        s.rt,
+        s.houseNumber,
+        s.holderName,
+        s.phone,
+        s.distributionDate,
+        s.lastCollectionDate,
+        s.lastAmount || 0,
+        s.totalCollected || 0,
+        s.status,
+        s.collectorOfficer,
+        s.notes
+      );
+    }
+  }
+
+  // 17. SSS Records
+  const recCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM sss_records').get() as { count: number | bigint }).count
+  );
+  if (recCount === 0 && INITIAL_SSS_RECORDS.length > 0) {
+    const insertRec = db.prepare(`
+      INSERT INTO sss_records (
+        id, canId, canCode, collectionDate, amount, rt, collector, depositedToCash, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const r of INITIAL_SSS_RECORDS) {
+      insertRec.run(
+        r.id,
+        r.canId,
+        r.canCode,
+        r.collectionDate,
+        r.amount,
+        r.rt,
+        r.collector,
+        r.depositedToCash ? 1 : 0,
+        r.notes || null
+      );
+    }
+  }
+
+  // 18. Ziswaf Aids
+  const aidCount = Number(
+    (db.prepare('SELECT COUNT(*) as count FROM ziswaf_aids').get() as { count: number | bigint }).count
+  );
+  if (aidCount === 0 && INITIAL_ZISWAF_AIDS.length > 0) {
+    const insertAid = db.prepare(`
+      INSERT INTO ziswaf_aids (
+        id, aidNumber, jamaahId, recipientName, recipientCategory, rt, address,
+        phone, aidType, amountValue, goodsDescription, distributionDate,
+        disbursedBy, status, receiptNumber, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const a of INITIAL_ZISWAF_AIDS) {
+      insertAid.run(
+        a.id,
+        a.aidNumber,
+        a.jamaahId || null,
+        a.recipientName,
+        a.recipientCategory,
+        a.rt,
+        a.address,
+        a.phone || null,
+        a.aidType,
+        a.amountValue || 0,
+        a.goodsDescription || null,
+        a.distributionDate,
+        a.disbursedBy,
+        a.status,
+        a.receiptNumber || null,
+        a.notes
+      );
+    }
+  }
+
   // Save Meta initialization date
   db.prepare(`
     INSERT OR REPLACE INTO meta_kv (key, value) VALUES (?, ?)
@@ -725,6 +1163,147 @@ const parseAudit = (r: Record<string, unknown>): AuditLogEntry => ({
   status: r.status as AuditLogEntry['status'],
 });
 
+const parseKhatib = (r: Record<string, unknown>): KhatibItem => ({
+  id: r.id as string,
+  name: r.name as string,
+  title: r.title as string,
+  specialization: r.specialization as string,
+  institution: r.institution as string,
+  phone: r.phone as string,
+  address: r.address as string,
+  totalAppearances: Number(r.totalAppearances || 0),
+  status: r.status as KhatibItem['status'],
+  notes: (r.notes as string) || undefined,
+  createdAt: r.createdAt as string,
+});
+
+const parseFridaySchedule = (r: Record<string, unknown>): FridayScheduleItem => ({
+  id: r.id as string,
+  year: r.year ? Number(r.year) : undefined,
+  date: r.date as string,
+  dateHijri: r.dateHijri as string,
+  khatibName: r.khatibName as string,
+  khatibTitle: (r.khatibTitle as string) || undefined,
+  imamName: r.imamName as string,
+  khutbahTopic: r.khutbahTopic as string,
+  phone: r.phone as string,
+  status: r.status as FridayScheduleItem['status'],
+  incentiveAmount: Number(r.incentiveAmount || 0),
+  notes: (r.notes as string) || undefined,
+  isCompleted: Boolean(r.isCompleted),
+  attendanceCount: r.attendanceCount ? Number(r.attendanceCount) : undefined,
+  actualHonorDisbursed: r.actualHonorDisbursed ? Number(r.actualHonorDisbursed) : undefined,
+  summaryNotes: (r.summaryNotes as string) || undefined,
+  completedAt: (r.completedAt as string) || undefined,
+});
+
+const parseRamadhanSchedule = (r: Record<string, unknown>): RamadhanScheduleItem => ({
+  id: r.id as string,
+  year: r.year ? Number(r.year) : undefined,
+  hijriYear: (r.hijriYear as string) || undefined,
+  nightNumber: Number(r.nightNumber || 0),
+  date: r.date as string,
+  penceramahTarawih: r.penceramahTarawih as string,
+  topicKultum: r.topicKultum as string,
+  honorPenceramah: Number(r.honorPenceramah || 0),
+  imamTarawih: r.imamTarawih as string,
+  honorImamTarawih: Number(r.honorImamTarawih || 0),
+  bukberHost: r.bukberHost as string,
+  bukberPax: Number(r.bukberPax || 0),
+  itikafStatus: (r.itikafStatus as RamadhanScheduleItem['itikafStatus']) || undefined,
+  isCompleted: Boolean(r.isCompleted),
+  attendanceCount: r.attendanceCount ? Number(r.attendanceCount) : undefined,
+  actualHonorDisbursed: r.actualHonorDisbursed ? Number(r.actualHonorDisbursed) : undefined,
+  summaryNotes: (r.summaryNotes as string) || undefined,
+  completedAt: (r.completedAt as string) || undefined,
+});
+
+const parseKajianSchedule = (r: Record<string, unknown>): KajianScheduleItem => ({
+  id: r.id as string,
+  title: r.title as string,
+  type: r.type as KajianScheduleItem['type'],
+  speakerName: r.speakerName as string,
+  speakerTitle: (r.speakerTitle as string) || undefined,
+  bookOrTopic: r.bookOrTopic as string,
+  dayTime: r.dayTime as string,
+  location: r.location as string,
+  fundingSource: r.fundingSource as KajianScheduleItem['fundingSource'],
+  contactPerson: r.contactPerson as string,
+  notes: (r.notes as string) || undefined,
+  isCompleted: Boolean(r.isCompleted),
+  attendanceCount: r.attendanceCount ? Number(r.attendanceCount) : undefined,
+  actualHonorDisbursed: r.actualHonorDisbursed ? Number(r.actualHonorDisbursed) : undefined,
+  summaryNotes: (r.summaryNotes as string) || undefined,
+  completedAt: (r.completedAt as string) || undefined,
+});
+
+const parsePhysicalProject = (r: Record<string, unknown>): PhysicalProjectItem => ({
+  id: r.id as string,
+  code: r.code as string,
+  title: r.title as string,
+  category: r.category as PhysicalProjectItem['category'],
+  allocatedBudget: Number(r.allocatedBudget || 0),
+  realizedBudget: Number(r.realizedBudget || 0),
+  progressPercentage: Number(r.progressPercentage || 0),
+  status: r.status as PhysicalProjectItem['status'],
+  urgencyLevel: r.urgencyLevel as PhysicalProjectItem['urgencyLevel'],
+  responsiblePerson: r.responsiblePerson as string,
+  contractorVendor: (r.contractorVendor as string) || undefined,
+  startDate: r.startDate as string,
+  targetEndDate: r.targetEndDate as string,
+  description: r.description as string,
+  milestones: JSON.parse((r.milestones as string) || '[]'),
+  notes: (r.notes as string) || undefined,
+  updatedAt: r.updatedAt as string,
+});
+
+const parseSSSCan = (r: Record<string, unknown>): SSSCanItem => ({
+  id: r.id as string,
+  canCode: r.canCode as string,
+  rt: r.rt as SSSCanItem['rt'],
+  houseNumber: r.houseNumber as string,
+  holderName: r.holderName as string,
+  phone: r.phone as string,
+  distributionDate: r.distributionDate as string,
+  lastCollectionDate: r.lastCollectionDate as string,
+  lastAmount: Number(r.lastAmount || 0),
+  totalCollected: Number(r.totalCollected || 0),
+  status: r.status as SSSCanItem['status'],
+  collectorOfficer: r.collectorOfficer as string,
+  notes: (r.notes as string) || '',
+});
+
+const parseSSSRecord = (r: Record<string, unknown>): SSSCollectionRecord => ({
+  id: r.id as string,
+  canId: r.canId as string,
+  canCode: r.canCode as string,
+  collectionDate: r.collectionDate as string,
+  amount: Number(r.amount || 0),
+  rt: r.rt as SSSCollectionRecord['rt'],
+  collector: r.collector as string,
+  depositedToCash: Boolean(r.depositedToCash),
+  notes: (r.notes as string) || undefined,
+});
+
+const parseZiswafAid = (r: Record<string, unknown>): ZiswafAidItem => ({
+  id: r.id as string,
+  aidNumber: r.aidNumber as string,
+  jamaahId: (r.jamaahId as string) || undefined,
+  recipientName: r.recipientName as string,
+  recipientCategory: r.recipientCategory as ZiswafAidItem['recipientCategory'],
+  rt: r.rt as ZiswafAidItem['rt'],
+  address: r.address as string,
+  phone: (r.phone as string) || undefined,
+  aidType: r.aidType as ZiswafAidItem['aidType'],
+  amountValue: Number(r.amountValue || 0),
+  goodsDescription: (r.goodsDescription as string) || undefined,
+  distributionDate: r.distributionDate as string,
+  disbursedBy: r.disbursedBy as string,
+  status: r.status as ZiswafAidItem['status'],
+  receiptNumber: (r.receiptNumber as string) || undefined,
+  notes: (r.notes as string) || '',
+});
+
 // ---------------- LOAD ALL DATA FROM DATABASE ----------------
 export function loadAllDataFromDatabase() {
   const db = getDb();
@@ -738,6 +1317,14 @@ export function loadAllDataFromDatabase() {
     approvals: db.prepare('SELECT * FROM approvals ORDER BY submittedAt DESC').all().map(parseApproval),
     fieldKPIs: db.prepare('SELECT * FROM field_kpis').all().map(parseKpi),
     auditLogs: db.prepare('SELECT * FROM audit_logs ORDER BY timestamp DESC').all().map(parseAudit),
+    khatibList: db.prepare('SELECT * FROM khatib_database ORDER BY name ASC').all().map(parseKhatib),
+    fridaySchedules: db.prepare('SELECT * FROM friday_schedules ORDER BY date ASC').all().map(parseFridaySchedule),
+    ramadhanSchedules: db.prepare('SELECT * FROM ramadhan_schedules ORDER BY nightNumber ASC').all().map(parseRamadhanSchedule),
+    kajianSchedules: db.prepare('SELECT * FROM kajian_schedules ORDER BY id ASC').all().map(parseKajianSchedule),
+    physicalProjects: db.prepare('SELECT * FROM physical_projects ORDER BY code ASC').all().map(parsePhysicalProject),
+    sssCans: db.prepare('SELECT * FROM sss_cans ORDER BY canCode ASC').all().map(parseSSSCan),
+    sssRecords: db.prepare('SELECT * FROM sss_records ORDER BY collectionDate DESC').all().map(parseSSSRecord),
+    ziswafAids: db.prepare('SELECT * FROM ziswaf_aids ORDER BY distributionDate DESC').all().map(parseZiswafAid),
   };
 }
 
@@ -1160,6 +1747,486 @@ export function dbInsertAuditLog(al: AuditLogEntry) {
   );
 }
 
+// ---------------- DAKWAH MUTATIONS ----------------
+
+export function dbInsertKhatib(k: KhatibItem) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO khatib_database (
+      id, name, title, specialization, institution, phone, address,
+      totalAppearances, status, notes, createdAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    k.id,
+    k.name,
+    k.title,
+    k.specialization,
+    k.institution,
+    k.phone,
+    k.address,
+    k.totalAppearances || 0,
+    k.status,
+    k.notes || null,
+    k.createdAt
+  );
+}
+
+export function dbUpdateKhatib(k: KhatibItem) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE khatib_database SET
+      name = ?, title = ?, specialization = ?, institution = ?,
+      phone = ?, address = ?, totalAppearances = ?, status = ?, notes = ?
+    WHERE id = ?
+  `).run(
+    k.name,
+    k.title,
+    k.specialization,
+    k.institution,
+    k.phone,
+    k.address,
+    k.totalAppearances || 0,
+    k.status,
+    k.notes || null,
+    k.id
+  );
+}
+
+export function dbDeleteKhatib(id: string) {
+  const db = getDb();
+  db.prepare('DELETE FROM khatib_database WHERE id = ?').run(id);
+}
+
+export function dbInsertFridaySchedule(f: FridayScheduleItem) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO friday_schedules (
+      id, year, date, dateHijri, khatibName, khatibTitle, imamName, khutbahTopic,
+      phone, status, incentiveAmount, notes, isCompleted, attendanceCount,
+      actualHonorDisbursed, summaryNotes, completedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    f.id,
+    f.year || 2026,
+    f.date,
+    f.dateHijri,
+    f.khatibName,
+    f.khatibTitle || null,
+    f.imamName,
+    f.khutbahTopic,
+    f.phone,
+    f.status,
+    f.incentiveAmount || 0,
+    f.notes || null,
+    f.isCompleted ? 1 : 0,
+    f.attendanceCount || null,
+    f.actualHonorDisbursed || null,
+    f.summaryNotes || null,
+    f.completedAt || null
+  );
+}
+
+export function dbUpdateFridaySchedule(f: FridayScheduleItem) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE friday_schedules SET
+      year = ?, date = ?, dateHijri = ?, khatibName = ?, khatibTitle = ?,
+      imamName = ?, khutbahTopic = ?, phone = ?, status = ?, incentiveAmount = ?,
+      notes = ?, isCompleted = ?, attendanceCount = ?, actualHonorDisbursed = ?,
+      summaryNotes = ?, completedAt = ?
+    WHERE id = ?
+  `).run(
+    f.year || 2026,
+    f.date,
+    f.dateHijri,
+    f.khatibName,
+    f.khatibTitle || null,
+    f.imamName,
+    f.khutbahTopic,
+    f.phone,
+    f.status,
+    f.incentiveAmount || 0,
+    f.notes || null,
+    f.isCompleted ? 1 : 0,
+    f.attendanceCount || null,
+    f.actualHonorDisbursed || null,
+    f.summaryNotes || null,
+    f.completedAt || null,
+    f.id
+  );
+}
+
+export function dbInsertBulkFridaySchedules(list: FridayScheduleItem[]) {
+  const db = getDb();
+  const stmt = db.prepare(`
+    INSERT OR REPLACE INTO friday_schedules (
+      id, year, date, dateHijri, khatibName, khatibTitle, imamName, khutbahTopic,
+      phone, status, incentiveAmount, notes, isCompleted, attendanceCount,
+      actualHonorDisbursed, summaryNotes, completedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  for (const f of list) {
+    stmt.run(
+      f.id,
+      f.year || 2026,
+      f.date,
+      f.dateHijri,
+      f.khatibName,
+      f.khatibTitle || null,
+      f.imamName,
+      f.khutbahTopic,
+      f.phone,
+      f.status,
+      f.incentiveAmount || 0,
+      f.notes || null,
+      f.isCompleted ? 1 : 0,
+      f.attendanceCount || null,
+      f.actualHonorDisbursed || null,
+      f.summaryNotes || null,
+      f.completedAt || null
+    );
+  }
+}
+
+export function dbInsertRamadhanSchedule(r: RamadhanScheduleItem) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO ramadhan_schedules (
+      id, year, hijriYear, nightNumber, date, penceramahTarawih, topicKultum,
+      honorPenceramah, imamTarawih, honorImamTarawih, bukberHost, bukberPax,
+      itikafStatus, isCompleted, attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    r.id,
+    r.year || 2026,
+    r.hijriYear || '1448 H',
+    r.nightNumber,
+    r.date,
+    r.penceramahTarawih,
+    r.topicKultum,
+    r.honorPenceramah || 0,
+    r.imamTarawih,
+    r.honorImamTarawih || 0,
+    r.bukberHost,
+    r.bukberPax || 0,
+    r.itikafStatus || null,
+    r.isCompleted ? 1 : 0,
+    r.attendanceCount || null,
+    r.actualHonorDisbursed || null,
+    r.summaryNotes || null,
+    r.completedAt || null
+  );
+}
+
+export function dbUpdateRamadhanSchedule(r: RamadhanScheduleItem) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE ramadhan_schedules SET
+      year = ?, hijriYear = ?, nightNumber = ?, date = ?, penceramahTarawih = ?,
+      topicKultum = ?, honorPenceramah = ?, imamTarawih = ?, honorImamTarawih = ?,
+      bukberHost = ?, bukberPax = ?, itikafStatus = ?, isCompleted = ?,
+      attendanceCount = ?, actualHonorDisbursed = ?, summaryNotes = ?, completedAt = ?
+    WHERE id = ?
+  `).run(
+    r.year || 2026,
+    r.hijriYear || '1448 H',
+    r.nightNumber,
+    r.date,
+    r.penceramahTarawih,
+    r.topicKultum,
+    r.honorPenceramah || 0,
+    r.imamTarawih,
+    r.honorImamTarawih || 0,
+    r.bukberHost,
+    r.bukberPax || 0,
+    r.itikafStatus || null,
+    r.isCompleted ? 1 : 0,
+    r.attendanceCount || null,
+    r.actualHonorDisbursed || null,
+    r.summaryNotes || null,
+    r.completedAt || null,
+    r.id
+  );
+}
+
+export function dbInsertBulkRamadhanSchedules(list: RamadhanScheduleItem[]) {
+  const db = getDb();
+  const stmt = db.prepare(`
+    INSERT OR REPLACE INTO ramadhan_schedules (
+      id, year, hijriYear, nightNumber, date, penceramahTarawih, topicKultum,
+      honorPenceramah, imamTarawih, honorImamTarawih, bukberHost, bukberPax,
+      itikafStatus, isCompleted, attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  for (const r of list) {
+    stmt.run(
+      r.id,
+      r.year || 2026,
+      r.hijriYear || '1448 H',
+      r.nightNumber,
+      r.date,
+      r.penceramahTarawih,
+      r.topicKultum,
+      r.honorPenceramah || 0,
+      r.imamTarawih,
+      r.honorImamTarawih || 0,
+      r.bukberHost,
+      r.bukberPax || 0,
+      r.itikafStatus || null,
+      r.isCompleted ? 1 : 0,
+      r.attendanceCount || null,
+      r.actualHonorDisbursed || null,
+      r.summaryNotes || null,
+      r.completedAt || null
+    );
+  }
+}
+
+export function dbInsertKajianSchedule(k: KajianScheduleItem) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO kajian_schedules (
+      id, title, type, speakerName, speakerTitle, bookOrTopic, dayTime,
+      location, fundingSource, contactPerson, notes, isCompleted,
+      attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    k.id,
+    k.title,
+    k.type,
+    k.speakerName,
+    k.speakerTitle || null,
+    k.bookOrTopic,
+    k.dayTime,
+    k.location,
+    k.fundingSource,
+    k.contactPerson,
+    k.notes || null,
+    k.isCompleted ? 1 : 0,
+    k.attendanceCount || null,
+    k.actualHonorDisbursed || null,
+    k.summaryNotes || null,
+    k.completedAt || null
+  );
+}
+
+export function dbUpdateKajianSchedule(k: KajianScheduleItem) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE kajian_schedules SET
+      title = ?, type = ?, speakerName = ?, speakerTitle = ?, bookOrTopic = ?,
+      dayTime = ?, location = ?, fundingSource = ?, contactPerson = ?, notes = ?,
+      isCompleted = ?, attendanceCount = ?, actualHonorDisbursed = ?,
+      summaryNotes = ?, completedAt = ?
+    WHERE id = ?
+  `).run(
+    k.title,
+    k.type,
+    k.speakerName,
+    k.speakerTitle || null,
+    k.bookOrTopic,
+    k.dayTime,
+    k.location,
+    k.fundingSource,
+    k.contactPerson,
+    k.notes || null,
+    k.isCompleted ? 1 : 0,
+    k.attendanceCount || null,
+    k.actualHonorDisbursed || null,
+    k.summaryNotes || null,
+    k.completedAt || null,
+    k.id
+  );
+}
+
+// ---------------- PROJECTS MUTATIONS ----------------
+
+export function dbInsertPhysicalProject(p: PhysicalProjectItem) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO physical_projects (
+      id, code, title, category, allocatedBudget, realizedBudget, progressPercentage,
+      status, urgencyLevel, responsiblePerson, contractorVendor, startDate,
+      targetEndDate, description, milestones, notes, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    p.id,
+    p.code,
+    p.title,
+    p.category,
+    p.allocatedBudget || 0,
+    p.realizedBudget || 0,
+    p.progressPercentage || 0,
+    p.status,
+    p.urgencyLevel,
+    p.responsiblePerson,
+    p.contractorVendor || null,
+    p.startDate,
+    p.targetEndDate,
+    p.description,
+    JSON.stringify(p.milestones || []),
+    p.notes || null,
+    p.updatedAt
+  );
+}
+
+export function dbUpdatePhysicalProject(p: PhysicalProjectItem) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE physical_projects SET
+      code = ?, title = ?, category = ?, allocatedBudget = ?, realizedBudget = ?,
+      progressPercentage = ?, status = ?, urgencyLevel = ?, responsiblePerson = ?,
+      contractorVendor = ?, startDate = ?, targetEndDate = ?, description = ?,
+      milestones = ?, notes = ?, updatedAt = ?
+    WHERE id = ?
+  `).run(
+    p.code,
+    p.title,
+    p.category,
+    p.allocatedBudget || 0,
+    p.realizedBudget || 0,
+    p.progressPercentage || 0,
+    p.status,
+    p.urgencyLevel,
+    p.responsiblePerson,
+    p.contractorVendor || null,
+    p.startDate,
+    p.targetEndDate,
+    p.description,
+    JSON.stringify(p.milestones || []),
+    p.notes || null,
+    p.updatedAt,
+    p.id
+  );
+}
+
+// ---------------- ZISWAF MUTATIONS ----------------
+
+export function dbInsertSSSCan(s: SSSCanItem) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO sss_cans (
+      id, canCode, rt, houseNumber, holderName, phone, distributionDate,
+      lastCollectionDate, lastAmount, totalCollected, status, collectorOfficer, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    s.id,
+    s.canCode,
+    s.rt,
+    s.houseNumber,
+    s.holderName,
+    s.phone,
+    s.distributionDate,
+    s.lastCollectionDate,
+    s.lastAmount || 0,
+    s.totalCollected || 0,
+    s.status,
+    s.collectorOfficer,
+    s.notes
+  );
+}
+
+export function dbUpdateSSSCan(s: SSSCanItem) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE sss_cans SET
+      canCode = ?, rt = ?, houseNumber = ?, holderName = ?, phone = ?,
+      distributionDate = ?, lastCollectionDate = ?, lastAmount = ?,
+      totalCollected = ?, status = ?, collectorOfficer = ?, notes = ?
+    WHERE id = ?
+  `).run(
+    s.canCode,
+    s.rt,
+    s.houseNumber,
+    s.holderName,
+    s.phone,
+    s.distributionDate,
+    s.lastCollectionDate,
+    s.lastAmount || 0,
+    s.totalCollected || 0,
+    s.status,
+    s.collectorOfficer,
+    s.notes,
+    s.id
+  );
+}
+
+export function dbInsertSSSRecord(r: SSSCollectionRecord) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO sss_records (
+      id, canId, canCode, collectionDate, amount, rt, collector, depositedToCash, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    r.id,
+    r.canId,
+    r.canCode,
+    r.collectionDate,
+    r.amount,
+    r.rt,
+    r.collector,
+    r.depositedToCash ? 1 : 0,
+    r.notes || null
+  );
+}
+
+export function dbInsertZiswafAid(a: ZiswafAidItem) {
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO ziswaf_aids (
+      id, aidNumber, jamaahId, recipientName, recipientCategory, rt, address,
+      phone, aidType, amountValue, goodsDescription, distributionDate,
+      disbursedBy, status, receiptNumber, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    a.id,
+    a.aidNumber,
+    a.jamaahId || null,
+    a.recipientName,
+    a.recipientCategory,
+    a.rt,
+    a.address,
+    a.phone || null,
+    a.aidType,
+    a.amountValue || 0,
+    a.goodsDescription || null,
+    a.distributionDate,
+    a.disbursedBy,
+    a.status,
+    a.receiptNumber || null,
+    a.notes
+  );
+}
+
+export function dbUpdateZiswafAid(a: ZiswafAidItem) {
+  const db = getDb();
+  db.prepare(`
+    UPDATE ziswaf_aids SET
+      aidNumber = ?, jamaahId = ?, recipientName = ?, recipientCategory = ?,
+      rt = ?, address = ?, phone = ?, aidType = ?, amountValue = ?,
+      goodsDescription = ?, distributionDate = ?, disbursedBy = ?,
+      status = ?, receiptNumber = ?, notes = ?
+    WHERE id = ?
+  `).run(
+    a.aidNumber,
+    a.jamaahId || null,
+    a.recipientName,
+    a.recipientCategory,
+    a.rt,
+    a.address,
+    a.phone || null,
+    a.aidType,
+    a.amountValue || 0,
+    a.goodsDescription || null,
+    a.distributionDate,
+    a.disbursedBy,
+    a.status,
+    a.receiptNumber || null,
+    a.notes,
+    a.id
+  );
+}
+
 // Database stats helper for Backup/Restore UI
 export async function getDatabaseStats(): Promise<{
   path: string;
@@ -1175,6 +2242,15 @@ export async function getDatabaseStats(): Promise<{
   totalAssets: number;
   totalApprovals: number;
   totalAuditLogs: number;
+  totalKhatib?: number;
+  totalFridaySchedules?: number;
+  totalRamadhanSchedules?: number;
+  totalKajianSchedules?: number;
+  totalPhysicalProjects?: number;
+  totalSssCans?: number;
+  totalSssRecords?: number;
+  totalZiswafAids?: number;
+  managedTablesCount?: number;
 }> {
   if (isTursoConfigured()) {
     const client = getTursoClient();
@@ -1216,6 +2292,15 @@ export async function getDatabaseStats(): Promise<{
     totalAssets: getCount('assets'),
     totalApprovals: getCount('approvals'),
     totalAuditLogs: getCount('audit_logs'),
+    totalKhatib: getCount('khatib_database'),
+    totalFridaySchedules: getCount('friday_schedules'),
+    totalRamadhanSchedules: getCount('ramadhan_schedules'),
+    totalKajianSchedules: getCount('kajian_schedules'),
+    totalPhysicalProjects: getCount('physical_projects'),
+    totalSssCans: getCount('sss_cans'),
+    totalSssRecords: getCount('sss_records'),
+    totalZiswafAids: getCount('ziswaf_aids'),
+    managedTablesCount: 18,
   };
 }
 
@@ -1235,6 +2320,14 @@ export async function exportDatabaseSnapshot(): Promise<{
     approvals: ApprovalItem[];
     fieldKPIs: FieldKPI[];
     auditLogs: AuditLogEntry[];
+    khatibList?: KhatibItem[];
+    fridaySchedules?: FridayScheduleItem[];
+    ramadhanSchedules?: RamadhanScheduleItem[];
+    kajianSchedules?: KajianScheduleItem[];
+    physicalProjects?: PhysicalProjectItem[];
+    sssCans?: SSSCanItem[];
+    sssRecords?: SSSCollectionRecord[];
+    ziswafAids?: ZiswafAidItem[];
   };
 }> {
   if (isTursoConfigured()) {
@@ -1266,6 +2359,14 @@ export async function restoreDatabaseSnapshot(snapshot: {
     approvals?: ApprovalItem[];
     fieldKPIs?: FieldKPI[];
     auditLogs?: AuditLogEntry[];
+    khatibList?: KhatibItem[];
+    fridaySchedules?: FridayScheduleItem[];
+    ramadhanSchedules?: RamadhanScheduleItem[];
+    kajianSchedules?: KajianScheduleItem[];
+    physicalProjects?: PhysicalProjectItem[];
+    sssCans?: SSSCanItem[];
+    sssRecords?: SSSCollectionRecord[];
+    ziswafAids?: ZiswafAidItem[];
   };
 }): Promise<{ success: boolean; message: string }> {
   if (isTursoConfigured()) {
@@ -1532,6 +2633,247 @@ export async function restoreDatabaseSnapshot(snapshot: {
           al.description,
           al.ipAddress || null,
           al.status
+        );
+      }
+    }
+
+    // Khatib Database
+    if (snapshot.data.khatibList && Array.isArray(snapshot.data.khatibList)) {
+      db.exec('DELETE FROM khatib_database;');
+      const stmt = db.prepare(`
+        INSERT INTO khatib_database (
+          id, name, title, specialization, institution, phone, address,
+          totalAppearances, status, notes, createdAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const k of snapshot.data.khatibList) {
+        stmt.run(
+          k.id,
+          k.name,
+          k.title,
+          k.specialization,
+          k.institution,
+          k.phone,
+          k.address,
+          k.totalAppearances || 0,
+          k.status,
+          k.notes || null,
+          k.createdAt
+        );
+      }
+    }
+
+    // Friday Schedules
+    if (snapshot.data.fridaySchedules && Array.isArray(snapshot.data.fridaySchedules)) {
+      db.exec('DELETE FROM friday_schedules;');
+      const stmt = db.prepare(`
+        INSERT INTO friday_schedules (
+          id, year, date, dateHijri, khatibName, khatibTitle, imamName, khutbahTopic,
+          phone, status, incentiveAmount, notes, isCompleted, attendanceCount,
+          actualHonorDisbursed, summaryNotes, completedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const f of snapshot.data.fridaySchedules) {
+        stmt.run(
+          f.id,
+          f.year || 2026,
+          f.date,
+          f.dateHijri,
+          f.khatibName,
+          f.khatibTitle || null,
+          f.imamName,
+          f.khutbahTopic,
+          f.phone,
+          f.status,
+          f.incentiveAmount || 0,
+          f.notes || null,
+          f.isCompleted ? 1 : 0,
+          f.attendanceCount || null,
+          f.actualHonorDisbursed || null,
+          f.summaryNotes || null,
+          f.completedAt || null
+        );
+      }
+    }
+
+    // Ramadhan Schedules
+    if (snapshot.data.ramadhanSchedules && Array.isArray(snapshot.data.ramadhanSchedules)) {
+      db.exec('DELETE FROM ramadhan_schedules;');
+      const stmt = db.prepare(`
+        INSERT INTO ramadhan_schedules (
+          id, year, hijriYear, nightNumber, date, penceramahTarawih, topicKultum,
+          honorPenceramah, imamTarawih, honorImamTarawih, bukberHost, bukberPax,
+          itikafStatus, isCompleted, attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const r of snapshot.data.ramadhanSchedules) {
+        stmt.run(
+          r.id,
+          r.year || 2026,
+          r.hijriYear || '1448 H',
+          r.nightNumber,
+          r.date,
+          r.penceramahTarawih,
+          r.topicKultum,
+          r.honorPenceramah || 0,
+          r.imamTarawih,
+          r.honorImamTarawih || 0,
+          r.bukberHost,
+          r.bukberPax || 0,
+          r.itikafStatus || null,
+          r.isCompleted ? 1 : 0,
+          r.attendanceCount || null,
+          r.actualHonorDisbursed || null,
+          r.summaryNotes || null,
+          r.completedAt || null
+        );
+      }
+    }
+
+    // Kajian Schedules
+    if (snapshot.data.kajianSchedules && Array.isArray(snapshot.data.kajianSchedules)) {
+      db.exec('DELETE FROM kajian_schedules;');
+      const stmt = db.prepare(`
+        INSERT INTO kajian_schedules (
+          id, title, type, speakerName, speakerTitle, bookOrTopic, dayTime,
+          location, fundingSource, contactPerson, notes, isCompleted,
+          attendanceCount, actualHonorDisbursed, summaryNotes, completedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const k of snapshot.data.kajianSchedules) {
+        stmt.run(
+          k.id,
+          k.title,
+          k.type,
+          k.speakerName,
+          k.speakerTitle || null,
+          k.bookOrTopic,
+          k.dayTime,
+          k.location,
+          k.fundingSource,
+          k.contactPerson,
+          k.notes || null,
+          k.isCompleted ? 1 : 0,
+          k.attendanceCount || null,
+          k.actualHonorDisbursed || null,
+          k.summaryNotes || null,
+          k.completedAt || null
+        );
+      }
+    }
+
+    // Physical Projects
+    if (snapshot.data.physicalProjects && Array.isArray(snapshot.data.physicalProjects)) {
+      db.exec('DELETE FROM physical_projects;');
+      const stmt = db.prepare(`
+        INSERT INTO physical_projects (
+          id, code, title, category, allocatedBudget, realizedBudget, progressPercentage,
+          status, urgencyLevel, responsiblePerson, contractorVendor, startDate,
+          targetEndDate, description, milestones, notes, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const p of snapshot.data.physicalProjects) {
+        stmt.run(
+          p.id,
+          p.code,
+          p.title,
+          p.category,
+          p.allocatedBudget || 0,
+          p.realizedBudget || 0,
+          p.progressPercentage || 0,
+          p.status,
+          p.urgencyLevel,
+          p.responsiblePerson,
+          p.contractorVendor || null,
+          p.startDate,
+          p.targetEndDate,
+          p.description,
+          JSON.stringify(p.milestones || []),
+          p.notes || null,
+          p.updatedAt
+        );
+      }
+    }
+
+    // SSS Cans
+    if (snapshot.data.sssCans && Array.isArray(snapshot.data.sssCans)) {
+      db.exec('DELETE FROM sss_cans;');
+      const stmt = db.prepare(`
+        INSERT INTO sss_cans (
+          id, canCode, rt, houseNumber, holderName, phone, distributionDate,
+          lastCollectionDate, lastAmount, totalCollected, status, collectorOfficer, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const s of snapshot.data.sssCans) {
+        stmt.run(
+          s.id,
+          s.canCode,
+          s.rt,
+          s.houseNumber,
+          s.holderName,
+          s.phone,
+          s.distributionDate,
+          s.lastCollectionDate,
+          s.lastAmount || 0,
+          s.totalCollected || 0,
+          s.status,
+          s.collectorOfficer,
+          s.notes
+        );
+      }
+    }
+
+    // SSS Records
+    if (snapshot.data.sssRecords && Array.isArray(snapshot.data.sssRecords)) {
+      db.exec('DELETE FROM sss_records;');
+      const stmt = db.prepare(`
+        INSERT INTO sss_records (
+          id, canId, canCode, collectionDate, amount, rt, collector, depositedToCash, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const r of snapshot.data.sssRecords) {
+        stmt.run(
+          r.id,
+          r.canId,
+          r.canCode,
+          r.collectionDate,
+          r.amount,
+          r.rt,
+          r.collector,
+          r.depositedToCash ? 1 : 0,
+          r.notes || null
+        );
+      }
+    }
+
+    // Ziswaf Aids
+    if (snapshot.data.ziswafAids && Array.isArray(snapshot.data.ziswafAids)) {
+      db.exec('DELETE FROM ziswaf_aids;');
+      const stmt = db.prepare(`
+        INSERT INTO ziswaf_aids (
+          id, aidNumber, jamaahId, recipientName, recipientCategory, rt, address,
+          phone, aidType, amountValue, goodsDescription, distributionDate,
+          disbursedBy, status, receiptNumber, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const a of snapshot.data.ziswafAids) {
+        stmt.run(
+          a.id,
+          a.aidNumber,
+          a.jamaahId || null,
+          a.recipientName,
+          a.recipientCategory,
+          a.rt,
+          a.address,
+          a.phone || null,
+          a.aidType,
+          a.amountValue || 0,
+          a.goodsDescription || null,
+          a.distributionDate,
+          a.disbursedBy,
+          a.status,
+          a.receiptNumber || null,
+          a.notes
         );
       }
     }

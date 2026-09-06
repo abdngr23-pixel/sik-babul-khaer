@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   HeartHandshake,
   Coins,
@@ -65,6 +65,20 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
     setTimeout(() => setToastMsg(null), 4000);
   };
 
+  // Sync data from Server API on mount
+  useEffect(() => {
+    fetch('/api/ziswaf')
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          if (Array.isArray(res.data.sssCans)) setSssCans(res.data.sssCans);
+          if (Array.isArray(res.data.sssRecords)) setSssRecords(res.data.sssRecords);
+          if (Array.isArray(res.data.ziswafAids)) setAidList(res.data.ziswafAids);
+        }
+      })
+      .catch((err) => console.warn('Gagal sinkronisasi data ZISWAF dari server:', err));
+  }, []);
+
   // KPI Calculations
   const totalCans = sssCans.length;
   const readyToCollectCount = sssCans.filter((c) => c.status === 'SIAP_TARIK').length;
@@ -106,7 +120,7 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
   }, [aidList, filterRtBansos, filterCategoryBansos, searchBansos]);
 
   // Handle Save SSS Collection
-  const handleSaveCollection = (canId: string, amount: number, collector: string, notes: string) => {
+  const handleSaveCollection = async (canId: string, amount: number, collector: string, notes: string) => {
     const today = new Date().toISOString().slice(0, 10);
     setSssCans((prev) =>
       prev.map((c) => {
@@ -138,11 +152,27 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
       setSssRecords((prev) => [newRec, ...prev]);
     }
 
+    try {
+      await fetch('/api/ziswaf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'record-collection',
+          canId,
+          amount,
+          collector,
+          notes,
+        }),
+      });
+    } catch (err) {
+      console.error('Gagal menyimpan penarikan SSS ke server:', err);
+    }
+
     triggerToast(`Penarikan kaleng ${target?.canCode} sebesar ${formatRupiah(amount)} berhasil dicatat!`);
   };
 
   // Handle Create New SSS Can
-  const handleCreateNewCan = (e: React.FormEvent) => {
+  const handleCreateNewCan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCanHolder.trim() || !newCanCode.trim()) return;
 
@@ -169,10 +199,28 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
     setNewCanHouse('');
     setNewCanPhone('');
     triggerToast(`Kaleng SSS ${newCan.canCode} untuk ${newCan.holderName} berhasil didaftarkan!`);
+
+    try {
+      await fetch('/api/ziswaf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'add-can',
+          canCode: newCan.canCode,
+          rt: newCan.rt,
+          houseNumber: newCan.houseNumber,
+          holderName: newCan.holderName,
+          phone: newCan.phone,
+          collectorOfficer: newCan.collectorOfficer,
+        }),
+      });
+    } catch (err) {
+      console.error('Gagal mendaftarkan kaleng SSS ke database:', err);
+    }
   };
 
   // Handle Save New Aid
-  const handleSaveNewAid = (newAidData: Omit<ZiswafAidItem, 'id' | 'aidNumber' | 'status'>) => {
+  const handleSaveNewAid = async (newAidData: Omit<ZiswafAidItem, 'id' | 'aidNumber' | 'status'>) => {
     const nextNum = `BS-2026/09/${String(aidList.length + 1).padStart(3, '0')}`;
     const newAid: ZiswafAidItem = {
       ...newAidData,
@@ -184,6 +232,21 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
 
     setAidList((prev) => [newAid, ...prev]);
     triggerToast(`Penyaluran bantuan untuk ${newAid.recipientName} (${formatRupiah(newAid.amountValue)}) berhasil dicatat!`);
+
+    try {
+      await fetch('/api/ziswaf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create-aid',
+          ...newAidData,
+          aidNumber: nextNum,
+          receiptNumber: newAid.receiptNumber,
+        }),
+      });
+    } catch (err) {
+      console.error('Gagal mencatat penyaluran bansos ZISWAF ke database:', err);
+    }
   };
 
   // List of Mustahiq Jamaah from Sensus for Sub-tab 3

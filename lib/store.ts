@@ -5,6 +5,14 @@ import { AssetItem, AssetStats } from '@/types/asset';
 import { ApprovalItem, ApprovalStatus, FieldKPI, LPJReport } from '@/types/reports';
 import { AuditLogEntry } from '@/types/auth';
 import { DonorItem, DonorStats } from '@/types/donor';
+import {
+  KhatibItem,
+  FridayScheduleItem,
+  RamadhanScheduleItem,
+  KajianScheduleItem,
+} from '@/types/dakwah';
+import { PhysicalProjectItem, ProjectStatus } from '@/types/project';
+import { SSSCanItem, SSSCollectionRecord, ZiswafAidItem } from '@/types/ziswaf';
 import { INITIAL_LETTERS, INITIAL_MINUTES } from './mock-data';
 import { INITIAL_JAMAAH } from './mock-jamaah';
 import { INITIAL_TRANSACTIONS } from './mock-finance';
@@ -12,6 +20,14 @@ import { INITIAL_ASSETS } from './mock-assets';
 import { INITIAL_APPROVALS, INITIAL_FIELD_KPIS } from './mock-reports';
 import { INITIAL_AUDIT_LOGS } from './mock-auth';
 import { INITIAL_DONORS } from './mock-donors';
+import {
+  INITIAL_KHATIB_DATABASE,
+  INITIAL_FRIDAY_SCHEDULES,
+  INITIAL_RAMADHAN_SCHEDULES,
+  INITIAL_KAJIAN_SCHEDULES,
+} from './mock-dakwah';
+import { INITIAL_PHYSICAL_PROJECTS } from './mock-projects';
+import { INITIAL_SSS_CANS, INITIAL_SSS_RECORDS, INITIAL_ZISWAF_AIDS } from './mock-ziswaf';
 import { generateLetterNumber, generateVerificationCode } from './letter-numbering';
 import {
   loadAllDataFromDatabase,
@@ -35,6 +51,24 @@ import {
   dbInsertApproval,
   dbUpdateApproval,
   dbInsertAuditLog,
+  dbInsertKhatib,
+  dbUpdateKhatib,
+  dbDeleteKhatib,
+  dbInsertFridaySchedule,
+  dbUpdateFridaySchedule,
+  dbInsertBulkFridaySchedules,
+  dbInsertRamadhanSchedule,
+  dbUpdateRamadhanSchedule,
+  dbInsertBulkRamadhanSchedules,
+  dbInsertKajianSchedule,
+  dbUpdateKajianSchedule,
+  dbInsertPhysicalProject,
+  dbUpdatePhysicalProject,
+  dbInsertSSSCan,
+  dbUpdateSSSCan,
+  dbInsertSSSRecord,
+  dbInsertZiswafAid,
+  dbUpdateZiswafAid,
 } from './db';
 import {
   isTursoConfigured,
@@ -60,6 +94,24 @@ import {
   tursoInsertApproval,
   tursoUpdateApproval,
   tursoInsertAuditLog,
+  tursoInsertKhatib,
+  tursoUpdateKhatib,
+  tursoDeleteKhatib,
+  tursoInsertFridaySchedule,
+  tursoUpdateFridaySchedule,
+  tursoInsertBulkFridaySchedules,
+  tursoInsertRamadhanSchedule,
+  tursoUpdateRamadhanSchedule,
+  tursoInsertBulkRamadhanSchedules,
+  tursoInsertKajianSchedule,
+  tursoUpdateKajianSchedule,
+  tursoInsertPhysicalProject,
+  tursoUpdatePhysicalProject,
+  tursoInsertSSSCan,
+  tursoUpdateSSSCan,
+  tursoInsertSSSRecord,
+  tursoInsertZiswafAid,
+  tursoUpdateZiswafAid,
 } from './turso';
 
 // Dual-Engine Persistent Store:
@@ -76,6 +128,14 @@ class DataStore {
   private approvals: ApprovalItem[] = [...INITIAL_APPROVALS];
   private fieldKPIs: FieldKPI[] = [...INITIAL_FIELD_KPIS];
   private auditLogs: AuditLogEntry[] = [...INITIAL_AUDIT_LOGS];
+  private khatibList: KhatibItem[] = [...INITIAL_KHATIB_DATABASE];
+  private fridaySchedules: FridayScheduleItem[] = [...INITIAL_FRIDAY_SCHEDULES];
+  private ramadhanSchedules: RamadhanScheduleItem[] = [...INITIAL_RAMADHAN_SCHEDULES];
+  private kajianSchedules: KajianScheduleItem[] = [...INITIAL_KAJIAN_SCHEDULES];
+  private physicalProjects: PhysicalProjectItem[] = [...INITIAL_PHYSICAL_PROJECTS];
+  private sssCans: SSSCanItem[] = [...INITIAL_SSS_CANS];
+  private sssRecords: SSSCollectionRecord[] = [...INITIAL_SSS_RECORDS];
+  private ziswafAids: ZiswafAidItem[] = [...INITIAL_ZISWAF_AIDS];
 
   private lastSyncedAt = 0;
   private syncPromise: Promise<void> | null = null;
@@ -99,6 +159,14 @@ class DataStore {
       if (data.approvals && data.approvals.length > 0) this.approvals = data.approvals;
       if (data.fieldKPIs && data.fieldKPIs.length > 0) this.fieldKPIs = data.fieldKPIs;
       if (data.auditLogs && data.auditLogs.length > 0) this.auditLogs = data.auditLogs;
+      if (data.khatibList && data.khatibList.length > 0) this.khatibList = data.khatibList;
+      if (data.fridaySchedules && data.fridaySchedules.length > 0) this.fridaySchedules = data.fridaySchedules;
+      if (data.ramadhanSchedules && data.ramadhanSchedules.length > 0) this.ramadhanSchedules = data.ramadhanSchedules;
+      if (data.kajianSchedules && data.kajianSchedules.length > 0) this.kajianSchedules = data.kajianSchedules;
+      if (data.physicalProjects && data.physicalProjects.length > 0) this.physicalProjects = data.physicalProjects;
+      if (data.sssCans && data.sssCans.length > 0) this.sssCans = data.sssCans;
+      if (data.sssRecords && data.sssRecords.length > 0) this.sssRecords = data.sssRecords;
+      if (data.ziswafAids && data.ziswafAids.length > 0) this.ziswafAids = data.ziswafAids;
     } catch (err) {
       console.warn('DataStore: Fallback to initial seed (local SQLite not yet ready):', err);
     }
@@ -136,6 +204,14 @@ class DataStore {
           if (data.approvals) this.approvals = data.approvals;
           if (data.fieldKPIs) this.fieldKPIs = data.fieldKPIs;
           if (data.auditLogs) this.auditLogs = data.auditLogs;
+          if (data.khatibList) this.khatibList = data.khatibList;
+          if (data.fridaySchedules) this.fridaySchedules = data.fridaySchedules;
+          if (data.ramadhanSchedules) this.ramadhanSchedules = data.ramadhanSchedules;
+          if (data.kajianSchedules) this.kajianSchedules = data.kajianSchedules;
+          if (data.physicalProjects) this.physicalProjects = data.physicalProjects;
+          if (data.sssCans) this.sssCans = data.sssCans;
+          if (data.sssRecords) this.sssRecords = data.sssRecords;
+          if (data.ziswafAids) this.ziswafAids = data.ziswafAids;
           this.lastSyncedAt = Date.now();
         }
       } catch (err) {
@@ -1417,6 +1493,702 @@ class DataStore {
     }
 
     return newLog;
+  }
+
+  // ================= DAKWAH & ASATIDZ =================
+
+  public async getKhatibList(params?: { search?: string; status?: string }): Promise<KhatibItem[]> {
+    await this.sync();
+    let res = [...this.khatibList];
+    if (params?.status && params.status !== 'ALL') {
+      res = res.filter((k) => k.status === params.status);
+    }
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      res = res.filter(
+        (k) =>
+          k.name.toLowerCase().includes(q) ||
+          k.specialization.toLowerCase().includes(q) ||
+          k.institution.toLowerCase().includes(q) ||
+          k.address.toLowerCase().includes(q)
+      );
+    }
+    return res;
+  }
+
+  public async addKhatib(item: Omit<KhatibItem, 'id' | 'createdAt'>): Promise<KhatibItem> {
+    const newKhatib: KhatibItem = {
+      ...item,
+      id: `ktb-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.khatibList.push(newKhatib);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertKhatib(client, newKhatib);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist khatib to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertKhatib(newKhatib);
+      } catch (err) {
+        console.error('Failed to persist khatib to SQLite:', err);
+      }
+    }
+
+    return newKhatib;
+  }
+
+  public async updateKhatib(id: string, updates: Partial<KhatibItem>): Promise<KhatibItem | null> {
+    const idx = this.khatibList.findIndex((k) => k.id === id);
+    if (idx === -1) return null;
+
+    const updated: KhatibItem = { ...this.khatibList[idx], ...updates };
+    this.khatibList[idx] = updated;
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateKhatib(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update khatib in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateKhatib(updated);
+      } catch (err) {
+        console.error('Failed to update khatib in SQLite:', err);
+      }
+    }
+
+    return updated;
+  }
+
+  public async deleteKhatib(id: string): Promise<boolean> {
+    const idx = this.khatibList.findIndex((k) => k.id === id);
+    if (idx === -1) return false;
+
+    this.khatibList.splice(idx, 1);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoDeleteKhatib(client, id);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to delete khatib from Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbDeleteKhatib(id);
+      } catch (err) {
+        console.error('Failed to delete khatib from SQLite:', err);
+      }
+    }
+
+    return true;
+  }
+
+  public async getFridaySchedules(year?: number): Promise<FridayScheduleItem[]> {
+    await this.sync();
+    if (year) {
+      return this.fridaySchedules.filter((f) => (f.year || 2026) === year);
+    }
+    return [...this.fridaySchedules];
+  }
+
+  public async addFridaySchedule(item: Omit<FridayScheduleItem, 'id'>): Promise<FridayScheduleItem> {
+    const newSchedule: FridayScheduleItem = {
+      ...item,
+      id: `fri-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    };
+
+    this.fridaySchedules.push(newSchedule);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertFridaySchedule(client, newSchedule);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist friday schedule to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertFridaySchedule(newSchedule);
+      } catch (err) {
+        console.error('Failed to persist friday schedule to SQLite:', err);
+      }
+    }
+
+    return newSchedule;
+  }
+
+  public async updateFridaySchedule(
+    id: string,
+    updates: Partial<FridayScheduleItem>
+  ): Promise<FridayScheduleItem | null> {
+    const idx = this.fridaySchedules.findIndex((f) => f.id === id);
+    if (idx === -1) return null;
+
+    const updated: FridayScheduleItem = { ...this.fridaySchedules[idx], ...updates };
+    this.fridaySchedules[idx] = updated;
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateFridaySchedule(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update friday schedule in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateFridaySchedule(updated);
+      } catch (err) {
+        console.error('Failed to update friday schedule in SQLite:', err);
+      }
+    }
+
+    return updated;
+  }
+
+  public async bulkUpsertFridaySchedules(list: FridayScheduleItem[]): Promise<void> {
+    for (const item of list) {
+      const idx = this.fridaySchedules.findIndex((f) => f.id === item.id);
+      if (idx >= 0) {
+        this.fridaySchedules[idx] = item;
+      } else {
+        this.fridaySchedules.push(item);
+      }
+    }
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertBulkFridaySchedules(client, list);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to bulk upsert friday schedules in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertBulkFridaySchedules(list);
+      } catch (err) {
+        console.error('Failed to bulk upsert friday schedules in SQLite:', err);
+      }
+    }
+  }
+
+  public async getRamadhanSchedules(year?: number): Promise<RamadhanScheduleItem[]> {
+    await this.sync();
+    if (year) {
+      return this.ramadhanSchedules.filter((r) => (r.year || 2026) === year);
+    }
+    return [...this.ramadhanSchedules];
+  }
+
+  public async addRamadhanSchedule(item: Omit<RamadhanScheduleItem, 'id'>): Promise<RamadhanScheduleItem> {
+    const newSchedule: RamadhanScheduleItem = {
+      ...item,
+      id: `ram-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    };
+
+    this.ramadhanSchedules.push(newSchedule);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertRamadhanSchedule(client, newSchedule);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist ramadhan schedule to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertRamadhanSchedule(newSchedule);
+      } catch (err) {
+        console.error('Failed to persist ramadhan schedule to SQLite:', err);
+      }
+    }
+
+    return newSchedule;
+  }
+
+  public async updateRamadhanSchedule(
+    id: string,
+    updates: Partial<RamadhanScheduleItem>
+  ): Promise<RamadhanScheduleItem | null> {
+    const idx = this.ramadhanSchedules.findIndex((r) => r.id === id);
+    if (idx === -1) return null;
+
+    const updated: RamadhanScheduleItem = { ...this.ramadhanSchedules[idx], ...updates };
+    this.ramadhanSchedules[idx] = updated;
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateRamadhanSchedule(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update ramadhan schedule in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateRamadhanSchedule(updated);
+      } catch (err) {
+        console.error('Failed to update ramadhan schedule in SQLite:', err);
+      }
+    }
+
+    return updated;
+  }
+
+  public async bulkUpsertRamadhanSchedules(list: RamadhanScheduleItem[]): Promise<void> {
+    for (const item of list) {
+      const idx = this.ramadhanSchedules.findIndex((r) => r.id === item.id);
+      if (idx >= 0) {
+        this.ramadhanSchedules[idx] = item;
+      } else {
+        this.ramadhanSchedules.push(item);
+      }
+    }
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertBulkRamadhanSchedules(client, list);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to bulk upsert ramadhan schedules in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertBulkRamadhanSchedules(list);
+      } catch (err) {
+        console.error('Failed to bulk upsert ramadhan schedules in SQLite:', err);
+      }
+    }
+  }
+
+  public async getKajianSchedules(): Promise<KajianScheduleItem[]> {
+    await this.sync();
+    return [...this.kajianSchedules];
+  }
+
+  public async addKajianSchedule(item: Omit<KajianScheduleItem, 'id'>): Promise<KajianScheduleItem> {
+    const newKajian: KajianScheduleItem = {
+      ...item,
+      id: `kaj-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    };
+
+    this.kajianSchedules.push(newKajian);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertKajianSchedule(client, newKajian);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist kajian schedule to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertKajianSchedule(newKajian);
+      } catch (err) {
+        console.error('Failed to persist kajian schedule to SQLite:', err);
+      }
+    }
+
+    return newKajian;
+  }
+
+  public async updateKajianSchedule(
+    id: string,
+    updates: Partial<KajianScheduleItem>
+  ): Promise<KajianScheduleItem | null> {
+    const idx = this.kajianSchedules.findIndex((k) => k.id === id);
+    if (idx === -1) return null;
+
+    const updated: KajianScheduleItem = { ...this.kajianSchedules[idx], ...updates };
+    this.kajianSchedules[idx] = updated;
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateKajianSchedule(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update kajian schedule in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateKajianSchedule(updated);
+      } catch (err) {
+        console.error('Failed to update kajian schedule in SQLite:', err);
+      }
+    }
+
+    return updated;
+  }
+
+  // ================= PHYSICAL PROJECTS =================
+
+  public async getPhysicalProjects(): Promise<PhysicalProjectItem[]> {
+    await this.sync();
+    return [...this.physicalProjects];
+  }
+
+  public async addPhysicalProject(
+    item: Omit<PhysicalProjectItem, 'id' | 'updatedAt'>
+  ): Promise<PhysicalProjectItem> {
+    const newProject: PhysicalProjectItem = {
+      ...item,
+      id: `prj-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.physicalProjects.push(newProject);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertPhysicalProject(client, newProject);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist physical project to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertPhysicalProject(newProject);
+      } catch (err) {
+        console.error('Failed to persist physical project to SQLite:', err);
+      }
+    }
+
+    return newProject;
+  }
+
+  public async updatePhysicalProject(
+    id: string,
+    updates: Partial<PhysicalProjectItem>
+  ): Promise<PhysicalProjectItem | null> {
+    const idx = this.physicalProjects.findIndex((p) => p.id === id);
+    if (idx === -1) return null;
+
+    const updated: PhysicalProjectItem = {
+      ...this.physicalProjects[idx],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    this.physicalProjects[idx] = updated;
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdatePhysicalProject(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update physical project in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdatePhysicalProject(updated);
+      } catch (err) {
+        console.error('Failed to update physical project in SQLite:', err);
+      }
+    }
+
+    return updated;
+  }
+
+  public async toggleProjectMilestone(
+    projectId: string,
+    milestoneId: string
+  ): Promise<PhysicalProjectItem | null> {
+    const proj = this.physicalProjects.find((p) => p.id === projectId);
+    if (!proj) return null;
+
+    const updatedMilestones = proj.milestones.map((m) =>
+      m.id === milestoneId ? { ...m, isDone: !m.isDone } : m
+    );
+    const doneCount = updatedMilestones.filter((m) => m.isDone).length;
+    const autoProgress = Math.round((doneCount / (updatedMilestones.length || 1)) * 100);
+    const newStatus: ProjectStatus =
+      autoProgress === 100 ? 'SELESAI' : autoProgress > 0 ? 'DALAM_PENGERJAAN' : proj.status;
+
+    return await this.updatePhysicalProject(projectId, {
+      milestones: updatedMilestones,
+      progressPercentage: autoProgress,
+      status: newStatus,
+    });
+  }
+
+  // ================= ZISWAF & SSS =================
+
+  public async getSssCans(params?: { rt?: string; status?: string; search?: string }): Promise<SSSCanItem[]> {
+    await this.sync();
+    let res = [...this.sssCans];
+    if (params?.rt && params.rt !== 'ALL') {
+      res = res.filter((c) => c.rt === params.rt);
+    }
+    if (params?.status && params.status !== 'ALL') {
+      res = res.filter((c) => c.status === params.status);
+    }
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      res = res.filter(
+        (c) =>
+          c.canCode.toLowerCase().includes(q) ||
+          c.holderName.toLowerCase().includes(q) ||
+          c.houseNumber.toLowerCase().includes(q)
+      );
+    }
+    return res;
+  }
+
+  public async addSssCan(
+    item: Omit<SSSCanItem, 'id' | 'lastAmount' | 'totalCollected'>
+  ): Promise<SSSCanItem> {
+    const newCan: SSSCanItem = {
+      ...item,
+      id: `sss-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      lastAmount: 0,
+      totalCollected: 0,
+    };
+
+    this.sssCans.push(newCan);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertSSSCan(client, newCan);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist sss can to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertSSSCan(newCan);
+      } catch (err) {
+        console.error('Failed to persist sss can to SQLite:', err);
+      }
+    }
+
+    return newCan;
+  }
+
+  public async updateSssCan(id: string, updates: Partial<SSSCanItem>): Promise<SSSCanItem | null> {
+    const idx = this.sssCans.findIndex((c) => c.id === id);
+    if (idx === -1) return null;
+
+    const updated: SSSCanItem = { ...this.sssCans[idx], ...updates };
+    this.sssCans[idx] = updated;
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateSSSCan(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update sss can in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateSSSCan(updated);
+      } catch (err) {
+        console.error('Failed to update sss can in SQLite:', err);
+      }
+    }
+
+    return updated;
+  }
+
+  public async getSssRecords(): Promise<SSSCollectionRecord[]> {
+    await this.sync();
+    return [...this.sssRecords];
+  }
+
+  public async recordSssCollection(data: {
+    canId: string;
+    amount: number;
+    collectionDate?: string;
+    collector?: string;
+    notes?: string;
+  }): Promise<SSSCollectionRecord> {
+    await this.sync();
+    const can = this.sssCans.find((c) => c.id === data.canId);
+    if (!can) throw new Error('Kaleng SSS tidak ditemukan');
+
+    const dateStr = data.collectionDate || new Date().toISOString().split('T')[0];
+    const newRecord: SSSCollectionRecord = {
+      id: `rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      canId: can.id,
+      canCode: can.canCode,
+      collectionDate: dateStr,
+      amount: data.amount,
+      rt: can.rt,
+      collector: data.collector || can.collectorOfficer,
+      depositedToCash: true,
+      notes: data.notes || '',
+    };
+
+    // Update can state
+    const updatedCan: SSSCanItem = {
+      ...can,
+      lastAmount: data.amount,
+      totalCollected: can.totalCollected + data.amount,
+      lastCollectionDate: dateStr,
+      status: 'DISETOR_KAS',
+    };
+
+    this.sssRecords.unshift(newRecord);
+    const canIdx = this.sssCans.findIndex((c) => c.id === data.canId);
+    if (canIdx >= 0) this.sssCans[canIdx] = updatedCan;
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertSSSRecord(client, newRecord);
+          await tursoUpdateSSSCan(client, updatedCan);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to record sss collection in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertSSSRecord(newRecord);
+        dbUpdateSSSCan(updatedCan);
+      } catch (err) {
+        console.error('Failed to record sss collection in SQLite:', err);
+      }
+    }
+
+    return newRecord;
+  }
+
+  public async getZiswafAids(params?: {
+    rt?: string;
+    category?: string;
+    search?: string;
+  }): Promise<ZiswafAidItem[]> {
+    await this.sync();
+    let res = [...this.ziswafAids];
+    if (params?.rt && params.rt !== 'ALL') {
+      res = res.filter((a) => a.rt === params.rt);
+    }
+    if (params?.category && params.category !== 'ALL') {
+      res = res.filter((a) => a.recipientCategory === params.category);
+    }
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      res = res.filter(
+        (a) =>
+          a.recipientName.toLowerCase().includes(q) ||
+          a.aidNumber.toLowerCase().includes(q) ||
+          a.address.toLowerCase().includes(q) ||
+          (a.goodsDescription && a.goodsDescription.toLowerCase().includes(q))
+      );
+    }
+    return res;
+  }
+
+  public async addZiswafAid(item: Omit<ZiswafAidItem, 'id'>): Promise<ZiswafAidItem> {
+    const newAid: ZiswafAidItem = {
+      ...item,
+      id: `aid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    };
+
+    this.ziswafAids.unshift(newAid);
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertZiswafAid(client, newAid);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist ziswaf aid to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertZiswafAid(newAid);
+      } catch (err) {
+        console.error('Failed to persist ziswaf aid to SQLite:', err);
+      }
+    }
+
+    return newAid;
+  }
+
+  public async updateZiswafAid(
+    id: string,
+    updates: Partial<ZiswafAidItem>
+  ): Promise<ZiswafAidItem | null> {
+    const idx = this.ziswafAids.findIndex((a) => a.id === id);
+    if (idx === -1) return null;
+
+    const updated: ZiswafAidItem = { ...this.ziswafAids[idx], ...updates };
+    this.ziswafAids[idx] = updated;
+
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateZiswafAid(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update ziswaf aid in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateZiswafAid(updated);
+      } catch (err) {
+        console.error('Failed to update ziswaf aid in SQLite:', err);
+      }
+    }
+
+    return updated;
   }
 }
 

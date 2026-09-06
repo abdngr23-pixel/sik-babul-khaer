@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Hammer,
   Calendar,
@@ -25,15 +25,27 @@ export default function PhysicalProjectsTracker() {
   const [editRealized, setEditRealized] = useState<number>(0);
   const [editStatus, setEditStatus] = useState<ProjectStatus>('DALAM_PENGERJAAN');
 
+  // Sync projects from server API on mount
+  useEffect(() => {
+    fetch('/api/projects')
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data && Array.isArray(res.data)) {
+          setProjects(res.data);
+        }
+      })
+      .catch((err) => console.warn('Gagal sinkronisasi data proyek dari server:', err));
+  }, []);
+
   // Calculated Stats
   const totalAllocated = projects.reduce((acc, p) => acc + p.allocatedBudget, 0);
   const totalRealized = projects.reduce((acc, p) => acc + p.realizedBudget, 0);
   const averageProgress = Math.round(
-    projects.reduce((acc, p) => acc + p.progressPercentage, 0) / projects.length
+    projects.reduce((acc, p) => acc + p.progressPercentage, 0) / (projects.length || 1)
   );
   const completedProjectsCount = projects.filter((p) => p.status === 'SELESAI').length;
 
-  const handleToggleMilestone = (projectId: string, milestoneId: string) => {
+  const handleToggleMilestone = async (projectId: string, milestoneId: string) => {
     if (isReadOnly) return;
     setProjects((prev) =>
       prev.map((proj) => {
@@ -43,7 +55,7 @@ export default function PhysicalProjectsTracker() {
         );
         // Recalculate progress based on done milestones
         const doneCount = updatedMilestones.filter((m) => m.isDone).length;
-        const autoProgress = Math.round((doneCount / updatedMilestones.length) * 100);
+        const autoProgress = Math.round((doneCount / (updatedMilestones.length || 1)) * 100);
         return {
           ...proj,
           milestones: updatedMilestones,
@@ -53,15 +65,30 @@ export default function PhysicalProjectsTracker() {
         };
       })
     );
+
+    try {
+      await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'toggle-milestone',
+          projectId,
+          milestoneId,
+        }),
+      });
+    } catch (err) {
+      console.error('Gagal menyimpan milestone proyek ke server:', err);
+    }
   };
 
-  const handleSaveProgress = (e: React.FormEvent) => {
+  const handleSaveProgress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProject) return;
 
+    const targetId = editingProject.id;
     setProjects((prev) =>
       prev.map((p) =>
-        p.id === editingProject.id
+        p.id === targetId
           ? {
               ...p,
               progressPercentage: editPercentage,
@@ -72,6 +99,23 @@ export default function PhysicalProjectsTracker() {
           : p
       )
     );
+
+    try {
+      await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update-progress',
+          projectId: targetId,
+          progressPercentage: editPercentage,
+          realizedBudget: editRealized,
+          status: editStatus,
+        }),
+      });
+    } catch (err) {
+      console.error('Gagal menyimpan update progress proyek:', err);
+    }
+
     setEditingProject(null);
   };
 
