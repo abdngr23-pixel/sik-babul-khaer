@@ -11,7 +11,7 @@ export const OFFICIAL_USERS: User[] = [
     phone: '0812-4000-0001',
     department: 'Badan Pimpinan Harian (Eksekutif)',
     isReadOnly: false,
-    pinHash: '$2b$10$l1f.XTyVNrI0wRVdxMV7fO8mIRDNiAs/FbLVNNoPBfe9eV17Ti3US',
+    pinHash: '$2b$10$EELfAlg0AdLrq9rdzEIsfuMCCmKN/WtsaC1UC8f5dYkcHI2v0lS16',
     bio: 'Pimpinan tertinggi operasional DKM Babul Khaer BTP Blok AE periode 2026-2029 (SK PC DMI Biringkanaya No. 13/2026). Penanggung jawab umum kegiatan kemasjidan, pemegang hak otorisasi pengesahan surat dinas, dan disposisi pencairan kas satu pintu sesuai ART Bagian Ketiga Pasal 3.',
   },
   {
@@ -24,7 +24,7 @@ export const OFFICIAL_USERS: User[] = [
     phone: '0812-4000-0002',
     department: 'Bidang Kesekretariatan & Tata Usaha',
     isReadOnly: false,
-    pinHash: '$2b$10$KSMIStsUtv.i6zX2bn5YxeggtVy1cNh9yCaGseZLJV8eSBJ2ZMpRm',
+    pinHash: '$2b$10$IWF8mlc8SgItEpCLT8eEsOafOu9sAgOhOtJgvpqcZ7PHoL/wy34LO',
     bio: 'Penanggung jawab administrasi umum dan tata usaha kemasjidan DKM Babul Khaer periode 2026-2029 (ART Bagian Kelima Pasal 6). Mengelola persuratan dinas resmi, e-arsip berkas digital, persiapan rapat pleno, notulensi AI, serta memaraf SK kepanitiaan sebelum ditandatangani Ketua Umum.',
   },
   {
@@ -37,7 +37,7 @@ export const OFFICIAL_USERS: User[] = [
     phone: '0812-4000-0003',
     department: 'Bidang Keuangan & Perbendaharaan',
     isReadOnly: false,
-    pinHash: '$2b$10$l7Kn/0INn.rXfyVG.6t8Mem0CKqUKYPnPn8XpOuIPMlcdMHM6CGWq',
+    pinHash: '$2b$10$qPB9.0KGvx2MKyHUC.LF9.M5iMegQVEj8UeiIZ.vW8qkEKdSXcyBC',
     bio: 'Penata dan pengelola administrasi keuangan dan perbendaharaan DKM Babul Khaer periode 2026-2029 (ART Bagian Keenam Pasal 7). Bertanggung jawab atas pembukuan kas harian, laporan berkala mimbar Jumat, pengelolaan pos dana swadaya PHBI satu pintu hasil Raker 2026, dan penerimaan ZISWAF/donatur.',
   },
   {
@@ -50,7 +50,7 @@ export const OFFICIAL_USERS: User[] = [
     phone: '0812-4000-0004',
     department: 'Bidang Pembangunan, Sarana & Prasarana (Ketua II)',
     isReadOnly: false,
-    pinHash: '$2b$10$11gnRncGONxwI9dFmNuUCO6/A24wq5pPCaH2KjhXCCo/F1XyFqpVS',
+    pinHash: '$2b$10$ILisYBrKnqb86HEIe1nlBOOb71J/NrFCKxHYZSNz0CWnPR8/PCX0S',
     bio: 'Koordinator Seksi Sarana dan Prasarana di bawah naungan Ketua II (H. Muh. Nancha Pattanang, S.E.) periode 2026-2029 (ART Pasal 9). Bertanggung jawab atas inventarisasi kekayaan fisik masjid, pemeliharaan AC Daikin, relokasi modul otomatis genset hasil Raker 2026, sound system, dan fasilitas fisik ibadah.',
   },
   {
@@ -63,7 +63,7 @@ export const OFFICIAL_USERS: User[] = [
     phone: '0812-4000-0005',
     department: 'Bidang Keagamaan, Pendidikan & Organisasi (Ketua I)',
     isReadOnly: false,
-    pinHash: '$2b$10$7y.aiA4ZO3/yB5qBcS6v4eSqXxY2Nreuesr57BI7hi7IIcoL0xa9q',
+    pinHash: '$2b$10$vlgpOVTZlgVX0sqHWgX4NOK7/Xh7uwQmZIdxoGxBCwpmM9AHsva7S',
     bio: 'Koordinator Seksi Peribadatan dan Dakwah di bawah naungan Ketua I (Drs. H. Suardi, M.Pd.) periode 2026-2029 (ART Pasal 8). Mengelola jadwal sholat fardhu/Jumat, penetapan insentif imam rawatib Rp1.500.000 hasil Raker 2026, sensus jamaah RT 01-05 Blok AE, dan pemetaan mustahiq zakat.',
   },
   {
@@ -76,7 +76,7 @@ export const OFFICIAL_USERS: User[] = [
     phone: '0812-4000-0006',
     department: 'Badan Pengawas & Pemeriksa Keuangan DKM',
     isReadOnly: true,
-    pinHash: '$2b$10$u9CdOJFgT5Hy18p5RlUdFeUViqZR5CuGYhjN0V4PidC4g7tVFbTeG',
+    pinHash: '$2b$10$9oUuPw9MYw6YEWYpfnRo5uTEI2puiSLEUVPrrkrO7kCMidpFyQpOi',
     bio: 'Koordinator Dewan Pengawas dan Pemeriksa DKM Babul Khaer periode 2026-2029 (SK PC DMI No. 13/2026 & ART Bagian Kedua Pasal 2 ayat 3). Menjalankan amanah independen pengawasan dan pemeriksaan penggunaan dana kas masjid, evaluasi pencapaian kinerja 4 pilar DKM, dan audit kepatuhan AD/ART (Mode Akses Read-Only).',
   },
 ];
