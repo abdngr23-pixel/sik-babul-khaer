@@ -28,6 +28,7 @@ import DonorTable from '@/components/finance/donor-table';
 import CashflowRunwayAlert from '@/components/finance/cashflow-runway-alert';
 import RakerBudgetTracker from '@/components/finance/raker-budget-tracker';
 import DakwahView from '@/components/dakwah/dakwah-view';
+import ZiswafView from '@/components/ziswaf/ziswaf-view';
 import AssetStatsCards from '@/components/assets/asset-stats';
 import SarprasView from '@/components/assets/sarpras-view';
 import SuperAdminView from '@/components/admin/super-admin-view';
@@ -1180,8 +1181,8 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Database Jamaah & Mustahiq */}
-              {(activeTab === 'jamaah' || activeTab === 'mustahiq') && (
+              {/* Database Jamaah Sensus 5 RT */}
+              {activeTab === 'jamaah' && (
                 <div className="space-y-4">
                   <JamaahTable
                     jamaahList={jamaahList}
@@ -1196,6 +1197,13 @@ export default function DashboardPage() {
                     isReadOnly={isReadOnly}
                     externalSearchTerm={globalSearchQuery}
                   />
+                </div>
+              )}
+
+              {/* Bidang III: ZISWAF, Program Sedekah Seribu Sehari (SSS) & Bansos 5 RT */}
+              {activeTab === 'mustahiq' && (
+                <div className="space-y-4">
+                  <ZiswafView jamaahList={jamaahList} />
                 </div>
               )}
 

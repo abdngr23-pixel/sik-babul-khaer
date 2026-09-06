@@ -271,11 +271,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         case 'minutes':
           return currentUser.role === 'SEKRETARIS';
 
-        // Modul Basis Data Warga & Dakwah (Hanya Kemasjidan)
+        // Modul Basis Data Warga & Dakwah
         case 'jamaah':
-        case 'mustahiq':
         case 'dakwah':
           return currentUser.role === 'KEMASJIDAN';
+
+        // Modul ZISWAF, SSS, dan Bansos (Kemasjidan & Bendahara)
+        case 'mustahiq':
+          return currentUser.role === 'KEMASJIDAN' || currentUser.role === 'BENDAHARA';
 
         // Modul Keuangan & Kas (Hanya Bendahara)
         case 'finance':

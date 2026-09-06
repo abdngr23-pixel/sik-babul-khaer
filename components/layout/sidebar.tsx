@@ -235,10 +235,10 @@ export default function Sidebar({
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
-                  <HeartHandshake className="w-4 h-4 text-amber-600" />
-                  <span>Mustahiq & Bansos</span>
-                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
-                    ZISWAF
+                  <HeartHandshake className="w-4 h-4 text-teal-600" />
+                  <span>ZISWAF & Bansos SSS</span>
+                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800">
+                    5 RT
                   </span>
                 </button>
               )}
