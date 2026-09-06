@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
       isYouthMember: isYouth === 'true' ? true : undefined,
     };
 
-    const jamaah = store.getJamaah(params);
-    const stats = store.getJamaahStats();
+    const jamaah = await store.getJamaah(params);
+    const stats = await store.getJamaahStats();
 
     return NextResponse.json({
       success: true,
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newJamaah = store.addJamaah({
+    const newJamaah = await store.addJamaah({
       fullName: body.fullName,
       nik: body.nik || '',
       gender: body.gender || 'L',
@@ -95,7 +95,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updated = store.updateJamaah(id, updates);
+    const updated = await store.updateJamaah(id, updates);
     if (!updated) {
       return NextResponse.json(
         { success: false, error: 'Data jamaah tidak ditemukan' },
@@ -134,7 +134,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const deleted = store.deleteJamaah(id);
+    const deleted = await store.deleteJamaah(id);
     if (!deleted) {
       return NextResponse.json(
         { success: false, error: 'Data jamaah tidak ditemukan' },

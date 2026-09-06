@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const isDownload = searchParams.get('download') === 'true';
 
     if (type === 'stats') {
-      const stats = getDatabaseStats();
+      const stats = await getDatabaseStats();
       return NextResponse.json({
         success: true,
         stats,
@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Full export
-    const snapshot = exportDatabaseSnapshot();
+    const snapshot = await exportDatabaseSnapshot();
 
     // Log this backup action
-    store.addAuditLog({
+    await store.addAuditLog({
       userId: 'usr-pimpinan',
       userName: 'Pengurus DKM (Pusat Kendali)',
       userRole: 'DEWAN_PENGAWAS',

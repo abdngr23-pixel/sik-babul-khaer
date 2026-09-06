@@ -3,7 +3,7 @@ import { store } from '@/lib/store';
 
 export async function GET() {
   try {
-    const kpis = store.getFieldKPIs();
+    const kpis = await store.getFieldKPIs();
 
     // Calculate overall organization health index
     const totalScore = kpis.reduce((sum, k) => sum + k.score, 0);

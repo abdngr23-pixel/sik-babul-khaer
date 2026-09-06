@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
         ? paymentStatusParam
         : undefined;
 
-    const donors = store.getDonors({ search, category, status, rt, paymentStatus });
-    const stats = store.getDonorStats();
+    const donors = await store.getDonors({ search, category, status, rt, paymentStatus });
+    const stats = await store.getDonorStats();
 
     return NextResponse.json({
       success: true,
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const result = store.recordDonorPayment({
+      const result = await store.recordDonorPayment({
         donorId,
         amount: amount ? Number(amount) : undefined,
         paymentMethod,
@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const stats = store.getDonorStats();
-      const financeSummary = store.getFinanceSummary();
+      const stats = await store.getDonorStats();
+      const financeSummary = await store.getFinanceSummary();
 
       return NextResponse.json({
         success: true,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newDonor = store.addDonor({
+    const newDonor = await store.addDonor({
       donorName: body.donorName.trim(),
       phone: body.phone.trim(),
       rt: body.rt || 'RT 01',
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       notes: body.notes ? body.notes.trim() : '',
     });
 
-    const stats = store.getDonorStats();
+    const stats = await store.getDonorStats();
 
     return NextResponse.json({
       success: true,
@@ -126,7 +126,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updated = store.updateDonor(id, updates);
+    const updated = await store.updateDonor(id, updates);
     if (!updated) {
       return NextResponse.json(
         { success: false, error: 'Donatur tidak ditemukan' },
@@ -134,7 +134,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const stats = store.getDonorStats();
+    const stats = await store.getDonorStats();
 
     return NextResponse.json({
       success: true,
@@ -168,7 +168,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const deleted = store.deleteDonor(id);
+    const deleted = await store.deleteDonor(id);
     if (!deleted) {
       return NextResponse.json(
         { success: false, error: 'Donatur tidak ditemukan' },
@@ -176,7 +176,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const stats = store.getDonorStats();
+    const stats = await store.getDonorStats();
 
     return NextResponse.json({
       success: true,

@@ -11,11 +11,15 @@ import {
   CheckCircle2,
   AlertTriangle,
   HardDrive,
+  Cloud,
 } from 'lucide-react';
 
 interface DatabaseStats {
   path: string;
   sizeBytes: number;
+  engine?: 'turso_cloud' | 'local_sqlite' | 'vercel_tmp';
+  engineLabel?: string;
+  cloudConnected?: boolean;
   totalLetters: number;
   totalMinutes: number;
   totalJamaah: number;
@@ -174,11 +178,13 @@ export default function DatabaseBackupModal({
                   Pusat Cadangan & Pemulihan Data
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/30 text-emerald-100 border border-emerald-400/30">
-                  SQLite Persisten
+                  {stats?.engine === 'turso_cloud' ? 'Turso Cloud Permanen' : 'SQLite Persisten'}
                 </span>
               </div>
               <p className="text-xs text-emerald-100/90 font-medium">
-                Penyimpanan Lokal Mandiri — Data Aman & Tersimpan di Perangkat Server
+                {stats?.engine === 'turso_cloud'
+                  ? 'Penyimpanan Cloud Terdistribusi — Aman dari Cold Restart Vercel'
+                  : 'Penyimpanan Mandiri — Data Tersimpan di Perangkat Server'}
               </p>
             </div>
           </div>
@@ -196,13 +202,42 @@ export default function DatabaseBackupModal({
           <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100 font-semibold">
-                  <Database className="w-5 h-5" />
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center border font-semibold ${
+                    stats?.engine === 'turso_cloud'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : stats?.engine === 'vercel_tmp'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-blue-50 text-blue-700 border-blue-200'
+                  }`}
+                >
+                  {stats?.engine === 'turso_cloud' ? (
+                    <Cloud className="w-5 h-5 text-emerald-600" />
+                  ) : (
+                    <Database className="w-5 h-5" />
+                  )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800">
-                    Status Basis Data Aktif
-                  </h3>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-sm font-bold text-slate-800">
+                      Status Basis Data Aktif
+                    </h3>
+                    {stats?.engine === 'turso_cloud' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        Cloud SQLite (Permanen)
+                      </span>
+                    )}
+                    {stats?.engine === 'vercel_tmp' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                        Vercel Temporer (/tmp)
+                      </span>
+                    )}
+                    {stats?.engine === 'local_sqlite' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-300">
+                        Disk Lokal
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[11px] text-slate-500 font-mono">
                     {stats?.path || 'data/sik_mbh.sqlite'}
                   </p>
@@ -210,10 +245,17 @@ export default function DatabaseBackupModal({
               </div>
 
               <div className="flex items-center space-x-2">
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-                  WAL Mode Aktif
-                </span>
+                {stats?.engine === 'turso_cloud' ? (
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                    Turso Online (Region sin1)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                    WAL Mode Aktif
+                  </span>
+                )}
                 <button
                   onClick={fetchStats}
                   disabled={isLoading}

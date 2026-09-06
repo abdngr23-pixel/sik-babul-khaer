@@ -45,17 +45,31 @@ Vercel adalah platform cloud terbaik untuk aplikasi Next.js. Sangat cocok jika D
 1. Pada menu **Environment Variables**, tambahkan:
    - `NEXT_PUBLIC_APP_URL` = `https://nama-proyek-anda.vercel.app`
    - `GEMINI_API_KEY` = `(Kunci API Google Gemini Anda dari https://aistudio.google.com)`
+
+> [!IMPORTANT]
+> **Penyimpanan Cloud Permanen di Vercel (Turso Cloud SQLite):**
+> Agar data surat, notulensi, jamaah, kas, donatur, dan aset tetap **abadi dan tidak terhapus saat Vercel restart**, tambahkan 2 variabel Turso (Gratis 100% dari [turso.tech](https://turso.tech)):
+> - `TURSO_DATABASE_URL` = `libsql://sik-babul-khaer-xxxxx.turso.io`
+> - `TURSO_AUTH_TOKEN` = `(Token autentikasi dari dasbor Turso)`
+>
+> **Cara Mendapatkan Kredensial Turso Gratis (2 Menit):**
+> 1. Buka **[turso.tech](https://turso.tech)** lalu klik **Start Free** (login menggunakan akun GitHub Anda).
+> 2. Klik **Create Database** -> beri nama `sik-babul-khaer` -> pilih lokasi terdekat: **Singapore (sin)**.
+> 3. Salin **Database URL** yang muncul (berawalan `libsql://...`).
+> 4. Klik **Create Token** -> salin token autentikasi rahasia Anda.
+> 5. Masukkan kedua nilai tersebut ke dasbor Vercel (**Project -> Settings -> Environment Variables**).
+
 2. Pengaturan **Framework Preset** otomatis terpilih: **Next.js**.
 3. Pengaturan **Node.js Version**: Masuk ke *Project Settings* -> *General* -> *Node.js Version* -> Pilih **22.x**.
 
-### Langkah 4: Klik Deploy
+### Langkah 4: Klik Deploy & Sinkronisasi Data Awal
 - Klik tombol **Deploy**.
 - Tunggu proses build selesai (~1-2 menit).
 - Aplikasi Anda kini aktif dan memiliki alamat web resmi, contoh: `https://sik-babul-khaer.vercel.app`.
-
-> [!TIP]
-> **Manajemen Data di Vercel:**  
-> Karena Vercel menggunakan serverless compute di mana filesystem bersifat sementara (*ephemeral*), pengurus disarankan mengunduh berkas cadangan secara berkala melalui menu **Sidebar -> Akses & Keamanan -> Cadangan Data (Backup)** -> simpan berkas `.json` ke Google Drive DKM.
+- **Opsional (Sinkronisasi Data Lokal ke Cloud)**: Jika Anda sudah menginput data di komputer lokal dan ingin memindahkannya ke Turso Cloud, cukup jalankan perintah di terminal laptop Anda:
+  ```bash
+  npm run db:turso:push
+  ```
 
 ---
 

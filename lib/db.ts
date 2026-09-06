@@ -20,6 +20,17 @@ import { AssetItem } from '@/types/asset';
 import { ApprovalItem, FieldKPI } from '@/types/reports';
 import { AuditLogEntry } from '@/types/auth';
 
+// Turso Cloud SQLite
+import {
+  isTursoConfigured,
+  getTursoClient,
+  tursoGetDatabaseStats,
+  tursoExportDatabaseSnapshot,
+  tursoRestoreDatabaseSnapshot,
+} from './turso';
+
+export { isTursoConfigured };
+
 const globalForDb = globalThis as unknown as {
   sikMbhDb?: DatabaseSync;
 };
@@ -1150,9 +1161,12 @@ export function dbInsertAuditLog(al: AuditLogEntry) {
 }
 
 // Database stats helper for Backup/Restore UI
-export function getDatabaseStats(): {
+export async function getDatabaseStats(): Promise<{
   path: string;
   sizeBytes: number;
+  engine: 'turso_cloud' | 'local_sqlite' | 'vercel_tmp';
+  engineLabel: string;
+  cloudConnected: boolean;
   totalLetters: number;
   totalMinutes: number;
   totalJamaah: number;
@@ -1161,7 +1175,14 @@ export function getDatabaseStats(): {
   totalAssets: number;
   totalApprovals: number;
   totalAuditLogs: number;
-} {
+}> {
+  if (isTursoConfigured()) {
+    const client = getTursoClient();
+    if (client) {
+      return await tursoGetDatabaseStats(client);
+    }
+  }
+
   const db = getDb();
   const dbPath = getDatabasePath();
   let sizeBytes = 0;
@@ -1179,9 +1200,14 @@ export function getDatabaseStats(): {
     }
   };
 
+  const isVercel = Boolean(process.env.VERCEL);
+
   return {
+    engine: isVercel ? 'vercel_tmp' : 'local_sqlite',
+    engineLabel: isVercel ? 'SQLite Ephemeral (/tmp Vercel)' : 'SQLite Native Disk Lokal',
     path: dbPath,
     sizeBytes,
+    cloudConnected: false,
     totalLetters: getCount('letters'),
     totalMinutes: getCount('minutes'),
     totalJamaah: getCount('jamaah'),
@@ -1194,10 +1220,11 @@ export function getDatabaseStats(): {
 }
 
 // Full Database Export Snapshot for Backup
-export function exportDatabaseSnapshot(): {
+export async function exportDatabaseSnapshot(): Promise<{
   version: string;
   exportedAt: string;
   mosqueName: string;
+  engine?: string;
   data: {
     letters: OfficialLetter[];
     minutes: MeetingMinutes[];
@@ -1209,18 +1236,26 @@ export function exportDatabaseSnapshot(): {
     fieldKPIs: FieldKPI[];
     auditLogs: AuditLogEntry[];
   };
-} {
+}> {
+  if (isTursoConfigured()) {
+    const client = getTursoClient();
+    if (client) {
+      return await tursoExportDatabaseSnapshot(client);
+    }
+  }
+
   const loaded = loadAllDataFromDatabase();
   return {
     version: '1.0',
     exportedAt: new Date().toISOString(),
     mosqueName: 'Masjid Babul Khaer BTP Blok AE Makassar',
+    engine: 'local_sqlite',
     data: loaded,
   };
 }
 
 // Restore Database from Snapshot
-export function restoreDatabaseSnapshot(snapshot: {
+export async function restoreDatabaseSnapshot(snapshot: {
   data: {
     letters?: OfficialLetter[];
     minutes?: MeetingMinutes[];
@@ -1232,7 +1267,14 @@ export function restoreDatabaseSnapshot(snapshot: {
     fieldKPIs?: FieldKPI[];
     auditLogs?: AuditLogEntry[];
   };
-}): { success: boolean; message: string } {
+}): Promise<{ success: boolean; message: string }> {
+  if (isTursoConfigured()) {
+    const client = getTursoClient();
+    if (client) {
+      return await tursoRestoreDatabaseSnapshot(client, snapshot);
+    }
+  }
+
   const db = getDb();
 
   db.exec('BEGIN TRANSACTION;');

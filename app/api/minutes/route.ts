@@ -3,7 +3,7 @@ import { store } from '@/lib/store';
 
 export async function GET() {
   try {
-    const minutes = store.getMinutes();
+    const minutes = await store.getMinutes();
     return NextResponse.json({
       success: true,
       data: minutes,
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const saved = store.addMinutes({
+    const saved = await store.addMinutes({
       title,
       date,
       location: location || 'Masjid Babul Khaer',
@@ -67,7 +67,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const success = store.toggleActionItemStatus(minuteId, actionId);
+    const success = await store.toggleActionItemStatus(minuteId, actionId);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Tugas tidak ditemukan' },

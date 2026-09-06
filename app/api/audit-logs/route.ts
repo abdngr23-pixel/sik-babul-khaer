@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     const search = searchParams.get('search') || '';
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 50;
 
-    const logs = store.getAuditLogs({
+    const logs = await store.getAuditLogs({
       module: moduleFilter,
       role,
       search,
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const newLog = store.addAuditLog({
+    const newLog = await store.addAuditLog({
       userId,
       userName,
       userRole,

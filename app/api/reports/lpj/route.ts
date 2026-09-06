@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'Tahun Anggaran 2026';
 
-    const lpjData = store.generateLPJData(period);
+    const lpjData = await store.generateLPJData(period);
 
     return NextResponse.json({
       success: true,

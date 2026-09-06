@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
 
-    const approvals = store.getApprovals(status);
+    const approvals = await store.getApprovals(status);
 
     const pendingCount = approvals.filter((a) => a.status === 'MENUNGGU_VERIFIKASI').length;
     const approvedCount = approvals.filter((a) => a.status === 'DISETUJUI').length;
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newItem = store.addApproval({
+    const newItem = await store.addApproval({
       type: body.type as ApprovalType,
       title: body.title.trim(),
       referenceNumber: body.referenceNumber ? body.referenceNumber.trim() : undefined,
@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const updated = store.verifyApproval(
+    const updated = await store.verifyApproval(
       id,
       status as ApprovalStatus,
       dispositionNotes,

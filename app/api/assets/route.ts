@@ -10,13 +10,13 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || undefined;
     const dueOnly = searchParams.get('maintenanceDueOnly') === 'true';
 
-    const assets = store.getAssets({
+    const assets = await store.getAssets({
       category,
       condition,
       search,
       maintenanceDueOnly: dueOnly,
     });
-    const stats = store.getAssetStats();
+    const stats = await store.getAssetStats();
 
     return NextResponse.json({
       success: true,
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newAsset = store.addAsset({
+    const newAsset = await store.addAsset({
       code: body.code ? body.code.trim() : `AST-${Date.now().toString().slice(-5)}`,
       name: body.name.trim(),
       category: body.category as AssetCategory,
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       maintenanceNotes: body.maintenanceNotes || '',
     });
 
-    const stats = store.getAssetStats();
+    const stats = await store.getAssetStats();
 
     return NextResponse.json({
       success: true,
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (action === 'RECORD_MAINTENANCE') {
-      const updated = store.recordMaintenanceDone(id, notes);
+      const updated = await store.recordMaintenanceDone(id, notes);
       if (!updated) {
         return NextResponse.json(
           { success: false, error: 'Aset tidak ditemukan' },
@@ -98,12 +98,12 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: updated,
-        stats: store.getAssetStats(),
+        stats: await store.getAssetStats(),
         message: 'Pemeliharaan aset berhasil dicatat dan jadwal servis berikutnya diperbarui!',
       });
     }
 
-    const updated = store.updateAsset(id, updates);
+    const updated = await store.updateAsset(id, updates);
     if (!updated) {
       return NextResponse.json(
         { success: false, error: 'Aset tidak ditemukan' },
@@ -114,7 +114,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: updated,
-      stats: store.getAssetStats(),
+      stats: await store.getAssetStats(),
       message: 'Data aset berhasil diperbarui',
     });
   } catch (error) {
@@ -143,7 +143,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const deleted = store.deleteAsset(id);
+    const deleted = await store.deleteAsset(id);
     if (!deleted) {
       return NextResponse.json(
         { success: false, error: 'Aset tidak ditemukan' },
@@ -153,7 +153,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      stats: store.getAssetStats(),
+      stats: await store.getAssetStats(),
       message: 'Aset berhasil dihapus dari inventaris',
     });
   } catch (error) {

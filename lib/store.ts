@@ -36,9 +36,36 @@ import {
   dbUpdateApproval,
   dbInsertAuditLog,
 } from './db';
+import {
+  isTursoConfigured,
+  getTursoClient,
+  tursoLoadAllData,
+  tursoInsertLetter,
+  tursoUpdateLetterStatus,
+  tursoInsertMinute,
+  tursoUpdateMinuteActionItems,
+  tursoInsertJamaah,
+  tursoInsertBulkJamaah,
+  tursoUpdateJamaah,
+  tursoDeleteJamaah,
+  tursoInsertTransaction,
+  tursoUpdateTransaction,
+  tursoDeleteTransaction,
+  tursoInsertDonor,
+  tursoUpdateDonor,
+  tursoDeleteDonor,
+  tursoInsertAsset,
+  tursoUpdateAsset,
+  tursoDeleteAsset,
+  tursoInsertApproval,
+  tursoUpdateApproval,
+  tursoInsertAuditLog,
+} from './turso';
 
-// Hybrid In-Memory + SQLite Persistent Store
-// Loads from SQLite on initialization; mutations write to disk & update memory for 0ms UI latency
+// Dual-Engine Persistent Store:
+// 1. If TURSO_DATABASE_URL is set -> uses Turso Cloud LibSQL (permanent across Vercel serverless cold starts)
+// 2. If TURSO_DATABASE_URL is NOT set -> uses native node:sqlite (local data/sik_mbh.sqlite or /tmp)
+// Both engines utilize an in-memory TTL write-through cache for instant UI rendering.
 class DataStore {
   private letters: OfficialLetter[] = [...INITIAL_LETTERS];
   private minutes: MeetingMinutes[] = [...INITIAL_MINUTES];
@@ -50,11 +77,17 @@ class DataStore {
   private fieldKPIs: FieldKPI[] = [...INITIAL_FIELD_KPIS];
   private auditLogs: AuditLogEntry[] = [...INITIAL_AUDIT_LOGS];
 
+  private lastSyncedAt = 0;
+  private syncPromise: Promise<void> | null = null;
+
   constructor() {
-    this.loadFromDatabase();
+    this.loadFromLocalDatabase();
+    if (isTursoConfigured()) {
+      this.sync(true).catch(() => {});
+    }
   }
 
-  public loadFromDatabase(): void {
+  public loadFromLocalDatabase(): void {
     try {
       const data = loadAllDataFromDatabase();
       if (data.letters && data.letters.length > 0) this.letters = data.letters;
@@ -67,20 +100,69 @@ class DataStore {
       if (data.fieldKPIs && data.fieldKPIs.length > 0) this.fieldKPIs = data.fieldKPIs;
       if (data.auditLogs && data.auditLogs.length > 0) this.auditLogs = data.auditLogs;
     } catch (err) {
-      console.warn('DataStore: Fallback to in-memory datasets (SQLite unavailable or initial build):', err);
+      console.warn('DataStore: Fallback to initial seed (local SQLite not yet ready):', err);
     }
   }
 
-  public reloadFromDatabase(): void {
-    this.loadFromDatabase();
+  public async sync(force = false): Promise<void> {
+    if (!isTursoConfigured()) {
+      if (force) {
+        this.loadFromLocalDatabase();
+      }
+      return;
+    }
+
+    const now = Date.now();
+    // Cache for 3000ms unless forced
+    if (!force && now - this.lastSyncedAt < 3000) {
+      return;
+    }
+
+    if (this.syncPromise) {
+      return this.syncPromise;
+    }
+
+    this.syncPromise = (async () => {
+      try {
+        const client = getTursoClient();
+        if (client) {
+          const data = await tursoLoadAllData(client);
+          if (data.letters) this.letters = data.letters;
+          if (data.minutes) this.minutes = data.minutes;
+          if (data.jamaah) this.jamaahList = data.jamaah;
+          if (data.transactions) this.transactions = data.transactions;
+          if (data.donors) this.donors = data.donors;
+          if (data.assets) this.assets = data.assets;
+          if (data.approvals) this.approvals = data.approvals;
+          if (data.fieldKPIs) this.fieldKPIs = data.fieldKPIs;
+          if (data.auditLogs) this.auditLogs = data.auditLogs;
+          this.lastSyncedAt = Date.now();
+        }
+      } catch (err) {
+        console.error('DataStore: Turso Cloud sync error:', err);
+      } finally {
+        this.syncPromise = null;
+      }
+    })();
+
+    return this.syncPromise;
+  }
+
+  public async reloadFromDatabase(): Promise<void> {
+    if (isTursoConfigured()) {
+      await this.sync(true);
+    } else {
+      this.loadFromLocalDatabase();
+    }
   }
 
   // ================= LETTERS =================
-  public getLetters(params?: {
+  public async getLetters(params?: {
     search?: string;
     category?: string;
     status?: string;
-  }): OfficialLetter[] {
+  }): Promise<OfficialLetter[]> {
+    await this.sync();
     let result = [...this.letters];
 
     if (params?.category && params.category !== 'ALL') {
@@ -105,16 +187,18 @@ class DataStore {
     return result.sort((a, b) => b.sequenceNumber - a.sequenceNumber);
   }
 
-  public getNextSequenceNumber(): number {
+  public async getNextSequenceNumber(): Promise<number> {
+    await this.sync();
     if (this.letters.length === 0) return 1;
     const max = Math.max(...this.letters.map((l) => l.sequenceNumber || 0));
     return max + 1;
   }
 
-  public addLetter(letterData: Omit<OfficialLetter, 'id' | 'sequenceNumber' | 'letterNumber' | 'createdAt' | 'updatedAt'> & {
+  public async addLetter(letterData: Omit<OfficialLetter, 'id' | 'sequenceNumber' | 'letterNumber' | 'createdAt' | 'updatedAt'> & {
     customNumber?: string;
-  }): OfficialLetter {
-    const nextSeq = this.getNextSequenceNumber();
+  }): Promise<OfficialLetter> {
+    await this.sync();
+    const nextSeq = await this.getNextSequenceNumber();
     const letterNumber =
       letterData.customNumber ||
       generateLetterNumber(nextSeq, letterData.category, letterData.letterDate);
@@ -131,36 +215,63 @@ class DataStore {
 
     this.letters.unshift(newLetter);
 
-    try {
-      dbInsertLetter(newLetter);
-    } catch (err) {
-      console.error('Failed to persist letter to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertLetter(client, newLetter);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist letter to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertLetter(newLetter);
+      } catch (err) {
+        console.error('Failed to persist letter to SQLite:', err);
+      }
     }
 
     return newLetter;
   }
 
-  public updateLetterStatus(id: string, status: LetterStatus): OfficialLetter | null {
+  public async updateLetterStatus(id: string, status: LetterStatus): Promise<OfficialLetter | null> {
+    await this.sync();
     const letter = this.letters.find((l) => l.id === id);
     if (!letter) return null;
     letter.status = status;
     letter.updatedAt = new Date().toISOString();
 
-    try {
-      dbUpdateLetterStatus(letter.id, status, letter.updatedAt);
-    } catch (err) {
-      console.error('Failed to persist letter status to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateLetterStatus(client, letter.id, status, letter.updatedAt);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update letter status in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateLetterStatus(letter.id, status, letter.updatedAt);
+      } catch (err) {
+        console.error('Failed to persist letter status to SQLite:', err);
+      }
     }
 
     return letter;
   }
 
   // ================= MINUTES =================
-  public getMinutes(): MeetingMinutes[] {
+  public async getMinutes(): Promise<MeetingMinutes[]> {
+    await this.sync();
     return [...this.minutes];
   }
 
-  public addMinutes(minuteData: Omit<MeetingMinutes, 'id' | 'createdAt'>): MeetingMinutes {
+  public async addMinutes(minuteData: Omit<MeetingMinutes, 'id' | 'createdAt'>): Promise<MeetingMinutes> {
+    await this.sync();
     const newMinute: MeetingMinutes = {
       ...minuteData,
       id: `min-${Date.now()}`,
@@ -168,33 +279,59 @@ class DataStore {
     };
     this.minutes.unshift(newMinute);
 
-    try {
-      dbInsertMinute(newMinute);
-    } catch (err) {
-      console.error('Failed to persist minutes to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertMinute(client, newMinute);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist minutes to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertMinute(newMinute);
+      } catch (err) {
+        console.error('Failed to persist minutes to SQLite:', err);
+      }
     }
 
     return newMinute;
   }
 
-  public toggleActionItemStatus(minuteId: string, actionId: string): boolean {
+  public async toggleActionItemStatus(minuteId: string, actionId: string): Promise<boolean> {
+    await this.sync();
     const minute = this.minutes.find((m) => m.id === minuteId);
     if (!minute) return false;
     const item = minute.actionItems.find((a) => a.id === actionId);
     if (!item) return false;
     item.status = item.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
 
-    try {
-      dbUpdateMinuteActionItems(minuteId, minute.actionItems);
-    } catch (err) {
-      console.error('Failed to persist minute action items to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateMinuteActionItems(client, minuteId, minute.actionItems);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update action items in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateMinuteActionItems(minuteId, minute.actionItems);
+      } catch (err) {
+        console.error('Failed to persist minute action items to SQLite:', err);
+      }
     }
 
     return true;
   }
 
   // ================= JAMAAH =================
-  public getJamaah(params?: JamaahFilterParams): Jamaah[] {
+  public async getJamaah(params?: JamaahFilterParams): Promise<Jamaah[]> {
+    await this.sync();
     let result = [...this.jamaahList];
 
     if (params?.rt && params.rt !== 'ALL') {
@@ -236,11 +373,13 @@ class DataStore {
     return result.sort((a, b) => a.fullName.localeCompare(b.fullName));
   }
 
-  public getJamaahById(id: string): Jamaah | undefined {
+  public async getJamaahById(id: string): Promise<Jamaah | undefined> {
+    await this.sync();
     return this.jamaahList.find((j) => j.id === id);
   }
 
-  public addJamaah(data: Omit<Jamaah, 'id' | 'createdAt' | 'updatedAt'>): Jamaah {
+  public async addJamaah(data: Omit<Jamaah, 'id' | 'createdAt' | 'updatedAt'>): Promise<Jamaah> {
+    await this.sync();
     const now = new Date().toISOString();
     const newJamaah: Jamaah = {
       ...data,
@@ -250,16 +389,29 @@ class DataStore {
     };
     this.jamaahList.unshift(newJamaah);
 
-    try {
-      dbInsertJamaah(newJamaah);
-    } catch (err) {
-      console.error('Failed to persist jamaah to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertJamaah(client, newJamaah);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist jamaah to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertJamaah(newJamaah);
+      } catch (err) {
+        console.error('Failed to persist jamaah to SQLite:', err);
+      }
     }
 
     return newJamaah;
   }
 
-  public addBulkJamaah(dataArray: Omit<Jamaah, 'id' | 'createdAt' | 'updatedAt'>[]): Jamaah[] {
+  public async addBulkJamaah(dataArray: Omit<Jamaah, 'id' | 'createdAt' | 'updatedAt'>[]): Promise<Jamaah[]> {
+    await this.sync();
     const now = new Date().toISOString();
     const addedList: Jamaah[] = [];
 
@@ -275,16 +427,29 @@ class DataStore {
       addedList.push(newJamaah);
     }
 
-    try {
-      dbInsertBulkJamaah(addedList);
-    } catch (err) {
-      console.error('Failed to bulk persist jamaah to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertBulkJamaah(client, addedList);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to bulk persist jamaah to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertBulkJamaah(addedList);
+      } catch (err) {
+        console.error('Failed to bulk persist jamaah to SQLite:', err);
+      }
     }
 
     return addedList;
   }
 
-  public updateJamaah(id: string, data: Partial<Jamaah>): Jamaah | null {
+  public async updateJamaah(id: string, data: Partial<Jamaah>): Promise<Jamaah | null> {
+    await this.sync();
     const index = this.jamaahList.findIndex((j) => j.id === id);
     if (index === -1) return null;
 
@@ -297,32 +462,58 @@ class DataStore {
 
     this.jamaahList[index] = updated;
 
-    try {
-      dbUpdateJamaah(updated);
-    } catch (err) {
-      console.error('Failed to update jamaah in SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateJamaah(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update jamaah in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateJamaah(updated);
+      } catch (err) {
+        console.error('Failed to update jamaah in SQLite:', err);
+      }
     }
 
     return updated;
   }
 
-  public deleteJamaah(id: string): boolean {
+  public async deleteJamaah(id: string): Promise<boolean> {
+    await this.sync();
     const prevLen = this.jamaahList.length;
     this.jamaahList = this.jamaahList.filter((j) => j.id !== id);
     const success = this.jamaahList.length < prevLen;
 
     if (success) {
-      try {
-        dbDeleteJamaah(id);
-      } catch (err) {
-        console.error('Failed to delete jamaah from SQLite:', err);
+      if (isTursoConfigured()) {
+        const client = getTursoClient();
+        if (client) {
+          try {
+            await tursoDeleteJamaah(client, id);
+            this.lastSyncedAt = Date.now();
+          } catch (err) {
+            console.error('Failed to delete jamaah from Turso Cloud:', err);
+          }
+        }
+      } else {
+        try {
+          dbDeleteJamaah(id);
+        } catch (err) {
+          console.error('Failed to delete jamaah from SQLite:', err);
+        }
       }
     }
 
     return success;
   }
 
-  public getJamaahStats(): JamaahStats {
+  public async getJamaahStats(): Promise<JamaahStats> {
+    await this.sync();
     const totalJamaah = this.jamaahList.length;
     const totalKK = this.jamaahList.filter((j) => j.familyRole === 'KEPALA_KELUARGA').length;
     const totalMustahiq = this.jamaahList.filter(
@@ -357,7 +548,8 @@ class DataStore {
   }
 
   // ================= FINANCE =================
-  public getTransactions(params?: { category?: string; type?: string; search?: string }): FinanceTransaction[] {
+  public async getTransactions(params?: { category?: string; type?: string; search?: string }): Promise<FinanceTransaction[]> {
+    await this.sync();
     let result = [...this.transactions];
 
     if (params?.category && params.category !== 'ALL') {
@@ -378,12 +570,12 @@ class DataStore {
       );
     }
 
-    // Sort descending by date
     return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
-  public addTransaction(data: Omit<FinanceTransaction, 'id' | 'balanceAfter' | 'createdAt'>): FinanceTransaction {
-    const currentSummary = this.getFinanceSummary();
+  public async addTransaction(data: Omit<FinanceTransaction, 'id' | 'balanceAfter' | 'createdAt'>): Promise<FinanceTransaction> {
+    await this.sync();
+    const currentSummary = await this.getFinanceSummary();
     const newBalance =
       data.type === 'INCOME'
         ? currentSummary.totalBalance + data.amount
@@ -398,16 +590,29 @@ class DataStore {
 
     this.transactions.push(newTrx);
 
-    try {
-      dbInsertTransaction(newTrx);
-    } catch (err) {
-      console.error('Failed to persist transaction to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertTransaction(client, newTrx);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist transaction to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertTransaction(newTrx);
+      } catch (err) {
+        console.error('Failed to persist transaction to SQLite:', err);
+      }
     }
 
     return newTrx;
   }
 
-  public updateTransaction(id: string, updates: Partial<FinanceTransaction>): FinanceTransaction | null {
+  public async updateTransaction(id: string, updates: Partial<FinanceTransaction>): Promise<FinanceTransaction | null> {
+    await this.sync();
     const idx = this.transactions.findIndex((t) => t.id === id);
     if (idx === -1) return null;
 
@@ -416,32 +621,58 @@ class DataStore {
       ...updates,
     };
 
-    try {
-      dbUpdateTransaction(this.transactions[idx]);
-    } catch (err) {
-      console.error('Failed to update transaction in SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateTransaction(client, this.transactions[idx]);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update transaction in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateTransaction(this.transactions[idx]);
+      } catch (err) {
+        console.error('Failed to update transaction in SQLite:', err);
+      }
     }
 
     return this.transactions[idx];
   }
 
-  public deleteTransaction(id: string): boolean {
+  public async deleteTransaction(id: string): Promise<boolean> {
+    await this.sync();
     const initialLen = this.transactions.length;
     this.transactions = this.transactions.filter((t) => t.id !== id);
     const success = this.transactions.length < initialLen;
 
     if (success) {
-      try {
-        dbDeleteTransaction(id);
-      } catch (err) {
-        console.error('Failed to delete transaction from SQLite:', err);
+      if (isTursoConfigured()) {
+        const client = getTursoClient();
+        if (client) {
+          try {
+            await tursoDeleteTransaction(client, id);
+            this.lastSyncedAt = Date.now();
+          } catch (err) {
+            console.error('Failed to delete transaction from Turso Cloud:', err);
+          }
+        }
+      } else {
+        try {
+          dbDeleteTransaction(id);
+        } catch (err) {
+          console.error('Failed to delete transaction from SQLite:', err);
+        }
       }
     }
 
     return success;
   }
 
-  public getFinanceSummary(): FinanceSummary {
+  public async getFinanceSummary(): Promise<FinanceSummary> {
+    await this.sync();
     let totalBalance = 0;
     let operationalBalance = 0;
     let phbiBalance = 0;
@@ -490,15 +721,16 @@ class DataStore {
   }
 
   // ================= DONORS (DONATUR TETAP) =================
-  public getDonors(params?: {
+  public async getDonors(params?: {
     search?: string;
     category?: string;
     status?: string;
     rt?: string;
     paymentStatus?: 'PAID_THIS_MONTH' | 'UNPAID_THIS_MONTH';
-  }): DonorItem[] {
+  }): Promise<DonorItem[]> {
+    await this.sync();
     let result = [...this.donors];
-    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const currentMonth = new Date().toISOString().slice(0, 7);
 
     if (params?.category && params.category !== 'ALL') {
       result = result.filter((d) => d.category === params.category);
@@ -534,11 +766,13 @@ class DataStore {
     return result.sort((a, b) => a.donorName.localeCompare(b.donorName));
   }
 
-  public getDonorById(id: string): DonorItem | undefined {
+  public async getDonorById(id: string): Promise<DonorItem | undefined> {
+    await this.sync();
     return this.donors.find((d) => d.id === id);
   }
 
-  public addDonor(data: Omit<DonorItem, 'id' | 'createdAt' | 'updatedAt'>): DonorItem {
+  public async addDonor(data: Omit<DonorItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<DonorItem> {
+    await this.sync();
     const now = new Date().toISOString();
     const newDonor: DonorItem = {
       ...data,
@@ -548,16 +782,29 @@ class DataStore {
     };
     this.donors.unshift(newDonor);
 
-    try {
-      dbInsertDonor(newDonor);
-    } catch (err) {
-      console.error('Failed to persist donor to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertDonor(client, newDonor);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist donor to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertDonor(newDonor);
+      } catch (err) {
+        console.error('Failed to persist donor to SQLite:', err);
+      }
     }
 
     return newDonor;
   }
 
-  public updateDonor(id: string, data: Partial<DonorItem>): DonorItem | null {
+  public async updateDonor(id: string, data: Partial<DonorItem>): Promise<DonorItem | null> {
+    await this.sync();
     const idx = this.donors.findIndex((d) => d.id === id);
     if (idx === -1) return null;
 
@@ -567,38 +814,64 @@ class DataStore {
       updatedAt: new Date().toISOString(),
     };
 
-    try {
-      dbUpdateDonor(this.donors[idx]);
-    } catch (err) {
-      console.error('Failed to update donor in SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateDonor(client, this.donors[idx]);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update donor in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateDonor(this.donors[idx]);
+      } catch (err) {
+        console.error('Failed to update donor in SQLite:', err);
+      }
     }
 
     return this.donors[idx];
   }
 
-  public deleteDonor(id: string): boolean {
+  public async deleteDonor(id: string): Promise<boolean> {
+    await this.sync();
     const initialLen = this.donors.length;
     this.donors = this.donors.filter((d) => d.id !== id);
     const success = this.donors.length < initialLen;
 
     if (success) {
-      try {
-        dbDeleteDonor(id);
-      } catch (err) {
-        console.error('Failed to delete donor from SQLite:', err);
+      if (isTursoConfigured()) {
+        const client = getTursoClient();
+        if (client) {
+          try {
+            await tursoDeleteDonor(client, id);
+            this.lastSyncedAt = Date.now();
+          } catch (err) {
+            console.error('Failed to delete donor from Turso Cloud:', err);
+          }
+        }
+      } else {
+        try {
+          dbDeleteDonor(id);
+        } catch (err) {
+          console.error('Failed to delete donor from SQLite:', err);
+        }
       }
     }
 
     return success;
   }
 
-  public recordDonorPayment(params: {
+  public async recordDonorPayment(params: {
     donorId: string;
     amount?: number;
     paymentMethod?: PaymentMethod;
     date?: string;
     notes?: string;
-  }): { donor: DonorItem; transaction: FinanceTransaction } | null {
+  }): Promise<{ donor: DonorItem; transaction: FinanceTransaction } | null> {
+    await this.sync();
     const donor = this.donors.find((d) => d.id === params.donorId);
     if (!donor) return null;
 
@@ -607,15 +880,14 @@ class DataStore {
     const payAmount = params.amount || donor.commitmentAmount;
     const method = params.paymentMethod || donor.paymentMethod;
 
-    // Map donor category to finance category
     let financeCat: FinanceCategory = 'KAS_OPERASIONAL';
     if (donor.category === 'KAS_OPERASIONAL') financeCat = 'KAS_OPERASIONAL';
     else if (donor.category === 'SWADAYA_PHBI') financeCat = 'SWADAYA_PHBI';
     else if (donor.category === 'ZISWAF_ZAKAT') financeCat = 'ZISWAF_ZAKAT';
     else if (donor.category === 'ZISWAF_INFAQ' || donor.category === 'BEASISWA_YATIM') financeCat = 'ZISWAF_INFAQ';
 
-    // 1. Create transaction in Finance (internally persists to SQLite)
-    const newTrx = this.addTransaction({
+    // 1. Create transaction in Finance
+    const newTrx = await this.addTransaction({
       date: payDate,
       type: 'INCOME',
       category: financeCat,
@@ -632,16 +904,29 @@ class DataStore {
     donor.lastPaymentMonth = payMonth;
     donor.updatedAt = new Date().toISOString();
 
-    try {
-      dbUpdateDonor(donor);
-    } catch (err) {
-      console.error('Failed to update donor payment status in SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateDonor(client, donor);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update donor payment status in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateDonor(donor);
+      } catch (err) {
+        console.error('Failed to update donor payment status in SQLite:', err);
+      }
     }
 
     return { donor, transaction: newTrx };
   }
 
-  public getDonorStats(): DonorStats {
+  public async getDonorStats(): Promise<DonorStats> {
+    await this.sync();
     const currentMonth = new Date().toISOString().slice(0, 7);
     const totalDonors = this.donors.length;
     const activeDonorsList = this.donors.filter((d) => d.status === 'AKTIF');
@@ -671,15 +956,15 @@ class DataStore {
   }
 
   // ================= ASSETS =================
-  public getAssets(params?: {
+  public async getAssets(params?: {
     category?: string;
     condition?: string;
     search?: string;
     maintenanceDueOnly?: boolean;
-  }): AssetItem[] {
+  }): Promise<AssetItem[]> {
+    await this.sync();
     const today = new Date().toISOString().split('T')[0];
 
-    // Compute maintenance due
     let result = this.assets.map((a) => {
       const isDue = Boolean(a.nextMaintenanceDate && a.nextMaintenanceDate <= today);
       return {
@@ -714,7 +999,8 @@ class DataStore {
     return result.sort((a, b) => a.code.localeCompare(b.code));
   }
 
-  public addAsset(data: Omit<AssetItem, 'id' | 'createdAt' | 'updatedAt' | 'isMaintenanceDue'>): AssetItem {
+  public async addAsset(data: Omit<AssetItem, 'id' | 'createdAt' | 'updatedAt' | 'isMaintenanceDue'>): Promise<AssetItem> {
+    await this.sync();
     const now = new Date().toISOString();
     const newAsset: AssetItem = {
       ...data,
@@ -724,16 +1010,29 @@ class DataStore {
     };
     this.assets.unshift(newAsset);
 
-    try {
-      dbInsertAsset(newAsset);
-    } catch (err) {
-      console.error('Failed to persist asset to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertAsset(client, newAsset);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist asset to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertAsset(newAsset);
+      } catch (err) {
+        console.error('Failed to persist asset to SQLite:', err);
+      }
     }
 
     return newAsset;
   }
 
-  public updateAsset(id: string, data: Partial<AssetItem>): AssetItem | null {
+  public async updateAsset(id: string, data: Partial<AssetItem>): Promise<AssetItem | null> {
+    await this.sync();
     const index = this.assets.findIndex((a) => a.id === id);
     if (index === -1) return null;
 
@@ -745,23 +1044,35 @@ class DataStore {
     };
     this.assets[index] = updated;
 
-    try {
-      dbUpdateAsset(updated);
-    } catch (err) {
-      console.error('Failed to update asset in SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateAsset(client, updated);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update asset in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateAsset(updated);
+      } catch (err) {
+        console.error('Failed to update asset in SQLite:', err);
+      }
     }
 
     return updated;
   }
 
-  public recordMaintenanceDone(id: string, notes?: string): AssetItem | null {
+  public async recordMaintenanceDone(id: string, notes?: string): Promise<AssetItem | null> {
+    await this.sync();
     const asset = this.assets.find((a) => a.id === id);
     if (!asset) return null;
 
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
-    // Compute next maintenance date
     const nextDate = new Date(today);
     nextDate.setMonth(nextDate.getMonth() + (asset.maintenanceCycleMonths || 3));
     const nextDateStr = nextDate.toISOString().split('T')[0];
@@ -775,32 +1086,58 @@ class DataStore {
     }
     asset.updatedAt = new Date().toISOString();
 
-    try {
-      dbUpdateAsset(asset);
-    } catch (err) {
-      console.error('Failed to update maintenance status in SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateAsset(client, asset);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update maintenance status in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateAsset(asset);
+      } catch (err) {
+        console.error('Failed to update maintenance status in SQLite:', err);
+      }
     }
 
     return asset;
   }
 
-  public deleteAsset(id: string): boolean {
+  public async deleteAsset(id: string): Promise<boolean> {
+    await this.sync();
     const prevLen = this.assets.length;
     this.assets = this.assets.filter((a) => a.id !== id);
     const success = this.assets.length < prevLen;
 
     if (success) {
-      try {
-        dbDeleteAsset(id);
-      } catch (err) {
-        console.error('Failed to delete asset from SQLite:', err);
+      if (isTursoConfigured()) {
+        const client = getTursoClient();
+        if (client) {
+          try {
+            await tursoDeleteAsset(client, id);
+            this.lastSyncedAt = Date.now();
+          } catch (err) {
+            console.error('Failed to delete asset from Turso Cloud:', err);
+          }
+        }
+      } else {
+        try {
+          dbDeleteAsset(id);
+        } catch (err) {
+          console.error('Failed to delete asset from SQLite:', err);
+        }
       }
     }
 
     return success;
   }
 
-  public getAssetStats(): AssetStats {
+  public async getAssetStats(): Promise<AssetStats> {
+    await this.sync();
     const today = new Date().toISOString().split('T')[0];
     const totalAssets = this.assets.length;
     const totalEstimatedValue = this.assets.reduce((sum, a) => sum + (a.purchaseCost || 0), 0);
@@ -818,7 +1155,8 @@ class DataStore {
   }
 
   // ================= APPROVALS =================
-  public getApprovals(status?: string): ApprovalItem[] {
+  public async getApprovals(status?: string): Promise<ApprovalItem[]> {
+    await this.sync();
     let result = [...this.approvals];
     if (status && status !== 'ALL') {
       result = result.filter((a) => a.status === status);
@@ -826,7 +1164,8 @@ class DataStore {
     return result.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
   }
 
-  public addApproval(data: Omit<ApprovalItem, 'id' | 'submittedAt' | 'status'>): ApprovalItem {
+  public async addApproval(data: Omit<ApprovalItem, 'id' | 'submittedAt' | 'status'>): Promise<ApprovalItem> {
+    await this.sync();
     const newItem: ApprovalItem = {
       ...data,
       id: `appr-${Date.now()}`,
@@ -835,21 +1174,34 @@ class DataStore {
     };
     this.approvals.unshift(newItem);
 
-    try {
-      dbInsertApproval(newItem);
-    } catch (err) {
-      console.error('Failed to persist approval to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertApproval(client, newItem);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist approval to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertApproval(newItem);
+      } catch (err) {
+        console.error('Failed to persist approval to SQLite:', err);
+      }
     }
 
     return newItem;
   }
 
-  public verifyApproval(
+  public async verifyApproval(
     id: string,
     status: ApprovalStatus,
     dispositionNotes?: string,
     verifiedBy: string = 'Drs. H. M. Said, M.Pd. (Ketua Umum)'
-  ): ApprovalItem | null {
+  ): Promise<ApprovalItem | null> {
+    await this.sync();
     const item = this.approvals.find((a) => a.id === id);
     if (!item) return null;
 
@@ -858,21 +1210,35 @@ class DataStore {
     item.verifiedBy = verifiedBy;
     item.verifiedAt = new Date().toISOString();
 
-    try {
-      dbUpdateApproval(item);
-    } catch (err) {
-      console.error('Failed to update approval verification in SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoUpdateApproval(client, item);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to update approval verification in Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbUpdateApproval(item);
+      } catch (err) {
+        console.error('Failed to update approval verification in SQLite:', err);
+      }
     }
 
     return item;
   }
 
   // ================= FIELD KPIS & LPJ =================
-  public getFieldKPIs(): FieldKPI[] {
+  public async getFieldKPIs(): Promise<FieldKPI[]> {
+    await this.sync();
     return [...this.fieldKPIs];
   }
 
-  public generateLPJData(customPeriod: string = 'Tahun Anggaran 2026'): LPJReport {
+  public async generateLPJData(customPeriod: string = 'Tahun Anggaran 2026'): Promise<LPJReport> {
+    await this.sync();
     // 1. Metrics from Letters & Minutes
     const totalLetters = this.letters.length;
     const invitationsCount = this.letters.filter((l) => l.category === 'UND').length;
@@ -895,7 +1261,7 @@ class DataStore {
     const youthMembersCount = this.jamaahList.filter((j) => j.isYouthMember).length;
 
     // 3. Metrics from Finance
-    const finSummary = this.getFinanceSummary();
+    const finSummary = await this.getFinanceSummary();
     const ziswafCollected = this.transactions
       .filter((t) => t.type === 'INCOME' && (t.category === 'ZISWAF_ZAKAT' || t.category === 'ZISWAF_INFAQ'))
       .reduce((sum, t) => sum + t.amount, 0);
@@ -904,7 +1270,7 @@ class DataStore {
       .reduce((sum, t) => sum + t.amount, 0);
 
     // 4. Metrics from Assets
-    const astStats = this.getAssetStats();
+    const astStats = await this.getAssetStats();
     const maintenanceCompliancePercent = Math.round(
       ((astStats.totalAssets - astStats.maintenanceDueCount) / (astStats.totalAssets || 1)) * 100
     );
@@ -969,12 +1335,13 @@ class DataStore {
   }
 
   // ================= AUDIT LOGS & KEAMANAN =================
-  public getAuditLogs(params?: {
+  public async getAuditLogs(params?: {
     module?: string;
     role?: string;
     search?: string;
     limit?: number;
-  }): AuditLogEntry[] {
+  }): Promise<AuditLogEntry[]> {
+    await this.sync();
     let result = [...this.auditLogs];
 
     if (params?.module && params.module !== 'ALL') {
@@ -996,7 +1363,6 @@ class DataStore {
       );
     }
 
-    // Sort descending by timestamp
     result.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     if (params?.limit && params.limit > 0) {
@@ -1006,9 +1372,9 @@ class DataStore {
     return result;
   }
 
-  public addAuditLog(
+  public async addAuditLog(
     entry: Omit<AuditLogEntry, 'id' | 'timestamp'> & { timestamp?: string }
-  ): AuditLogEntry {
+  ): Promise<AuditLogEntry> {
     const newLog: AuditLogEntry = {
       ...entry,
       id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -1017,10 +1383,22 @@ class DataStore {
 
     this.auditLogs.unshift(newLog);
 
-    try {
-      dbInsertAuditLog(newLog);
-    } catch (err) {
-      console.error('Failed to persist audit log to SQLite:', err);
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          await tursoInsertAuditLog(client, newLog);
+          this.lastSyncedAt = Date.now();
+        } catch (err) {
+          console.error('Failed to persist audit log to Turso Cloud:', err);
+        }
+      }
+    } else {
+      try {
+        dbInsertAuditLog(newLog);
+      } catch (err) {
+        console.error('Failed to persist audit log to SQLite:', err);
+      }
     }
 
     return newLog;

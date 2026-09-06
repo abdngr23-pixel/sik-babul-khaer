@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const category = (searchParams.get('category') || 'UND') as LetterCategory;
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
-    const nextSeq = store.getNextSequenceNumber();
+    const nextSeq = await store.getNextSequenceNumber();
     const nextLetterNumber = generateLetterNumber(nextSeq, category, date);
 
     return NextResponse.json({

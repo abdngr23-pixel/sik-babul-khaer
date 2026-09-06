@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Perform database restoration
-    const result = restoreDatabaseSnapshot(snapshot);
+    const result = await restoreDatabaseSnapshot(snapshot);
 
     if (!result.success) {
       return NextResponse.json(
@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Refresh store in-memory state
-    store.reloadFromDatabase();
+    await store.reloadFromDatabase();
 
     // Log this restore action
-    store.addAuditLog({
+    await store.addAuditLog({
       userId: 'usr-pimpinan',
       userName: 'Pengurus DKM (Pusat Kendali)',
       userRole: 'DEWAN_PENGAWAS',

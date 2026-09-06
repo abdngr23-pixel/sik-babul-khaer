@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') || undefined;
     const status = searchParams.get('status') || undefined;
 
-    const letters = store.getLetters({ search, category, status });
+    const letters = await store.getLetters({ search, category, status });
     return NextResponse.json({
       success: true,
       data: letters,
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newLetter = store.addLetter({
+    const newLetter = await store.addLetter({
       category: body.category,
       recipientName: body.recipientName,
       recipientTitle: body.recipientTitle || '',
@@ -87,7 +87,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const updated = store.updateLetterStatus(id, status as LetterStatus);
+    const updated = await store.updateLetterStatus(id, status as LetterStatus);
     if (!updated) {
       return NextResponse.json(
         { success: false, error: 'Surat tidak ditemukan' },

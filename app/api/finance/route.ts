@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || undefined;
     const search = searchParams.get('search') || undefined;
 
-    const transactions = store.getTransactions({ category, type, search });
-    const summary = store.getFinanceSummary();
+    const transactions = await store.getTransactions({ category, type, search });
+    const summary = await store.getFinanceSummary();
 
     return NextResponse.json({
       success: true,
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newTrx = store.addTransaction({
+    const newTrx = await store.addTransaction({
       date: body.date || new Date().toISOString().split('T')[0],
       type: body.type as TransactionType,
       category: body.category as FinanceCategory,
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       notes: body.notes ? body.notes.trim() : '',
     });
 
-    const summary = store.getFinanceSummary();
+    const summary = await store.getFinanceSummary();
 
     return NextResponse.json({
       success: true,
@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updated = store.updateTransaction(id, updates);
+    const updated = await store.updateTransaction(id, updates);
     if (!updated) {
       return NextResponse.json(
         { success: false, error: 'Transaksi tidak ditemukan' },
@@ -87,7 +87,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const summary = store.getFinanceSummary();
+    const summary = await store.getFinanceSummary();
     return NextResponse.json({
       success: true,
       data: updated,
@@ -120,7 +120,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const deleted = store.deleteTransaction(id);
+    const deleted = await store.deleteTransaction(id);
     if (!deleted) {
       return NextResponse.json(
         { success: false, error: 'Transaksi tidak ditemukan' },
@@ -128,7 +128,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const summary = store.getFinanceSummary();
+    const summary = await store.getFinanceSummary();
     return NextResponse.json({
       success: true,
       summary,

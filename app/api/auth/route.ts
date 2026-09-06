@@ -48,7 +48,7 @@ export async function POST(req: Request) {
         ? `Pengguna beralih peran aktif ke ${matchedUser.title} (${matchedUser.name})`
         : `Masuk ke akun ${matchedUser.title} (${matchedUser.name}) dari perangkat pimpinan`;
 
-    store.addAuditLog({
+    await store.addAuditLog({
       userId: matchedUser.id,
       userName: matchedUser.name,
       userRole: matchedUser.role,

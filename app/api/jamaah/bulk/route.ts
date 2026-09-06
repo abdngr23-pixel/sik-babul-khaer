@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const added = store.addBulkJamaah(validRows);
-    const stats = store.getJamaahStats();
+    const added = await store.addBulkJamaah(validRows);
+    const stats = await store.getJamaahStats();
 
     return NextResponse.json({
       success: true,
