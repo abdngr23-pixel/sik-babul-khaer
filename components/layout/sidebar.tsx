@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   Database,
   LogOut,
+  Calendar,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
@@ -30,6 +31,7 @@ export type AppNavTab =
   | 'minutes'
   | 'jamaah'
   | 'mustahiq'
+  | 'dakwah'
   | 'finance'
   | 'donors'
   | 'assets'
@@ -65,7 +67,7 @@ export default function Sidebar({
   // Role visibility checks
   const showPhase1 =
     canAccessTab('archive') || canAccessTab('create') || canAccessTab('minutes');
-  const showPhase2 = canAccessTab('jamaah') || canAccessTab('mustahiq');
+  const showPhase2 = canAccessTab('jamaah') || canAccessTab('mustahiq') || canAccessTab('dakwah');
   const showKeuangan = canAccessTab('finance') || canAccessTab('donors');
   const showSarpras = canAccessTab('assets');
   const showPhase4 = canAccessTab('reports') || canAccessTab('approvals');
@@ -236,6 +238,23 @@ export default function Sidebar({
                   <span>Mustahiq & Bansos</span>
                   <span className="ml-auto text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
                     ZISWAF
+                  </span>
+                </button>
+              )}
+
+              {canAccessTab('dakwah') && (
+                <button
+                  onClick={() => setActiveTab('dakwah')}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'dakwah'
+                      ? 'bg-[#059669] text-white shadow-soft-md'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  <Calendar className="w-4 h-4 text-teal-600" />
+                  <span>Jadwal Dakwah & Ibadah</span>
+                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800">
+                    Khatib
                   </span>
                 </button>
               )}

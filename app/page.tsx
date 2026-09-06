@@ -25,6 +25,9 @@ import TransactionTable from '@/components/finance/transaction-table';
 import TransactionModal from '@/components/finance/transaction-modal';
 import FridayReportModal from '@/components/finance/friday-report-modal';
 import DonorTable from '@/components/finance/donor-table';
+import CashflowRunwayAlert from '@/components/finance/cashflow-runway-alert';
+import RakerBudgetTracker from '@/components/finance/raker-budget-tracker';
+import DakwahView from '@/components/dakwah/dakwah-view';
 import AssetStatsCards from '@/components/assets/asset-stats';
 import AssetTable from '@/components/assets/asset-table';
 import AssetFormModal from '@/components/assets/asset-form-modal';
@@ -81,6 +84,7 @@ import {
   LayoutDashboard,
   Archive,
   LogOut,
+  Calendar,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -186,6 +190,7 @@ export default function DashboardPage() {
   const isJamaahTab = activeTab === 'jamaah' || activeTab === 'mustahiq';
   const isReportsTab = activeTab === 'reports';
   const isApprovalsTab = activeTab === 'approvals';
+  const isDakwahTab = activeTab === 'dakwah';
 
   // ----------------------------------------------------
   // Action Handlers
@@ -481,6 +486,8 @@ export default function DashboardPage() {
                 ? 'bg-gradient-to-r from-amber-950 via-amber-900 to-slate-900 shadow-amber-950/20'
                 : isAssetTab
                 ? 'bg-gradient-to-r from-slate-900 via-teal-950 to-emerald-950 shadow-slate-950/20'
+                : isDakwahTab
+                ? 'bg-gradient-to-r from-teal-950 via-emerald-950 to-slate-900 shadow-teal-950/20'
                 : isJamaahTab
                 ? 'bg-gradient-to-r from-teal-950 via-teal-900 to-emerald-950 shadow-teal-950/20'
                 : 'bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 shadow-emerald-950/20'
@@ -511,6 +518,8 @@ export default function DashboardPage() {
                     ? 'Pengelolaan Keuangan & Swadaya PHBI Satu Pintu'
                     : isDonorsTab
                     ? 'Kelola Infaq & Donatur Rutin Masjid Babul Khaer'
+                    : isDakwahTab
+                    ? 'Seksi Peribadatan & Dakwah: Khatib Jumat, Imam Rawatib Rp1.5jt, Kajian, & Ramadhan'
                     : isAssetTab
                     ? 'Inventarisasi Sarana Prasarana & Peringatan Servis Berkala'
                     : isJamaahTab
@@ -552,6 +561,8 @@ export default function DashboardPage() {
                   ? 'Transparansi mutasi kas DKM Kompleks BTP Blok AE: Pemisahan tegas antara Kas Operasional Rutin, Dana Swadaya Kegiatan PHBI (satu pintu), dan Rekapitulasi ZISWAF umat.'
                   : isDonorsTab
                   ? 'Manajemen donatur tetap bulanan (infaq operasional, beasiswa yatim, zakat mal, PHBI) dengan integrasi 1-klik setor kas masjid dan pemantauan tertib komitmen donasi.'
+                  : isDakwahTab
+                  ? 'Pengelolaan peribadatan resmi Masjid Babul Khaer BTP Blok AE: Jadwal Khatib Jumat, 3 Imam Rawatib sholat fardhu (standar insentif Rp1.5jt hasil Raker 2026), agenda kajian pekanan mandiri, dan perencanaan Semarak Ramadhan 1448 H.'
                   : isAssetTab
                   ? 'Katalog sarana & prasarana fisik masjid (AC duduk Daikin, genset silent 5500W, sound system, karpet shaf) lengkap dengan pemantauan otomatis jadwal servis berkala.'
                   : isJamaahTab
@@ -804,7 +815,7 @@ export default function DashboardPage() {
               selectedStatus={selectedStatus}
               onSelectStatus={setSelectedStatus}
             />
-          ) : (
+          ) : isDakwahTab ? null : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
@@ -952,6 +963,20 @@ export default function DashboardPage() {
               >
                 <HeartHandshake className="w-3.5 h-3.5 text-teal-600" />
                 <span>Mustahiq ZISWAF</span>
+              </button>
+            )}
+
+            {canAccessTab('dakwah') && (
+              <button
+                onClick={() => setActiveTab('dakwah')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'dakwah'
+                    ? 'bg-white text-teal-900 shadow-soft-sm ring-1 ring-teal-500/20'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5 text-teal-600" />
+                <span>Dakwah & Peribadatan</span>
               </button>
             )}
 
@@ -1157,7 +1182,10 @@ export default function DashboardPage() {
 
               {/* Keuangan: Buku Kas */}
               {activeTab === 'finance' && (
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  {/* Prioritas 1: Peringatan Dini Defisit & Analisis Runway Kas */}
+                  <CashflowRunwayAlert />
+
                   <TransactionTable
                     transactions={transactions}
                     selectedCategory={financeCategoryFilter}
@@ -1170,6 +1198,9 @@ export default function DashboardPage() {
                     isReadOnly={isReadOnly}
                     externalSearchTerm={globalSearchQuery}
                   />
+
+                  {/* Prioritas 1: Monitoring Pagu Anggaran Raker (Budget vs Actual) */}
+                  <RakerBudgetTracker />
                 </div>
               )}
 
@@ -1294,6 +1325,13 @@ export default function DashboardPage() {
                     onVerify={handleVerifyApproval}
                     onSubmitNewApproval={handleSubmitNewApproval}
                   />
+                </div>
+              )}
+
+              {/* Dakwah: Manajemen Jadwal Khatib, Rawatib, Kajian, Ramadhan */}
+              {activeTab === 'dakwah' && (
+                <div className="space-y-4">
+                  <DakwahView />
                 </div>
               )}
             </>
