@@ -1,7 +1,7 @@
 /// SIK-MBH Service Worker — Network-First with Cache Fallback
-/// Version: 3.0 (Bottom Navigation Bar & Mobile Telkomsel/By.U Overhaul)
+/// Version: 4.0 (High-Contrast White-on-Emerald Icon & Favicon Overhaul)
 
-const CACHE_NAME = 'sik-mbh-v3-20260907';
+const CACHE_NAME = 'sik-mbh-v4-20260907';
 const OFFLINE_URL = '/';
 
 // Precache only static branding assets (DO NOT precache HTML root to prevent stale UI)
