@@ -182,13 +182,13 @@ ${letter.signatory1.name}               ${letter.signatory2.name}
               </div>
             </div>
 
-            {/* TANDA TANGAN RESMI */}
+            {/* TANDA TANGAN RESMI & STEMPEL */}
             <div className="relative z-10 mt-8 pt-4">
               <p className="text-center text-sm font-semibold mb-6">
                 DEWAN KEMAKMURAN MASJID (DKM) BABUL KHAER
               </p>
 
-              <div className="grid grid-cols-2 text-center text-sm">
+              <div className="relative grid grid-cols-2 text-center text-sm">
                 {/* Ketua */}
                 <div className="flex flex-col items-center">
                   <p className="font-semibold">{letter.signatory1.role}</p>
@@ -203,6 +203,9 @@ ${letter.signatory1.name}               ${letter.signatory2.name}
                     {letter.signatory1.name}
                   </p>
                 </div>
+
+                {/* Stempel Digital DKM di tengah antara Ketua & Sekretaris */}
+                {letter.status !== 'DRAFT' && <DkmOfficialStamp />}
 
                 {/* Sekretaris */}
                 <div className="flex flex-col items-center">
@@ -220,12 +223,119 @@ ${letter.signatory1.name}               ${letter.signatory2.name}
                 </div>
               </div>
 
-              <div className="text-center mt-6 pt-3 border-t border-slate-200 text-[10px] text-slate-400 font-sans">
-                Dokumen ini resmi diterbitkan melalui Sistem Informasi DKM Babul Khaer (SIK-MBH)
+              {/* Baris Bawah: QR Code Verifikasi & Catatan Penerbitan */}
+              <div className="mt-8 pt-4 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <OfficialQrCode
+                  letterNumber={letter.letterNumber}
+                  verificationCode={letter.verificationCode}
+                />
+                <div className="text-right text-[10px] text-slate-500 font-sans space-y-0.5">
+                  <p className="font-semibold text-slate-700">Sistem Informasi DKM Babul Khaer (SIK-MBH)</p>
+                  <p>Kompleks BTP Blok AE, Tamalanrea, Kota Makassar</p>
+                  <p className="text-[9px] text-slate-400">Arsip Digital & Tata Usaha Sekretariat Resmi</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function DkmOfficialStamp() {
+  return (
+    <div className="absolute left-1/2 -translate-x-1/2 top-4 pointer-events-none select-none opacity-85 -rotate-6 z-20">
+      <svg width="115" height="115" viewBox="0 0 120 120" className="text-emerald-700">
+        {/* Outer Ring */}
+        <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="4 2" />
+        <circle cx="60" cy="60" r="51" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        {/* Inner Ring */}
+        <circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        {/* Text Top */}
+        <path id="stamp-top" d="M 18,60 A 42,42 0 0,1 102,60" fill="none" />
+        <text fontSize="7.5" fontWeight="bold" fill="currentColor" letterSpacing="0.8">
+          <textPath href="#stamp-top" startOffset="50%" textAnchor="middle">
+            DKM MASJID BABUL KHAER
+          </textPath>
+        </text>
+        {/* Text Bottom */}
+        <path id="stamp-bottom" d="M 102,60 A 42,42 0 0,1 18,60" fill="none" />
+        <text fontSize="7" fontWeight="bold" fill="currentColor" letterSpacing="0.6">
+          <textPath href="#stamp-bottom" startOffset="50%" textAnchor="middle">
+            BTP BLOK AE MAKASSAR
+          </textPath>
+        </text>
+        {/* Center Emblem */}
+        <g transform="translate(60, 60) scale(0.9)">
+          <text x="0" y="-3" textAnchor="middle" fontSize="8" fontWeight="bold" fill="currentColor">
+            SEKRETARIAT
+          </text>
+          <text x="0" y="7" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="currentColor">
+            TERVERIFIKASI
+          </text>
+          <circle cx="-20" cy="0" r="1.5" fill="currentColor" />
+          <circle cx="20" cy="0" r="1.5" fill="currentColor" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function OfficialQrCode({ letterNumber, verificationCode }: { letterNumber: string; verificationCode?: string }) {
+  return (
+    <div className="flex items-center gap-3 border border-slate-200 bg-slate-50/70 p-2.5 rounded-xl max-w-[300px]">
+      <svg width="56" height="56" viewBox="0 0 29 29" className="text-slate-900 shrink-0 bg-white p-0.5 rounded shadow-2xs">
+        {/* Finder Pattern Top-Left */}
+        <rect x="1" y="1" width="7" height="7" fill="currentColor" />
+        <rect x="2" y="2" width="5" height="5" fill="white" />
+        <rect x="3" y="3" width="3" height="3" fill="currentColor" />
+        {/* Finder Pattern Top-Right */}
+        <rect x="21" y="1" width="7" height="7" fill="currentColor" />
+        <rect x="22" y="2" width="5" height="5" fill="white" />
+        <rect x="23" y="3" width="3" height="3" fill="currentColor" />
+        {/* Finder Pattern Bottom-Left */}
+        <rect x="1" y="21" width="7" height="7" fill="currentColor" />
+        <rect x="2" y="22" width="5" height="5" fill="white" />
+        <rect x="3" y="23" width="3" height="3" fill="currentColor" />
+        {/* Timing Patterns */}
+        <rect x="9" y="4" width="1" height="1" fill="currentColor" />
+        <rect x="11" y="4" width="1" height="1" fill="currentColor" />
+        <rect x="13" y="4" width="1" height="1" fill="currentColor" />
+        <rect x="15" y="4" width="1" height="1" fill="currentColor" />
+        <rect x="17" y="4" width="1" height="1" fill="currentColor" />
+        <rect x="19" y="4" width="1" height="1" fill="currentColor" />
+        <rect x="4" y="9" width="1" height="1" fill="currentColor" />
+        <rect x="4" y="11" width="1" height="1" fill="currentColor" />
+        <rect x="4" y="13" width="1" height="1" fill="currentColor" />
+        <rect x="4" y="15" width="1" height="1" fill="currentColor" />
+        <rect x="4" y="17" width="1" height="1" fill="currentColor" />
+        <rect x="4" y="19" width="1" height="1" fill="currentColor" />
+        {/* Data Matrix Dots */}
+        <rect x="10" y="10" width="2" height="2" fill="currentColor" />
+        <rect x="14" y="10" width="1" height="2" fill="currentColor" />
+        <rect x="17" y="11" width="2" height="1" fill="currentColor" />
+        <rect x="10" y="14" width="3" height="1" fill="currentColor" />
+        <rect x="15" y="14" width="2" height="2" fill="currentColor" />
+        <rect x="11" y="17" width="2" height="2" fill="currentColor" />
+        <rect x="15" y="18" width="3" height="1" fill="currentColor" />
+        <rect x="22" y="10" width="2" height="1" fill="currentColor" />
+        <rect x="25" y="11" width="2" height="2" fill="currentColor" />
+        <rect x="21" y="15" width="2" height="2" fill="currentColor" />
+        <rect x="24" y="16" width="3" height="1" fill="currentColor" />
+        <rect x="10" y="22" width="2" height="2" fill="currentColor" />
+        <rect x="14" y="23" width="2" height="1" fill="currentColor" />
+        <rect x="18" y="22" width="1" height="3" fill="currentColor" />
+        <rect x="22" y="22" width="3" height="1" fill="currentColor" />
+        <rect x="24" y="25" width="2" height="2" fill="currentColor" />
+      </svg>
+      <div className="text-[9.5px] leading-tight font-sans text-slate-600">
+        <div className="font-bold text-slate-900 flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+          Verifikasi Dokumen Resmi
+        </div>
+        <div className="font-mono text-[9px] text-teal-800 mt-0.5 truncate">{verificationCode || letterNumber}</div>
+        <div className="text-[8px] text-slate-500 mt-0.5">Pindai untuk verifikasi portal resmi DKM Babul Khaer</div>
       </div>
     </div>
   );

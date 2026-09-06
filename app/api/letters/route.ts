@@ -8,9 +8,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || undefined;
     const category = searchParams.get('category') || undefined;
+    const department = searchParams.get('department') || undefined;
     const status = searchParams.get('status') || undefined;
 
-    const letters = await store.getLetters({ search, category, status });
+    const letters = await store.getLetters({ search, category, department, status });
     return NextResponse.json({
       success: true,
       data: letters,
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
 
     const newLetter = await store.addLetter({
       category: body.category,
+      department: body.department,
       recipientName: body.recipientName,
       recipientTitle: body.recipientTitle || '',
       recipientAddress: body.recipientAddress || '',
@@ -65,6 +67,7 @@ export async function POST(request: NextRequest) {
         role: 'Sekretaris Umum',
       },
       customNumber: body.customNumber,
+      verificationCode: body.verificationCode,
       physicalArchiveLocation: body.physicalArchiveLocation || body.physicalLocation,
       letterDetails: body.letterDetails,
     });

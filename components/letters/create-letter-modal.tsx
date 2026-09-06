@@ -1,8 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { LetterCategory, LETTER_CATEGORIES, OfficialLetter, LetterStatus } from '@/types/letter';
-import { DKM_INFO, generateLetterNumber } from '@/lib/letter-numbering';
+import {
+  LetterCategory,
+  LETTER_CATEGORIES,
+  LetterDepartment,
+  LETTER_DEPARTMENTS,
+  OfficialLetter,
+  LetterStatus,
+} from '@/types/letter';
+import { DKM_INFO, generateLetterNumber, generateVerificationCode } from '@/lib/letter-numbering';
 import {
   Sparkles,
   Save,
@@ -23,33 +30,129 @@ interface CreateLetterModalProps {
   onPreviewLetter: (letter: OfficialLetter) => void;
 }
 
-const LETTER_PRESET_TEMPLATES = [
+const LETTER_PRESET_TEMPLATES: {
+  id: string;
+  label: string;
+  category: LetterCategory;
+  department: LetterDepartment;
+  subject: string;
+  recipientName: string;
+  recipientTitle: string;
+  recipientAddress: string;
+  eventLocation: string;
+  content: string;
+}[] = [
+  {
+    id: 'tpl-tgs-khutbah',
+    label: 'Surat Tugas Khotib Jumat',
+    category: 'TGS',
+    department: 'DKW',
+    subject: 'Surat Penugasan Khotib Sholat Jumat & Penceramah Agama Islam',
+    recipientName: 'Ustadz Pemateri / Da\'i Tamu',
+    recipientTitle: 'Khotib & Da\'i Pembina Jamaah',
+    recipientAddress: 'Kota Makassar',
+    eventLocation: 'Masjid Babul Khaer BTP Blok AE',
+    content: `Assalamu'alaikum Warahmatullahi Wabarakatuh.
+
+Ba'da tahmid dan shalawat, semoga Allah Subhanahu Wa Ta'ala senantiasa melimpahkan hidayah dan taufik-Nya kepada Ustadz dalam mengemban amanah dakwah di tengah-tengah umat.
+
+Sehubungan dengan agenda rutin peribadatan di Masjid Babul Khaer Kompleks BTP Blok AE, Pengurus DKM melalui Bidang I (Peribadatan & Dakwah) dengan ini menugaskan kepada:
+
+  Nama Khotib / Da'i : Ustadz Pemateri
+  Amanah Penugasan   : Khotib Sholat Jumat & Imam Berjamaah
+  Lokasi Ibadah      : Masjid Babul Khaer, Kompleks BTP Blok AE Tamalanrea
+  Ketentuan Waktu    : Hadir 20 menit sebelum Adzan (Durasi Khutbah: 15 - 20 menit)
+  Konfirmasi Kontak  : Firman (Marbot Masjid) - 0812-4211-9876
+
+Besar harapan kami Ustadz berkenan meluangkan waktu guna membimbing serta memberikan santapan rohani bagi segenap jamaah warga Kompleks BTP Blok AE.
+
+Demikian surat penugasan resmi ini kami sampaikan. Atas kesediaan, dedikasi, dan keikhlasan Ustadz dalam membina umat, kami haturkan terima kasih yang setinggi-tingginya. Jazakumullahu Khairan Katsiran.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
+  },
   {
     id: 'tpl-und-rapat',
-    label: 'Undangan Rapat DKM',
-    category: 'UND' as LetterCategory,
-    subject: 'Undangan Rapat Musyawarah Pleno Pengurus DKM Babul Khaer',
-    recipientName: 'Seluruh Jajaran Pengurus DKM Babul Khaer',
-    recipientTitle: 'Pengurus Harian & Koordinator Bidang',
+    label: 'Undangan Rapat Pleno DKM',
+    category: 'UND',
+    department: 'SEKR',
+    subject: 'Undangan Rapat Musyawarah Pleno & Evaluasi Program Kerja DKM Babul Khaer',
+    recipientName: 'Seluruh Jajaran Pengurus DKM & Dewan Pengawas',
+    recipientTitle: 'Pengurus Harian, Koordinator Bidang & Dewan Pengawas',
     recipientAddress: 'Kompleks BTP Blok AE, Tamalanrea, Makassar',
     eventLocation: 'Ruang Rapat Utama Masjid Babul Khaer',
     content: `Assalamu'alaikum Warahmatullahi Wabarakatuh.
 
 Segala puji bagi Allah Subhanahu Wa Ta'ala atas limpahan rahmat dan karunia-Nya. Shalawat dan salam semoga senantiasa tercurah kepada baginda Rasulullah Muhammad Shallallahu 'Alaihi Wasallam.
 
-Sehubungan dengan evaluasi program kerja dan konsolidasi kepengurusan periode 2026-2029, dengan ini kami mengundang Bapak/Ibu/Saudara(i) pengurus DKM Masjid Babul Khaer untuk menghadiri Rapat Musyawarah Pleno dengan agenda utama pembahasan realisasi program dakwah, laporan kas berjalan, dan pemeliharaan sarana prasarana masjid.
+Sehubungan dengan evaluasi berkala pelaksanaan program kerja DKM Masjid Babul Khaer periode 2026-2029, dengan ini Sekretariat Umum mengundang Bapak/Ibu/Saudara(i) untuk menghadiri Rapat Musyawarah Pleno dengan agenda pembahasan:
+  1. Laporan Keuangan Kas Berjalan & Realisasi Buku Kas DKM.
+  2. Progres Fisik Pembangunan & Renovasi Sarpras (Plafon Lantai 2 & Saluran Air).
+  3. Evaluasi Kegiatan Peribadatan & Kesiapan Agenda PHBI/Ramadhan.
+  4. Laporan Penyaluran ZISWAF & Program Sedekah Seribu Sehari (SSS) 5 RT.
 
-Mengingat pentingnya musyawarah ini bagi kemaslahatan jamaah dan kelancaran amanah kelembagaan, kami sangat mengharapkan kehadiran Bapak/Ibu tepat pada waktunya.
+Mengingat pentingnya musyawarah ini demi kemaslahatan dan transparansi tata kelola masjid, kami sangat mengharapkan kehadiran Bapak/Ibu tepat pada waktunya.
 
-Demikian surat undangan ini kami sampaikan. Atas perhatian, dedikasi, dan kehadiran Bapak/Ibu, kami haturkan terima kasih. Jazakumullahu Khairan Katsiran.
+Demikian surat undangan resmi ini kami sampaikan. Atas perhatian, dedikasi, dan kehadirannya, kami haturkan terima kasih. Jazakumullahu Khairan Katsiran.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
+  },
+  {
+    id: 'tpl-moh-bantuan',
+    label: 'Permohonan Donasi Sarpras (BSI DKM)',
+    category: 'PER',
+    department: 'SAR',
+    subject: 'Permohonan Bantuan Dana Donasi & Infaq Renovasi Plafon Lantai 2 Masjid Babul Khaer',
+    recipientName: 'Para Muhsinin, Agniya, dan Jamaah Dermawan',
+    recipientTitle: 'Bapak/Ibu Donatur Pemerhati Umat',
+    recipientAddress: 'Di Tempat',
+    eventLocation: 'Masjid Babul Khaer BTP Blok AE',
+    content: `Assalamu'alaikum Warahmatullahi Wabarakatuh.
+
+Segala puji dan syukur hanya milik Allah Rabb Semesta Alam. Shalawat teriring salam senantiasa tercurah kepada junjungan Nabi Besar Muhammad Shallallahu 'Alaihi Wasallam.
+
+Dalam rangka menjaga kelayakan fasilitas, kekhusyukan ibadah sholat berjamaah, dan mengatasi kebocoran atap saat musim hujan, Pengurus DKM Masjid Babul Khaer melalui Bidang II (Sarana & Prasarana) sedang melaksanakan Program Pembangunan & Renovasi Plafon Lantai 2 (Pagu Anggaran Rp 350.000.000,-).
+
+Sehubungan dengan hal tersebut, kami membuka kesempatan amal jariyah bagi Bapak/Ibu para muhsinin, agniya, dan dermawan untuk turut berpartisipasi menyisihkan sebagian rezekinya. Infaq dan sedekah jariyah dapat disalurkan langsung melalui rekening resmi:
+
+  Nama Bank      : Bank Syariah Indonesia (BSI)
+  Nomor Rekening : 7182938475
+  Atas Nama      : DKM Babul Khaer BTP
+  Konfirmasi WA  : 0812-4211-9876 (Sekretariat / Bendahara DKM)
+
+Setiap rupiah dana yang disalurkan akan dicatat secara transparan dan dipertanggungjawabkan dalam laporan pembukuan kas DKM. Semoga Allah SWT melipatgandakan rezeki dan menjadikan sedekah ini sebagai amal jariyah yang pahalanya terus mengalir.
+
+Demikian permohonan ini kami sampaikan, atas kebaikan dan kepedulian Bapak/Ibu kami haturkan terima kasih. Jazakumullahu Khairan Katsiran.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
+  },
+  {
+    id: 'tpl-ket-mustahiq',
+    label: 'Keterangan Rekomendasi Mustahiq Sensus',
+    category: 'SKET',
+    department: 'SOS',
+    subject: 'Surat Keterangan Domisili Jamaah & Rekomendasi Mustahiq Sensus BTP Blok AE',
+    recipientName: 'Badan Amil Zakat / Lembaga Penyalur Bantuan Sosial',
+    recipientTitle: 'Pimpinan Lembaga / Instansi Penyalur Bantuan',
+    recipientAddress: 'Kota Makassar',
+    eventLocation: 'Masjid Babul Khaer BTP Blok AE',
+    content: `Assalamu'alaikum Warahmatullahi Wabarakatuh.
+
+Yang bertanda tangan di bawah ini, Pengurus Dewan Kemakmuran Masjid (DKM) Babul Khaer Kompleks BTP Blok AE, Kelurahan Tamalanrea, Kecamatan Tamalanrea, Kota Makassar, dengan ini menerangkan bahwa:
+
+Adalah benar warga tetap yang berdomisili sah di lingkungan Kompleks BTP Blok AE (Wilayah RT 01 s/d RT 05) dan tercatat dalam basis data Sensus Jamaah DKM Babul Khaer sebagai keluarga mustahiq yang memenuhi kriteria syar'i (Asnaf Fakir/Miskin/Dhuafa) penerima manfaat santunan sosial & beasiswa pendidikan.
+
+Surat keterangan ini diberikan atas dasar survei lapangan terverifikasi oleh Tim Sosial & UPZ DKM Babul Khaer, untuk dapat dipergunakan sebagai rekomendasi kelayakan bantuan sebagaimana mestinya.
+
+Demikian surat keterangan ini kami terbitkan dengan sebenarnya untuk dapat dipergunakan sesuai peruntukannya. Semoga Allah Subhanahu Wa Ta'ala senantiasa membalas kebaikan kita semua.
 
 Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
   },
   {
     id: 'tpl-und-phbi',
-    label: 'Undangan Tabligh PHBI',
-    category: 'UND' as LetterCategory,
-    subject: 'Undangan Tabligh Akbar Peringatan Hari Besar Islam (PHBI)',
+    label: 'Undangan Tabligh Akbar PHBI',
+    category: 'UND',
+    department: 'PHBI',
+    subject: 'Undangan Tabligh Akbar & Dzikir Bersama Peringatan Hari Besar Islam (PHBI)',
     recipientName: 'Bapak/Ibu Jamaah Kompleks BTP Blok AE',
     recipientTitle: 'Warga Jamaah RT 01 s.d. RT 05',
     recipientAddress: 'Kompleks BTP Blok AE Tamalanrea, Makassar',
@@ -66,69 +169,6 @@ Demikian undangan ini kami sampaikan, atas kehadiran dan doa restu Bapak/Ibu, ka
 
 Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
   },
-  {
-    id: 'tpl-ket-mustahiq',
-    label: 'Keterangan Mustahiq',
-    category: 'KET' as LetterCategory,
-    subject: 'Surat Keterangan Rekomendasi Mustahiq / Bantuan Sosial ZISWAF',
-    recipientName: 'Badan Amil Zakat / Lembaga Penyalur Bantuan Sosial',
-    recipientTitle: 'Pimpinan Lembaga Terkait',
-    recipientAddress: 'Kota Makassar',
-    eventLocation: 'Masjid Babul Khaer BTP Blok AE',
-    content: `Assalamu'alaikum Warahmatullahi Wabarakatuh.
-
-Yang bertanda tangan di bawah ini, Pengurus Dewan Kemakmuran Masjid (DKM) Babul Khaer Kompleks BTP Blok AE, Kelurahan Tamalanrea, Kecamatan Tamalanrea, Kota Makassar, menerangkan bahwa warga yang bersangkutan adalah mustahiq terverifikasi sesuai hasil sensus jamaah DKM.
-
-Adalah benar warga tetap yang berdomisili di lingkungan Kompleks BTP Blok AE Tamalanrea dan tercatat dalam basis data mustahiq terverifikasi Bidang Kemasjidan & Sosial DKM Babul Khaer. Yang bersangkutan memenuhi kriteria syar'i sebagai penerima manfaat penyaluran ZISWAF dan bantuan sosial keumatan.
-
-Surat keterangan ini dibuat dengan sebenarnya sesuai hasil sensus dan survei lapangan pengurus, untuk dipergunakan sebagaimana mestinya.
-
-Demikian surat keterangan rekomendasi ini diberikan. Semoga Allah Subhanahu Wa Ta'ala membalas kebaikan dan kepedulian kita terhadap sesama.
-
-Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
-  },
-  {
-    id: 'tpl-moh-bantuan',
-    label: 'Permohonan Donasi Sarpras',
-    category: 'MOH' as LetterCategory,
-    subject: 'Permohonan Bantuan Dana Pengadaan & Pemeliharaan Sarana Prasarana Masjid',
-    recipientName: 'Para Muhsinin, Agniya, dan Jamaah Dermawan',
-    recipientTitle: 'Bapak/Ibu Donatur Pemerhati Umat',
-    recipientAddress: 'Di Tempat',
-    eventLocation: 'Masjid Babul Khaer BTP Blok AE',
-    content: `Assalamu'alaikum Warahmatullahi Wabarakatuh.
-
-Segala puji dan syukur hanya milik Allah Rabb Semesta Alam. Shalawat teriring salam senantiasa tercurah kepada junjungan nabi besar Muhammad Shallallahu 'Alaihi Wasallam.
-
-Dalam rangka menjaga kelayakan, kenyamanan ibadah sholat berjamaah, dan kesiapan fasilitas fisik Masjid Babul Khaer Kompleks BTP Blok AE, Bidang Sarana & Prasarana DKM merencanakan peremajaan dan pengadaan fasilitas masjid yang mendesak (meliputi unit pendingin AC, servis genset darurat, dan sound system utama).
-
-Sehubungan dengan hal tersebut, kami membuka peluang amal jariyah bagi Bapak/Ibu para muhsinin dan dermawan untuk turut berpartisipasi menyisihkan sebagian rezekinya demi kemakmuran rumah Allah ini. Setiap rupiah infaq yang disalurkan akan dicatat secara transparan dan dipertanggungjawabkan dalam buku kas DKM.
-
-Semoga Allah Subhanahu Wa Ta'ala melipatgandakan rezeki, meridhai setiap langkah kebajikan, dan menjadikan sedekah ini sebagai amal jariyah yang mengalirkan pahala tiada terputus.
-
-Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
-  },
-  {
-    id: 'tpl-tgs-khutbah',
-    label: 'Tugas Khutbah & Kajian',
-    category: 'TGS' as LetterCategory,
-    subject: 'Surat Penugasan Khotib Khutbah Jumat & Pemateri Kajian Rutin',
-    recipientName: 'Ustadz Pemateri / Da\'i',
-    recipientTitle: 'Khotib & Da\'i Pembina Jamaah',
-    recipientAddress: 'Kota Makassar',
-    eventLocation: 'Masjid Babul Khaer BTP Blok AE',
-    content: `Assalamu'alaikum Warahmatullahi Wabarakatuh.
-
-Ba'da tahmid dan shalawat, semoga Allah Subhanahu Wa Ta'ala senantiasa melimpahkan hidayah dan taufik-Nya kepada Ustadz dalam menjalankan tugas dakwah di tengah-tengah umat.
-
-Dengan hormat, Pengurus DKM Babul Khaer melalui Seksi Kemasjidan & Dakwah menugaskan kepada Ustadz untuk menjadi Khotib Sholat Jumat sekaligus Imam, atau Pengisi Kajian Tematik Ba'da Sholat di Masjid Babul Khaer Kompleks BTP Blok AE Tamalanrea Makassar.
-
-Adapun tema dan waktu pelaksanaan adalah sebagaimana terlampir pada jadwal dakwah DKM. Besar harapan kami Ustadz berkenan meluangkan waktu guna membimbing dan memberikan santapan rohani bagi segenap jamaah warga Kompleks BTP Blok AE.
-
-Demikian surat penugasan resmi ini kami sampaikan. Atas kesediaan dan keikhlasan Ustadz dalam membina umat, kami haturkan terima kasih dan penghargaan yang setinggi-tingginya.
-
-Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
-  },
 ];
 
 export default function CreateLetterModal({
@@ -138,6 +178,7 @@ export default function CreateLetterModal({
   onPreviewLetter,
 }: CreateLetterModalProps) {
   const [category, setCategory] = useState<LetterCategory>('UND');
+  const [department, setDepartment] = useState<LetterDepartment>('SEKR');
   const [letterDate, setLetterDate] = useState(new Date().toISOString().split('T')[0]);
   const [nextNumber, setNextNumber] = useState('');
   const [sequenceNumber, setSequenceNumber] = useState(1);
@@ -313,7 +354,9 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
 
     const fetchNextNumber = async () => {
       try {
-        const res = await fetch(`/api/letters/next-number?category=${category}&date=${letterDate}`);
+        const res = await fetch(
+          `/api/letters/next-number?category=${category}&department=${department}&date=${letterDate}`
+        );
         const data = await res.json();
         if (data.success) {
           setNextNumber(data.letterNumber);
@@ -321,12 +364,12 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
         }
       } catch {
         // Fallback local calc
-        setNextNumber(generateLetterNumber(14, category, letterDate));
+        setNextNumber(generateLetterNumber(14, category, letterDate, department));
       }
     };
 
     fetchNextNumber();
-  }, [category, letterDate, isOpen]);
+  }, [category, department, letterDate, isOpen]);
 
   if (!isOpen) return null;
 
@@ -394,6 +437,8 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
 
     const payload = {
       category,
+      department,
+      verificationCode: generateVerificationCode(sequenceNumber, department, new Date(letterDate).getFullYear()),
       recipientName,
       recipientTitle,
       recipientAddress,
@@ -509,25 +554,48 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
           )}
 
           {/* Nomor Surat & Kategori Bar */}
-          <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800">
-                  Nomor Surat Resmi (Otomatis)
+                  Nomor Surat Resmi DKM (Otomatis)
                 </span>
-                <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold">
-                  Auto-Numbering
+                <span className="text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded-full font-bold">
+                  Anti-Collision Aktif
                 </span>
               </div>
-              <p className="text-base md:text-lg font-mono font-bold text-emerald-950 mt-0.5">
+              <p className="text-base md:text-lg font-mono font-extrabold text-emerald-950 mt-0.5">
                 {nextNumber || 'Memuat...'}
               </p>
-              <p className="text-[11px] text-emerald-700">
-                Format: [No.Urut]/DKM-MBH/[Kode Kategori]/[Bulan Romawi]/[Tahun]
-              </p>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <p className="text-[11px] text-emerald-700 font-medium">
+                  Format Baku AD/ART: [No.Urut]/[Kode Bidang]/DKM-BK/[Bulan Romawi]/[Tahun]
+                </p>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-300/60">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  <span>Terpusat (Sekretaris I, II & Panitia PHBI)</span>
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Unit / Bidang Pengirim
+                </label>
+                <select
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value as LetterDepartment)}
+                  className="w-full text-xs font-semibold border border-slate-300 rounded-lg px-2.5 py-2 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                >
+                  {Object.values(LETTER_DEPARTMENTS).map((dept) => (
+                    <option key={dept.code} value={dept.code}>
+                      [{dept.code}] {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Kategori Surat
@@ -535,7 +603,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as LetterCategory)}
-                  className="text-xs font-medium border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                  className="w-full text-xs font-semibold border border-slate-300 rounded-lg px-2.5 py-2 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
                 >
                   {Object.values(LETTER_CATEGORIES).map((cat) => (
                     <option key={cat.code} value={cat.code}>
@@ -553,7 +621,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
                   type="date"
                   value={letterDate}
                   onChange={(e) => setLetterDate(e.target.value)}
-                  className="text-xs font-medium border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                  className="w-full text-xs font-semibold border border-slate-300 rounded-lg px-2.5 py-2 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
                 />
               </div>
             </div>
@@ -564,7 +632,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
                 <FileText className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Pilih Format Baku Cepat (Template Resmi):</span>
+                <span>Pilih Format Baku Cepat (Template Resmi DKM):</span>
               </div>
               <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
                 1-Klik Isi Draf
@@ -577,6 +645,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
                   type="button"
                   onClick={() => {
                     setCategory(tpl.category);
+                    setDepartment(tpl.department);
                     setSubject(tpl.subject);
                     setRecipientName(tpl.recipientName);
                     setRecipientTitle(tpl.recipientTitle);
@@ -586,7 +655,9 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
                   }}
                   className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 border border-slate-200/80 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 font-mono font-bold">
+                    {tpl.department}
+                  </span>
                   <span>{tpl.label}</span>
                 </button>
               ))}

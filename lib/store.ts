@@ -12,7 +12,7 @@ import { INITIAL_ASSETS } from './mock-assets';
 import { INITIAL_APPROVALS, INITIAL_FIELD_KPIS } from './mock-reports';
 import { INITIAL_AUDIT_LOGS } from './mock-auth';
 import { INITIAL_DONORS } from './mock-donors';
-import { generateLetterNumber } from './letter-numbering';
+import { generateLetterNumber, generateVerificationCode } from './letter-numbering';
 import {
   loadAllDataFromDatabase,
   dbInsertLetter,
@@ -160,6 +160,7 @@ class DataStore {
   public async getLetters(params?: {
     search?: string;
     category?: string;
+    department?: string;
     status?: string;
   }): Promise<OfficialLetter[]> {
     await this.sync();
@@ -167,6 +168,12 @@ class DataStore {
 
     if (params?.category && params.category !== 'ALL') {
       result = result.filter((l) => l.category === params.category);
+    }
+
+    if (params?.department && params.department !== 'ALL') {
+      result = result.filter(
+        (l) => l.department === params.department || l.letterNumber.includes(`/${params.department}/`)
+      );
     }
 
     if (params?.status && params.status !== 'ALL') {
@@ -199,9 +206,15 @@ class DataStore {
   }): Promise<OfficialLetter> {
     await this.sync();
     const nextSeq = await this.getNextSequenceNumber();
+    const department = letterData.department || 'SEKR';
     const letterNumber =
       letterData.customNumber ||
-      generateLetterNumber(nextSeq, letterData.category, letterData.letterDate);
+      generateLetterNumber(nextSeq, letterData.category, letterData.letterDate, department);
+
+    const year = new Date(letterData.letterDate).getFullYear();
+    const verificationCode =
+      letterData.verificationCode ||
+      generateVerificationCode(nextSeq, department, year);
 
     const now = new Date().toISOString();
     const newLetter: OfficialLetter = {
@@ -209,6 +222,8 @@ class DataStore {
       id: `ltr-${String(nextSeq).padStart(3, '0')}-${Date.now().toString().slice(-4)}`,
       sequenceNumber: nextSeq,
       letterNumber,
+      department,
+      verificationCode,
       createdAt: now,
       updatedAt: now,
     };
