@@ -1,47 +1,52 @@
 /// SIK-MBH Service Worker — Network-First with Cache Fallback
-/// Provides offline-ready experience for DKM Babul Khaer digital system
+/// Version: 2.0 (Mobile Responsiveness Overhaul & Auto-Cache Invalidation)
 
-const CACHE_NAME = 'sik-mbh-v1';
+const CACHE_NAME = 'sik-mbh-v2-20260907';
 const OFFLINE_URL = '/';
 
-// Assets to precache on install (app shell)
+// Precache only static branding assets (DO NOT precache HTML root to prevent stale UI)
 const PRECACHE_ASSETS = [
-  '/',
   '/manifest.json',
   '/logo-babul-khaer.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
 ];
 
-// Install: precache app shell
+// Install: precache branding and immediately take over
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
-  self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: clean up ALL legacy caches and claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(
         keyList.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[SW] Purging outdated cache:', key);
             return caches.delete(key);
           }
         })
       );
+    }).then(() => {
+      // Notify all open windows/PWA clients to reload with fresh assets
+      return self.clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'SW_UPDATED', cache: CACHE_NAME });
+        });
+      });
     })
   );
   self.clients.claim();
 });
 
-// Fetch: Network-first strategy
-// API calls → network only (never cache API responses)
-// Static assets → network first, fallback to cache
+// Fetch: Strategy
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -49,23 +54,39 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // Skip API routes — always go to network
+  // Skip API routes — always go directly to network
   if (url.pathname.startsWith('/api/')) return;
 
-  // Skip Chrome extensions and other non-http(s) schemes
+  // Skip non-http schemes
   if (!url.protocol.startsWith('http')) return;
 
+  // Navigation requests (HTML pages): ALWAYS network-first, never serve stale HTML from cache when online
+  if (request.mode === 'navigate' || url.pathname === '/') {
+    event.respondWith(
+      fetch(request)
+        .catch(() => {
+          // Only if network fails (offline), attempt to serve cached offline page
+          return caches.match(OFFLINE_URL).then((cached) => {
+            return cached || new Response('Offline - Silakan periksa koneksi internet Anda.', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+            });
+          });
+        })
+    );
+    return;
+  }
+
+  // Static immutable assets (.png, .svg, .woff2, .ico)
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // Clone and cache successful responses for static assets
         if (response.ok && (
-          url.pathname.endsWith('.js') ||
-          url.pathname.endsWith('.css') ||
           url.pathname.endsWith('.png') ||
           url.pathname.endsWith('.svg') ||
           url.pathname.endsWith('.woff2') ||
-          url.pathname === '/'
+          url.pathname.endsWith('.ico')
         )) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -75,16 +96,9 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Network failed — serve from cache
         return caches.match(request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // If navigating and nothing cached, serve offline page (index)
-          if (request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL);
-          }
-          return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+          if (cachedResponse) return cachedResponse;
+          return new Response('Asset unavailable offline', { status: 404 });
         });
       })
   );
