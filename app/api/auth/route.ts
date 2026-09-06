@@ -216,8 +216,14 @@ export async function POST(req: Request) {
     return response;
   } catch (error) {
     console.error('Error logging in user:', error);
+    const detailMsg = error instanceof Error ? error.message : 'Terjadi kendala internal pada server';
     return NextResponse.json(
-      { success: false, error: 'Gagal memproses otentikasi pengurus' },
+      {
+        success: false,
+        error: detailMsg.includes('AUTH_SECRET')
+          ? 'Konfigurasi kunci sesi belum disetel di server hosting (AUTH_SECRET).'
+          : `Gagal memproses otentikasi pengurus: ${detailMsg}`,
+      },
       { status: 500 }
     );
   }
