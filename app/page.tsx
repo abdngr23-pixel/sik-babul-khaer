@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar, { AppNavTab } from '@/components/layout/sidebar';
 import BottomNavBar from '@/components/layout/bottom-nav-bar';
 import { TAB_LABELS } from '@/types/navigation';
@@ -8,6 +8,12 @@ import Navbar from '@/components/layout/navbar';
 import { ModuleHeaderBanner } from '@/components/layout/module-header-banner';
 import { ModuleTabSelector } from '@/components/layout/module-tab-selector';
 import { AppModals } from '@/components/modals/app-modals';
+import {
+  setTabNavigationHandler,
+  pushTabHistory,
+  replaceTabHistory,
+  useModalBackHandler,
+} from '@/lib/back-button-handler';
 
 // Phase 1 Components
 import LetterArchiveTable from '@/components/letters/letter-archive-table';
@@ -86,10 +92,39 @@ export default function DashboardPage() {
   const [requestedTab, setRequestedTab] = useState<AppNavTab>('dashboard');
   const [tabHistory, setTabHistory] = useState<AppNavTab[]>([]);
 
+  // Initialize browser history & hash routing on initial mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const hash = window.location.hash.replace('#', '') as AppNavTab;
+    if (hash && hash !== 'dashboard' && canAccessTab(hash)) {
+      replaceTabHistory('dashboard');
+      pushTabHistory(hash);
+      setRequestedTab(hash);
+      setTabHistory(['dashboard']);
+    } else {
+      replaceTabHistory('dashboard');
+    }
+  }, [canAccessTab]);
+
+  // Connect central popstate dispatcher to tab navigation state
+  useEffect(() => {
+    setTabNavigationHandler((targetTab) => {
+      const nextTab: AppNavTab = targetTab && canAccessTab(targetTab) ? targetTab : 'dashboard';
+      setRequestedTab(nextTab);
+      setTabHistory((prev) => (prev.length > 0 ? prev.slice(0, -1) : []));
+    });
+
+    return () => {
+      setTabNavigationHandler(null);
+    };
+  }, [canAccessTab]);
+
   // History-aware navigation handler
   const handleNavigateTab = useCallback((newTab: AppNavTab) => {
     setRequestedTab((currentTab) => {
       if (currentTab !== newTab) {
+        pushTabHistory(newTab);
         setTabHistory((prev) => [...prev, currentTab]);
       }
       return newTab;
@@ -98,17 +133,12 @@ export default function DashboardPage() {
 
   // Back handler to return to previous menu
   const handleGoBack = useCallback(() => {
-    setTabHistory((prev) => {
-      if (prev.length === 0) {
-        setRequestedTab('dashboard');
-        return [];
-      }
-      const newHistory = [...prev];
-      const previousTab = newHistory.pop()!;
-      setRequestedTab(previousTab);
-      return newHistory;
-    });
-  }, []);
+    if (typeof window !== 'undefined' && window.history.length > 1 && requestedTab !== 'dashboard') {
+      window.history.back();
+    } else {
+      handleNavigateTab('dashboard');
+    }
+  }, [requestedTab, handleNavigateTab]);
 
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [isFridayReportOpen, setIsFridayReportOpen] = useState(false);
@@ -161,6 +191,7 @@ export default function DashboardPage() {
 
   // Responsive Mobile Drawer
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useModalBackHandler(isMobileMenuOpen, () => setIsMobileMenuOpen(false), 'mobile-menu-drawer');
 
   // Global Toast & Confirm Contexts
   const { toast } = useToast();

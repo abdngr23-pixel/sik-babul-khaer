@@ -19,6 +19,7 @@ import { Jamaah } from '@/types/jamaah';
 import { INITIAL_SSS_CANS, INITIAL_SSS_RECORDS, INITIAL_ZISWAF_AIDS } from '@/lib/mock-ziswaf';
 import { formatRupiah } from '@/components/finance/finance-stats';
 import { useAuth } from '@/lib/auth-context';
+import { useModalBackHandler } from '@/lib/back-button-handler';
 import RecordSSSModal from './record-sss-modal';
 import CreateAidModal from './create-aid-modal';
 import AidReceiptModal from './aid-receipt-modal';
@@ -49,6 +50,12 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
   const [isAddCanOpen, setIsAddCanOpen] = useState(false);
   const [isCreateAidOpen, setIsCreateAidOpen] = useState(false);
   const [receiptAidTarget, setReceiptAidTarget] = useState<ZiswafAidItem | null>(null);
+
+  // Mobile Hardware Back Button handlers for ZISWAF modals
+  useModalBackHandler(Boolean(selectedCanForCollection), () => setSelectedCanForCollection(null), 'ziswaf-can-collection');
+  useModalBackHandler(isAddCanOpen, () => setIsAddCanOpen(false), 'ziswaf-add-can');
+  useModalBackHandler(isCreateAidOpen, () => setIsCreateAidOpen(false), 'ziswaf-create-aid');
+  useModalBackHandler(Boolean(receiptAidTarget), () => setReceiptAidTarget(null), 'ziswaf-aid-receipt');
 
   // New Can Form
   const [newCanCode, setNewCanCode] = useState('');

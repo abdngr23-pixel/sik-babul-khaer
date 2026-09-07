@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useModalBackHandler } from '@/lib/back-button-handler';
 import CreateLetterModal from '@/components/letters/create-letter-modal';
 import OfficialLetterPreview from '@/components/letters/official-letter-preview';
 import ArchiveLetterModal from '@/components/letters/archive-letter-modal';
@@ -128,6 +129,21 @@ export function AppModals({
   setIsBackupModalOpen,
   onDataRestored,
 }: AppModalsProps) {
+  // Mobile hardware back button bindings for all lifted modals
+  useModalBackHandler(isCreateLetterOpen, () => setIsCreateLetterOpen(false), 'create-letter');
+  useModalBackHandler(Boolean(previewLetter), () => setPreviewLetter(null), 'preview-letter');
+  useModalBackHandler(isArchiveLetterModalOpen, () => setIsArchiveLetterModalOpen(false), 'archive-letter');
+  useModalBackHandler(isJamaahFormOpen, () => setIsJamaahFormOpen(false), 'jamaah-form');
+  useModalBackHandler(Boolean(detailJamaah), () => setDetailJamaah(null), 'detail-jamaah');
+  useModalBackHandler(isExcelModalOpen, () => setIsExcelModalOpen(false), 'excel-jamaah');
+  useModalBackHandler(isFridayReportOpen, () => setIsFridayReportOpen(false), 'friday-report');
+  useModalBackHandler(isTransactionModalOpen, () => setIsTransactionModalOpen(false), 'transaction-form');
+  useModalBackHandler(isAssetModalOpen, () => setIsAssetModalOpen(false), 'asset-form');
+  useModalBackHandler(Boolean(previewLPJ), () => setPreviewLPJ(null), 'preview-lpj');
+  useModalBackHandler(isLoginModalOpen, () => setIsLoginModalOpen(false), 'login-auth');
+  useModalBackHandler(isAuditLogModalOpen, () => setIsAuditLogModalOpen(false), 'audit-log');
+  useModalBackHandler(isBackupModalOpen, () => setIsBackupModalOpen(false), 'database-backup');
+
   return (
     <>
       {/* Modal Buat Surat */}

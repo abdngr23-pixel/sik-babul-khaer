@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useModalBackHandler } from '@/lib/back-button-handler';
 import {
   Calendar,
   Clock,
@@ -98,6 +99,11 @@ export default function DakwahView() {
     defaultHonor: number;
     defaultAttendance?: number;
   } | null>(null);
+
+  // Mobile Hardware Back Button handlers for Dakwah modals
+  useModalBackHandler(isCreateKhatibOpen, () => setIsCreateKhatibOpen(false), 'dakwah-create-khatib');
+  useModalBackHandler(uploadModalState.isOpen, () => setUploadModalState((prev) => ({ ...prev, isOpen: false })), 'dakwah-upload');
+  useModalBackHandler(Boolean(completeModalTarget), () => setCompleteModalTarget(null), 'dakwah-complete-agenda');
 
   const [copiedMessage, setCopiedMessage] = useState<string | null>(null);
 

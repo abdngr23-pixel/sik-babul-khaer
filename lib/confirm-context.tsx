@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
 import { AlertTriangle, AlertCircle, HelpCircle, X } from 'lucide-react';
+import { useModalBackHandler } from '@/lib/back-button-handler';
 
 export interface ConfirmOptions {
   title: string;
@@ -58,6 +59,9 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   };
 
   const { options, isOpen } = dialogState;
+
+  // Mobile Hardware Back Button handler for confirm dialog (dismisses with false)
+  useModalBackHandler(isOpen, () => handleClose(false), 'global-confirm-dialog');
 
   return (
     <ConfirmContext.Provider value={{ confirm }}>

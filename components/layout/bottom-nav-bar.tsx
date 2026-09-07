@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { AppNavTab } from '@/types/navigation';
+import { useModalBackHandler } from '@/lib/back-button-handler';
 
 interface BottomNavBarProps {
   activeTab: AppNavTab;
@@ -61,6 +62,9 @@ export default function BottomNavBar({
 }: BottomNavBarProps) {
   const { currentUser, isReadOnly, canAccessTab, logout } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+
+  // Bind the "Lainnya" bottom sheet drawer to mobile hardware back button
+  useModalBackHandler(isMoreOpen, () => setIsMoreOpen(false), 'bottom-nav-more-drawer');
 
   // --------------------------------------------------------------------------
   // Dynamic 5-Slot Navigation Builder based on User Role & Permissions

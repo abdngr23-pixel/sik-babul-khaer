@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ApprovalItem, ApprovalStatus, ApprovalType } from '@/types/reports';
 import { formatRupiah } from '@/components/finance/finance-stats';
 import { useAuth } from '@/lib/auth-context';
+import { useModalBackHandler } from '@/lib/back-button-handler';
 import {
   CheckCircle2,
   XCircle,
@@ -58,6 +59,10 @@ export default function ApprovalBoard({
     action: ApprovalStatus;
   } | null>(null);
   const [dispositionNotes, setDispositionNotes] = useState('');
+
+  // Mobile Hardware Back Button handlers
+  useModalBackHandler(isSubmitModalOpen, () => setIsSubmitModalOpen(false), 'approval-submit');
+  useModalBackHandler(Boolean(activeActionItem), () => setActiveActionItem(null), 'approval-action');
 
   // Filter approvals
   const filtered = approvals.filter((a) => {
