@@ -25,6 +25,10 @@ export const INITIAL_PHYSICAL_PROJECTS: PhysicalProjectItem[] = [
       { id: 'm6', title: 'Uji serah terima & inspeksi Dewan Pengawas DKM', isDone: false, targetDate: '2026-11-15' },
     ],
     notes: 'Pekerjaan fisik dilakukan pada hari kerja ba\'da Ashar s/d pukul 22.00 agar tidak mengganggu ketertiban sholat jamaah.',
+    photos: [
+      'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&auto=format&fit=crop&q=80',
+    ],
     updatedAt: '2026-09-05T14:30:00.000Z',
   },
   {
@@ -51,6 +55,10 @@ export const INITIAL_PHYSICAL_PROJECTS: PhysicalProjectItem[] = [
       { id: 'm6', title: 'Pemasangan instalasi sound horn TOA 8 unit & lampu hias sorot', isDone: false, targetDate: '2027-02-15' },
     ],
     notes: 'Didanai melalui pos khusus Panitia Pembangunan & Donatur Wakaf Menara (rekening satu pintu).',
+    photos: [
+      'https://images.unsplash.com/photo-1590076215667-875d4ef2d7ee?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800&auto=format&fit=crop&q=80',
+    ],
     updatedAt: '2026-09-04T10:15:00.000Z',
   },
   {

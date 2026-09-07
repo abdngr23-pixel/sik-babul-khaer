@@ -13,6 +13,7 @@ import {
   Printer,
   ChevronRight,
   TrendingUp,
+  Wheat,
 } from 'lucide-react';
 import { SSSCanItem, SSSCollectionRecord, ZiswafAidItem } from '@/types/ziswaf';
 import { Jamaah } from '@/types/jamaah';
@@ -24,6 +25,7 @@ import RecordSSSModal from './record-sss-modal';
 import CreateAidModal from './create-aid-modal';
 import AidReceiptModal from './aid-receipt-modal';
 import { MuzakkiView } from './muzakki-view';
+import AtmBerasView from '@/components/atm-beras/atm-beras-view';
 
 interface ZiswafViewProps {
   jamaahList?: Jamaah[];
@@ -31,7 +33,7 @@ interface ZiswafViewProps {
 
 export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
   const { isReadOnly } = useAuth();
-  const [activeSubTab, setActiveSubTab] = useState<'sss' | 'bansos' | 'muzakki' | 'pemerataan'>('sss');
+  const [activeSubTab, setActiveSubTab] = useState<'sss' | 'bansos' | 'muzakki' | 'atm-beras' | 'pemerataan'>('sss');
 
 
   // SSS State
@@ -330,6 +332,23 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
               activeSubTab === 'bansos' ? 'bg-teal-950 text-teal-200' : 'bg-slate-200 text-slate-700'
             }`}>
               {aidList.length} Penyaluran
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab('atm-beras')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeSubTab === 'atm-beras'
+                ? 'bg-teal-800 text-white shadow-soft-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+            }`}
+          >
+            <Wheat className="w-3.5 h-3.5 text-amber-300" />
+            <span>ATM Beras Lumbung Mandiri</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-extrabold ${
+              activeSubTab === 'atm-beras' ? 'bg-teal-950 text-teal-200' : 'bg-emerald-100 text-emerald-800'
+            }`}>
+              Swadaya
             </span>
           </button>
 
@@ -807,6 +826,13 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
             )}
           </div>
         </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SUB-TAB 5: ATM BERAS (LUMBUNG PANGAN MANDIRI SWADAYA)                     */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'atm-beras' && (
+        <AtmBerasView />
       )}
 
       {/* ========================================================================= */}

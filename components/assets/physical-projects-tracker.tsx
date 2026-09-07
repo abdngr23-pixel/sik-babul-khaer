@@ -26,6 +26,7 @@ export default function PhysicalProjectsTracker() {
   const [editPercentage, setEditPercentage] = useState<number>(0);
   const [editRealized, setEditRealized] = useState<number>(0);
   const [editStatus, setEditStatus] = useState<ProjectStatus>('DALAM_PENGERJAAN');
+  const [editPhotosText, setEditPhotosText] = useState<string>('');
 
   // Sync projects from server API on mount
   useEffect(() => {
@@ -88,6 +89,11 @@ export default function PhysicalProjectsTracker() {
     if (!editingProject) return;
 
     const targetId = editingProject.id;
+    const parsedPhotos = editPhotosText
+      .split('\n')
+      .map((s) => s.trim())
+      .filter((s) => s.startsWith('http://') || s.startsWith('https://'));
+
     setProjects((prev) =>
       prev.map((p) =>
         p.id === targetId
@@ -96,6 +102,7 @@ export default function PhysicalProjectsTracker() {
               progressPercentage: editPercentage,
               realizedBudget: editRealized,
               status: editStatus,
+              photos: parsedPhotos,
               updatedAt: new Date().toISOString(),
             }
           : p
@@ -112,6 +119,7 @@ export default function PhysicalProjectsTracker() {
           progressPercentage: editPercentage,
           realizedBudget: editRealized,
           status: editStatus,
+          photos: parsedPhotos,
         }),
       });
       toast.success(`Progres proyek ${editingProject.title} berhasil diperbarui (${editPercentage}%).`);
@@ -261,6 +269,7 @@ export default function PhysicalProjectsTracker() {
                           setEditPercentage(project.progressPercentage);
                           setEditRealized(project.realizedBudget);
                           setEditStatus(project.status);
+                          setEditPhotosText((project.photos || []).join('\n'));
                         }}
                         className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
                       >
@@ -391,6 +400,22 @@ export default function PhysicalProjectsTracker() {
                       <strong>Catatan Khusus:</strong> {project.notes}
                     </div>
                   )}
+
+                  {project.photos && project.photos.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      <div className="text-[11px] font-bold text-slate-700">
+                        Dokumentasi Foto Progres Lapangan ({project.photos.length} Foto)
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {project.photos.map((photoUrl, pIdx) => (
+                          <div key={pIdx} className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={photoUrl} alt={`Foto progres ${project.title}`} className="w-full h-full object-cover" loading="lazy" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -472,6 +497,22 @@ export default function PhysicalProjectsTracker() {
                   <option value="SELESAI">SELESAI (100% Tuntas)</option>
                   <option value="TERTUNDA">TERTUNDA</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Foto Dokumentasi Lapangan (URL gambar, pisahkan dengan baris baru)
+                </label>
+                <textarea
+                  rows={3}
+                  value={editPhotosText}
+                  onChange={(e) => setEditPhotosText(e.target.value)}
+                  placeholder="https://images.unsplash.com/...&#10;https://..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                />
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Foto ini akan tampil di Galeri Portal Publik &amp; Tracker Sarpras
+                </p>
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex flex-col-reverse md:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">

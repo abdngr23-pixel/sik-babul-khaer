@@ -13,6 +13,7 @@ import {
 } from '@/types/dakwah';
 import { PhysicalProjectItem, ProjectStatus } from '@/types/project';
 import { SSSCanItem, SSSCollectionRecord, ZiswafAidItem } from '@/types/ziswaf';
+import { RiceDeposit, RiceWithdrawalLog, RiceStockSnapshot } from '@/types/atm-beras';
 import { INITIAL_LETTERS, INITIAL_MINUTES } from './mock-data';
 import { INITIAL_JAMAAH } from './mock-jamaah';
 import { INITIAL_TRANSACTIONS } from './mock-finance';
@@ -28,6 +29,7 @@ import {
 } from './mock-dakwah';
 import { INITIAL_PHYSICAL_PROJECTS } from './mock-projects';
 import { INITIAL_SSS_CANS, INITIAL_SSS_RECORDS, INITIAL_ZISWAF_AIDS } from './mock-ziswaf';
+import { INITIAL_RICE_DEPOSITS, INITIAL_RICE_WITHDRAWALS, INITIAL_RICE_SNAPSHOT } from './mock-atm-beras';
 import { generateLetterNumber, generateVerificationCode } from './letter-numbering';
 import {
   loadAllDataFromDatabase,
@@ -145,6 +147,9 @@ class DataStore {
   private sssRecords: SSSCollectionRecord[] = [...INITIAL_SSS_RECORDS];
   private ziswafAids: ZiswafAidItem[] = [...INITIAL_ZISWAF_AIDS];
   private users: User[] = [...OFFICIAL_USERS];
+  private riceDeposits: RiceDeposit[] = [...INITIAL_RICE_DEPOSITS];
+  private riceWithdrawals: RiceWithdrawalLog[] = [...INITIAL_RICE_WITHDRAWALS];
+  private riceSnapshot: RiceStockSnapshot = { ...INITIAL_RICE_SNAPSHOT };
 
   private lastSyncedAt = 0;
   private syncPromise: Promise<void> | null = null;
@@ -2324,6 +2329,49 @@ class DataStore {
     }
 
     return idx !== -1;
+  }
+
+  // ================= ATM BERAS (LUMBUNG PANGAN SWADAYA) =================
+  public async getRiceStockSnapshot(): Promise<RiceStockSnapshot> {
+    await this.sync();
+    return { ...this.riceSnapshot };
+  }
+
+  public async getRiceDeposits(): Promise<RiceDeposit[]> {
+    await this.sync();
+    return [...this.riceDeposits].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  public async addRiceDeposit(data: Omit<RiceDeposit, 'id'>): Promise<RiceDeposit> {
+    const newDeposit: RiceDeposit = {
+      ...data,
+      id: `rdep-${Date.now()}`,
+    };
+    this.riceDeposits.unshift(newDeposit);
+    this.riceSnapshot.currentStockKg += Number(data.weightKg) || 0;
+    this.riceSnapshot.lastRefillDate = data.date || new Date().toISOString().split('T')[0];
+    return newDeposit;
+  }
+
+  public async getRiceWithdrawals(): Promise<RiceWithdrawalLog[]> {
+    await this.sync();
+    return [...this.riceWithdrawals].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  public async addRiceWithdrawal(data: Omit<RiceWithdrawalLog, 'id'>): Promise<RiceWithdrawalLog> {
+    const newWithdrawal: RiceWithdrawalLog = {
+      ...data,
+      id: `rwth-${Date.now()}`,
+    };
+    this.riceWithdrawals.unshift(newWithdrawal);
+    const est = Number(data.estimatedWeightKg) || 0;
+    this.riceSnapshot.currentStockKg = Math.max(0, this.riceSnapshot.currentStockKg - est);
+    return newWithdrawal;
+  }
+
+  public async updateRiceStockThreshold(thresholdKg: number): Promise<RiceStockSnapshot> {
+    this.riceSnapshot.lowStockThresholdKg = thresholdKg;
+    return { ...this.riceSnapshot };
   }
 }
 

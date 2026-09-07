@@ -36,6 +36,7 @@ export interface PhysicalProjectItem {
   targetEndDate: string;
   description: string;
   milestones: ProjectMilestone[];
+  photos?: string[];
   notes?: string;
   updatedAt: string;
 }

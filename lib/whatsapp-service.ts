@@ -159,4 +159,51 @@ export const WhatsAppTemplates = {
       `*Seksi Pemberdayaan Ekonomi & Gerai Muslimah DKM*`
     );
   },
+
+  /**
+   * Peringatan Stok ATM Beras Menipis / Kritis ke Bendahara & Sarpras
+   */
+  riceStockAlert: (data: {
+    currentStockKg: number;
+    thresholdKg: number;
+    lastRefillDate?: string;
+  }) => {
+    const isCritical = data.currentStockKg <= data.thresholdKg / 2;
+    const statusLabel = isCritical ? 'KRITIS 🚨' : 'MENIPIS ⚠️';
+
+    return (
+      `Assalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
+      `*PERINGATAN STOK ATM BERAS: ${statusLabel}*\n\n` +
+      `Lumbung pangan swadaya ATM Beras Masjid Babul Khaer memerlukan perhatian segera:\n` +
+      `🌾 *Sisa Stok Saat Ini:* *${data.currentStockKg} Kg*\n` +
+      `⚠️ *Batas Minimum (Threshold):* ${data.thresholdKg} Kg\n` +
+      `${data.lastRefillDate ? `🗓 *Refill Terakhir:* ${data.lastRefillDate}\n` : ''}` +
+      `\nMohon Bapak Bendahara / Seksi ZISWAF & Sarpras dapat mengoordinasikan pembukaan donasi beras atau alokasi dana kas sosial agar dispenser beras tetap terisi untuk jamaah dhuafa.\n\n` +
+      `Syukran Jazakumullah Khair.\n` +
+      `*Pengelola ATM Beras & UPZ DKM Babul Khaer*`
+    );
+  },
+
+  /**
+   * Konfirmasi Donasi / Infaq Jamaah dari Portal Publik
+   */
+  publicDonationConfirmation: (data: {
+    category: string;
+    amountRp?: number;
+    donorName?: string;
+  }) => {
+    const formatRp = (num: number) =>
+      new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+
+    return (
+      `Assalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
+      `Yth. Pengurus DKM Masjid Babul Khaer (BTP Blok AE),\n\n` +
+      `Saya ingin mengonfirmasi komitmen / bukti transfer donasi melalui Portal Publik:\n` +
+      `📌 *Program/Kategori:* ${data.category}\n` +
+      `${data.amountRp && data.amountRp > 0 ? `💰 *Nominal:* ${formatRp(data.amountRp)}\n` : ''}` +
+      `${data.donorName ? `👤 *Nama:* ${data.donorName}\n` : ''}` +
+      `\nMohon konfirmasi jika dana sudah masuk ke Rekening Resmi BSI 7123456789. Semoga menjadi amal jariyah yang berkah bagi keluarga kami.\n\n` +
+      `Jazakumullahu Khairan Katsiran.`
+    );
+  },
 };

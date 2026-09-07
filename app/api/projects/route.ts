@@ -54,16 +54,21 @@ export async function POST(request: NextRequest) {
 
     // 2. Update Progress & Realized Budget
     if (action === 'update-progress') {
-      const { projectId, progressPercentage, realizedBudget, status } = body;
+      const { projectId, progressPercentage, realizedBudget, status, photos } = body;
       if (!projectId) {
         return NextResponse.json({ success: false, error: 'Project ID wajib diisi' }, { status: 400 });
       }
 
-      const updated = await store.updatePhysicalProject(projectId, {
+      const updateData: Partial<import('@/types/project').PhysicalProjectItem> = {
         progressPercentage: Number(progressPercentage) || 0,
         realizedBudget: Number(realizedBudget) || 0,
         status,
-      });
+      };
+      if (Array.isArray(photos)) {
+        updateData.photos = photos;
+      }
+
+      const updated = await store.updatePhysicalProject(projectId, updateData);
 
       return NextResponse.json({
         success: true,

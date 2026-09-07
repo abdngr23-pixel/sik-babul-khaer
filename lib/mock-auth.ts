@@ -128,6 +128,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canExecuteDispositions: true,
     canViewAuditLogs: true,
     canAccessSuperAdmin: true,
+    canAccessAtmBeras: true,
+    canMutateAtmBeras: true,
     isReadOnly: false,
   },
   KETUA_UMUM: {
@@ -145,6 +147,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canExecuteDispositions: true,
     canViewAuditLogs: true,
     canAccessSuperAdmin: true,
+    canAccessAtmBeras: true,
+    canMutateAtmBeras: true,
     isReadOnly: false,
   },
   SEKRETARIS: {
@@ -162,6 +166,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canExecuteDispositions: false,
     canViewAuditLogs: false,
     canAccessSuperAdmin: false,
+    canAccessAtmBeras: true,
+    canMutateAtmBeras: false,
     isReadOnly: false,
   },
   BENDAHARA: {
@@ -179,6 +185,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canExecuteDispositions: false,
     canViewAuditLogs: false,
     canAccessSuperAdmin: false,
+    canAccessAtmBeras: true,
+    canMutateAtmBeras: true,
     isReadOnly: false,
   },
   SARPRAS: {
@@ -196,6 +204,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canExecuteDispositions: false,
     canViewAuditLogs: false,
     canAccessSuperAdmin: false,
+    canAccessAtmBeras: true,
+    canMutateAtmBeras: true,
     isReadOnly: false,
   },
   KEMASJIDAN: {
@@ -213,6 +223,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canExecuteDispositions: false,
     canViewAuditLogs: false,
     canAccessSuperAdmin: false,
+    canAccessAtmBeras: true,
+    canMutateAtmBeras: true,
     isReadOnly: false,
   },
   DEWAN_PENGAWAS: {
@@ -228,8 +240,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermission> = {
     canAccessReports: true,
     canAccessApprovals: false,
     canExecuteDispositions: false,
-    canViewAuditLogs: true,
+    canViewAuditLogs: false,
     canAccessSuperAdmin: false,
+    canAccessAtmBeras: true,
+    canMutateAtmBeras: false,
     isReadOnly: true,
   },
 };

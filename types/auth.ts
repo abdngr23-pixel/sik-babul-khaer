@@ -108,6 +108,8 @@ export interface RolePermission {
   canExecuteDispositions: boolean;
   canViewAuditLogs: boolean;
   canAccessSuperAdmin?: boolean;
+  canAccessAtmBeras?: boolean;
+  canMutateAtmBeras?: boolean;
   isReadOnly: boolean;
 }
 
