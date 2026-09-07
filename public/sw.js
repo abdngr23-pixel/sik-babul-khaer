@@ -1,7 +1,7 @@
 /// SIK-MBH Service Worker — Network-First with Cache Fallback
-/// Version: 5.0 (Mobile Hardware Back Button & Gesture Navigation Support)
+/// Version: 6.0 (White Seamless Splash & PWA Brand Sync)
 
-const CACHE_NAME = 'sik-mbh-v5-20260907';
+const CACHE_NAME = 'sik-mbh-v6-white-splash';
 const OFFLINE_URL = '/';
 
 // Precache only static branding assets (DO NOT precache HTML root to prevent stale UI)

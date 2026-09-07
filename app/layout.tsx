@@ -60,6 +60,10 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} h-full antialiased overflow-x-hidden`}
     >
       <head>
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="background-color" content="#ffffff" />
+        <meta name="msapplication-navbutton-color" content="#ffffff" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
