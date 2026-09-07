@@ -33,15 +33,15 @@ export default function SplashScreen() {
       // Fallback jika sessionStorage dibatasi
     }
 
-    // Timer memudar setelah 2 detik
+    // Mulai transisi fade-out setelah 2 detik
     const fadeTimer = setTimeout(() => {
       setPhase('fading');
     }, 2000);
 
-    // Hapus total dari DOM (unmount) setelah transisi memudar (2000ms + 500ms)
+    // Hapus total dari DOM (unmount) setelah transisi fade-out selesai (durasi transisi 700ms > minimal 500ms)
     const unmountTimer = setTimeout(() => {
       setPhase('hidden');
-    }, 2500);
+    }, 2750);
 
     return () => {
       clearTimeout(fadeTimer);
@@ -58,20 +58,18 @@ export default function SplashScreen() {
       role="status"
       aria-label="Splash Screen Masjid Babul Khaer"
       aria-live="polite"
-      className={`fixed inset-0 z-[99999] flex items-center justify-center bg-white transition-opacity duration-500 ease-out select-none ${
+      className={`fixed inset-0 z-[9999] w-screen h-screen bg-white flex items-center justify-center overflow-hidden transition-opacity duration-700 ease-out select-none ${
         phase === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <div className="w-full h-full max-w-md max-h-[80vh] flex items-center justify-center p-6">
-        <video
-          src="/splash.mp4"
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          className="w-full h-auto max-h-full object-contain drop-shadow-sm"
-        />
-      </div>
+      <video
+        src="/splash.mp4"
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        className="w-full h-full object-contain pointer-events-none"
+      />
     </div>
   );
 }
