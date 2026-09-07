@@ -161,7 +161,22 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 8. Update Kajian Schedule
+    // 8. Create Kajian Schedule
+    if (action === 'create-kajian') {
+      const { item } = body;
+      if (!item || !item.title || !item.speakerName) {
+        return NextResponse.json({ success: false, error: 'Data kajian tidak lengkap' }, { status: 400 });
+      }
+
+      const created = await store.addKajianSchedule(item);
+      return NextResponse.json({
+        success: true,
+        data: created,
+        message: 'Agenda kajian berhasil ditambahkan',
+      });
+    }
+
+    // 9. Update Kajian Schedule
     if (action === 'update-kajian') {
       const { id, updates } = body;
       if (!id || !updates) {

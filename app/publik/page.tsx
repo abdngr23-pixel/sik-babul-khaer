@@ -22,9 +22,11 @@ import {
   Image as ImageIcon,
   Sparkles,
   Type,
+  Gavel,
+  Maximize2,
 } from 'lucide-react';
 import { useTheme } from '@/lib/theme-context';
-import { buildWhatsAppLink } from '@/lib/whatsapp-service';
+import { buildWhatsAppLink, WhatsAppTemplates, openWhatsApp } from '@/lib/whatsapp-service';
 
 // Data Types from public stats endpoint
 interface PublicStatsData {
@@ -73,11 +75,25 @@ interface PublicStatsData {
       notes: string;
     }[];
   };
+  lelang: {
+    id: string;
+    itemName: string;
+    description: string;
+    photoUrls: string[];
+    startingBid: number;
+    currentHighestBid: number;
+    currentBidderName: string;
+    deadlineDate: string;
+    coordinatorContact: string;
+    division: string;
+  }[];
   gallery: {
+    id: string;
     url: string;
     title: string;
+    caption?: string;
     category: string;
-    progress: number;
+    date?: string;
   }[];
   calendarEvents: {
     id: string;
@@ -89,6 +105,7 @@ interface PublicStatsData {
     time: string;
     location: string;
     description: string;
+    posterUrl?: string;
   }[];
   transparency: {
     monthlyTrends: { month: string; income: number; expense: number; balance: number }[];
@@ -175,24 +192,44 @@ const DEFAULT_STATS: PublicStatsData = {
       { id: '4', date: '2026-08-30', donorDisplay: 'Hamba Allah (Anonim)', weightKg: 25, notes: 'Sedekah beras serambi' },
     ],
   },
+  lelang: [
+    {
+      id: 'llg-001',
+      itemName: 'Jam Dinding Kaligrafi Kayu Jati Ukir Jepara',
+      description: 'Donasi wakaf barang dari keluarga jamaah untuk kelanjutan renovasi plafon lantai 2.',
+      photoUrls: ['https://images.unsplash.com/photo-1590073242678-70ee3fc28e8e?auto=format&fit=crop&w=800&q=80'],
+      startingBid: 750000,
+      currentHighestBid: 1250000,
+      currentBidderName: 'Hamba Allah (Warga Blok AE)',
+      deadlineDate: '2026-09-25',
+      coordinatorContact: '0812-4000-0003',
+      division: 'Seksi Dana & Usaha Swadaya',
+    },
+  ],
   gallery: [
     {
+      id: 'gal-1',
       url: 'https://images.unsplash.com/photo-1590076215667-875d4ef2d7ee?w=800&auto=format&fit=crop&q=80',
       title: 'Pembangunan Menara Masjid 30 Meter',
-      category: 'PEMBANGUNAN_BARU',
-      progress: 30,
+      caption: 'Struktur rangka dan bekisting elevated cor menara.',
+      category: 'PEMBANGUNAN',
+      date: '2026-08-30',
     },
     {
-      url: 'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=800&auto=format&fit=crop&q=80',
-      title: 'Renovasi Plafon & Atap Bocor',
-      category: 'RENOVASI',
-      progress: 55,
+      id: 'gal-2',
+      url: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=800&auto=format&fit=crop&q=80',
+      title: 'Kajian Subuh Ahad Berjamaah',
+      caption: 'Kajian kitab Bulughul Maram bersama warga Blok AE.',
+      category: 'KAJIAN',
+      date: '2026-09-06',
     },
     {
-      url: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800&auto=format&fit=crop&q=80',
-      title: 'Struktur Elevated Lantai Menara',
-      category: 'PEMBANGUNAN_BARU',
-      progress: 30,
+      id: 'gal-3',
+      url: 'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=800&auto=format&fit=crop&q=80',
+      title: 'Peringatan Hari Besar Islam & Santunan',
+      caption: 'Penyaluran santunan bagi mustahiq dan anak yatim.',
+      category: 'PHBI',
+      date: '2026-08-25',
     },
   ],
   calendarEvents: [
@@ -296,6 +333,7 @@ export default function PublicPortalPage() {
   const [stats, setStats] = useState<PublicStatsData>(DEFAULT_STATS);
   const [copiedAccount, setCopiedAccount] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>('');
+  const [selectedGalleryCategory, setSelectedGalleryCategory] = useState<string>('ALL');
 
   // Donation interactive state
   const [selectedCategory, setSelectedCategory] = useState<'INFAQ' | 'ZAKAT' | 'WAKAF' | 'DONATUR'>('INFAQ');
@@ -504,6 +542,13 @@ export default function PublicPortalPage() {
             >
               <Wheat className="w-4 h-4 text-amber-300" />
               <span>Program ATM Beras</span>
+            </a>
+            <a
+              href="#lelang"
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-xs sm:text-sm border border-white/20 transition-all cursor-pointer flex items-center gap-2"
+            >
+              <Gavel className="w-4 h-4 text-amber-400" />
+              <span>Lelang Infaq</span>
             </a>
             <a
               href="#kalender"
@@ -921,7 +966,139 @@ export default function PublicPortalPage() {
         </section>
 
         {/* ========================================================================= */}
-        {/* SECTION 5: GALERI BUKTI NYATA                                             */}
+        {/* SECTION 4B: LELANG INFAQ BERLANGSUNG                                      */}
+        {/* ========================================================================= */}
+        <section id="lelang" className="space-y-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-xs font-bold text-amber-800 dark:text-amber-300 inline-flex items-center gap-1.5">
+              <Gavel className="w-3.5 h-3.5 text-amber-600" />
+              <span>Infaq Swadaya Barang &amp; Karya</span>
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+              Lelang Infaq Berlangsung
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              Miliki barang wakaf atau karya santri sambil berinfaq jariyah. Seluruh dana yang terkumpul disalurkan 100% untuk operasional dan pembangunan fasilitas masjid.
+            </p>
+          </div>
+
+          {!stats.lelang || stats.lelang.length === 0 ? (
+            <div className="p-10 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 space-y-2">
+              <Gavel className="w-8 h-8 mx-auto text-slate-400" />
+              <div className="text-sm font-bold text-slate-600 dark:text-slate-400">
+                Belum ada lelang aktif saat ini
+              </div>
+              <p className="text-xs text-slate-400">
+                Pelelangan barang wakaf baru akan segera dibuka oleh panitia pengurus.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+              {stats.lelang.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white dark:bg-slate-900 rounded-3xl border border-amber-300/80 dark:border-amber-600/30 ring-1 ring-amber-500/10 shadow-sm overflow-hidden flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Photo */}
+                    <div
+                      onClick={() => {
+                        if (item.photoUrls && item.photoUrls.length > 0) {
+                          setSelectedPhotoZoom(item.photoUrls[0]);
+                        }
+                      }}
+                      className="relative aspect-[4/3] bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-pointer group"
+                    >
+                      {item.photoUrls && item.photoUrls.length > 0 ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={item.photoUrls[0]}
+                          alt={item.itemName}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                          <Gavel className="w-10 h-10 stroke-1" />
+                        </div>
+                      )}
+                      <div className="absolute top-3 left-3">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-600/90 text-white backdrop-blur-md shadow-2xs">
+                          SEDANG DIBUKA
+                        </span>
+                      </div>
+                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-bold backdrop-blur-[2px]">
+                        <Maximize2 className="w-4 h-4" />
+                        <span>Perbesar Foto</span>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-5 space-y-3">
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                        <span>{item.division}</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-amber-600" />
+                          <span>Tutup: {item.deadlineDate}</span>
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
+                        {item.itemName}
+                      </h3>
+
+                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                        {item.description}
+                      </p>
+
+                      {/* Price Box */}
+                      <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 space-y-1">
+                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                          <span>Harga Awal:</span>
+                          <span className="font-semibold">{formatRp(item.startingBid)}</span>
+                        </div>
+                        <div className="flex items-center justify-between pt-1 border-t border-amber-200/50 dark:border-amber-800/30">
+                          <span className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                            Tawaran Tertinggi:
+                          </span>
+                          <span className="text-base font-black text-amber-700 dark:text-amber-400">
+                            {formatRp(item.currentHighestBid)}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-600 dark:text-slate-400 pt-0.5 flex justify-between">
+                          <span>Penawar:</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{item.currentBidderName}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CTA WA Button */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const template = WhatsAppTemplates.lelangBidInquiry({
+                          itemName: item.itemName,
+                          currentBid: item.currentHighestBid,
+                          coordinatorContact: item.coordinatorContact,
+                        });
+                        openWhatsApp(item.coordinatorContact, template);
+                      }}
+                      className="w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white text-xs font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Tawar via WhatsApp</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 5: GALERI BUKTI NYATA (TERPADU LINTAS DIVISI)                      */}
         {/* ========================================================================= */}
         <section id="galeri" className="space-y-6">
           <div className="text-center max-w-2xl mx-auto space-y-2">
@@ -929,46 +1106,81 @@ export default function PublicPortalPage() {
               Dokumentasi Lapangan
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              Galeri Bukti Nyata Progres
+              Galeri Bukti Nyata Kegiatan &amp; Progres
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Dokumentasi autentik pekerjaan fisik pembangunan dan perbaikan sarana prasarana Masjid Babul Khaer.
+              Dokumentasi autentik program kerja, majelis taklim, penyaluran sosial, dan pembangunan fisik Masjid Babul Khaer.
             </p>
           </div>
 
-          {stats.gallery.length === 0 ? (
+          {/* Filter Pills Kategori */}
+          <div className="flex items-center justify-center gap-1.5 flex-wrap pt-1">
+            {[
+              { id: 'ALL', label: 'Semua' },
+              { id: 'PEMBANGUNAN', label: 'Pembangunan' },
+              { id: 'KAJIAN', label: 'Kajian & Dakwah' },
+              { id: 'PHBI', label: 'Hari Besar (PHBI)' },
+              { id: 'SOSIAL', label: 'Sosial & Lumbung' },
+              { id: 'TPA', label: 'Santri TPA' },
+              { id: 'RAPAT', label: 'Rapat Pleno' },
+            ].map((cat) => {
+              const isActive = selectedGalleryCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedGalleryCategory(cat.id)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-emerald-700 text-white shadow-soft-xs'
+                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {stats.gallery.filter((g) => selectedGalleryCategory === 'ALL' || g.category === selectedGalleryCategory).length === 0 ? (
             <div className="p-12 text-center rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 space-y-2">
               <ImageIcon className="w-8 h-8 mx-auto text-slate-400" />
               <div className="text-sm font-bold text-slate-600 dark:text-slate-400">
-                Dokumentasi foto lapangan akan segera hadir
+                Belum ada dokumentasi pada kategori ini
               </div>
               <p className="text-xs text-slate-400">
-                Tim Seksi Sarpras sedang mengunggah foto progres pengerjaan terbaru.
+                Tim pengurus DKM sedang memperbarui arsip dokumentasi lapangan.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-              {stats.gallery.map((img, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => setSelectedPhotoZoom(img.url)}
-                  className="group relative aspect-video rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-sm cursor-pointer"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={img.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-90 p-4 flex flex-col justify-end text-white">
-                    <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
-                      {img.category.replace('_', ' ')} • {img.progress}%
+              {stats.gallery
+                .filter((g) => selectedGalleryCategory === 'ALL' || g.category === selectedGalleryCategory)
+                .map((img, idx) => (
+                  <div
+                    key={img.id || idx}
+                    onClick={() => setSelectedPhotoZoom(img.url)}
+                    className="group relative aspect-video rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-sm cursor-pointer"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.url}
+                      alt={img.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent opacity-95 p-4 flex flex-col justify-end text-white">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                        <span>{img.category.replace('_', ' ')}</span>
+                        {img.date && <span className="text-slate-300 lowercase">{img.date}</span>}
+                      </div>
+                      <div className="text-xs font-bold truncate mt-0.5">{img.title}</div>
+                      {img.caption && (
+                        <div className="text-[11px] text-slate-300 line-clamp-1 mt-0.5">{img.caption}</div>
+                      )}
                     </div>
-                    <div className="text-xs font-bold truncate mt-0.5">{img.title}</div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </section>
@@ -1030,6 +1242,27 @@ export default function PublicPortalPage() {
                   <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
                     {evt.title}
                   </h3>
+
+                  {/* Poster Brosur Kajian (Jika Ada) */}
+                  {evt.posterUrl && (
+                    <div
+                      onClick={() => setSelectedPhotoZoom(evt.posterUrl!)}
+                      className="relative w-full h-44 rounded-xl overflow-hidden mt-2 mb-2 border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 group/poster cursor-pointer"
+                      title="Klik untuk melihat poster penuh"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={evt.posterUrl}
+                        alt={`Poster ${evt.title}`}
+                        className="w-full h-full object-cover group-hover/poster:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/poster:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-bold backdrop-blur-[2px]">
+                        <Maximize2 className="w-4 h-4" />
+                        <span>Lihat Brosur Poster</span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                     {evt.speakerName} {evt.speakerTitle ? `(${evt.speakerTitle})` : ''}

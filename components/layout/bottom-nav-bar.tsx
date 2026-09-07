@@ -27,6 +27,8 @@ import {
   Award,
   BookOpen,
   Store,
+  Gavel,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
@@ -645,6 +647,56 @@ export default function BottomNavBar({
                         </p>
                         <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                           Gerai & Qardh
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Lelang Infaq Barakah */}
+                  {canAccessTab('lelang') && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab('lelang')}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                        activeTab === 'lelang'
+                          ? 'bg-amber-50/80 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 ring-2 ring-amber-500/20'
+                          : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 shrink-0">
+                        <Gavel className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          Lelang Infaq
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          Galang Swadaya
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Galeri Kegiatan Universal */}
+                  {canAccessTab('gallery') && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab('gallery')}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                        activeTab === 'gallery'
+                          ? 'bg-teal-50/80 dark:bg-teal-950/60 border-teal-300 dark:border-teal-800 ring-2 ring-teal-500/20'
+                          : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 shrink-0">
+                        <ImageIcon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          Galeri Foto
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          Dokumentasi DKM
                         </p>
                       </div>
                     </button>

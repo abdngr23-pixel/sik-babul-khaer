@@ -31,6 +31,8 @@ import IntegratedMeetingModule from '@/components/minutes/integrated-meeting-mod
 import { AdhocCommitteeView } from '@/components/organization/adhoc-committee-view';
 import { TpaView } from '@/components/tpa/tpa-view';
 import { UmkmView } from '@/components/umkm/umkm-view';
+import LelangView from '@/components/lelang/lelang-view';
+import GalleryView from '@/components/gallery/gallery-view';
 
 
 import { OfficialLetter, LetterStatus } from '@/types/letter';
@@ -693,6 +695,20 @@ export default function MainContentRouter(props: MainContentRouterProps) {
           {activeTab === 'umkm' && (
             <div className="space-y-4">
               <UmkmView />
+            </div>
+          )}
+
+          {/* Lelang Infaq Barakah */}
+          {activeTab === 'lelang' && (
+            <div className="space-y-4">
+              <LelangView />
+            </div>
+          )}
+
+          {/* Galeri Kegiatan Universal */}
+          {activeTab === 'gallery' && (
+            <div className="space-y-4">
+              <GalleryView />
             </div>
           )}
         </>

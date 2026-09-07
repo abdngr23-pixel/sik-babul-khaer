@@ -268,6 +268,7 @@ export const INITIAL_KAJIAN_SCHEDULES: KajianScheduleItem[] = [
     fundingSource: 'SWADAYA_JAMAAH',
     contactPerson: 'Syafruddin (0812-4200-1122)',
     isCompleted: false,
+    posterUrl: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=800&q=80',
     notes: 'Maksimal 2x dalam sepekan, dana dicarikan sendiri swadaya jamaah (TIDAK memakai kas masjid).',
   },
   {
@@ -282,6 +283,7 @@ export const INITIAL_KAJIAN_SCHEDULES: KajianScheduleItem[] = [
     fundingSource: 'SWADAYA_JAMAAH',
     contactPerson: 'Fakhri Pradana (0812-4200-1123)',
     isCompleted: false,
+    posterUrl: 'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?auto=format&fit=crop&w=800&q=80',
     notes: 'Pengumuman dicetak dan ditempel di papan bicara serambi masjid.',
   },
   {

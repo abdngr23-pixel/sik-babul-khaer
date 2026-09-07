@@ -14,6 +14,8 @@ import {
 import { PhysicalProjectItem, ProjectStatus } from '@/types/project';
 import { SSSCanItem, SSSCollectionRecord, ZiswafAidItem } from '@/types/ziswaf';
 import { RiceDeposit, RiceWithdrawalLog, RiceStockSnapshot } from '@/types/atm-beras';
+import { LelangItem } from '@/types/lelang';
+import { GalleryItem } from '@/types/gallery';
 import { INITIAL_LETTERS, INITIAL_MINUTES } from './mock-data';
 import { INITIAL_JAMAAH } from './mock-jamaah';
 import { INITIAL_TRANSACTIONS } from './mock-finance';
@@ -30,6 +32,8 @@ import {
 import { INITIAL_PHYSICAL_PROJECTS } from './mock-projects';
 import { INITIAL_SSS_CANS, INITIAL_SSS_RECORDS, INITIAL_ZISWAF_AIDS } from './mock-ziswaf';
 import { INITIAL_RICE_DEPOSITS, INITIAL_RICE_WITHDRAWALS, INITIAL_RICE_SNAPSHOT } from './mock-atm-beras';
+import { INITIAL_LELANG_ITEMS } from './mock-lelang';
+import { INITIAL_GALLERY_ITEMS } from './mock-gallery';
 import { generateLetterNumber, generateVerificationCode } from './letter-numbering';
 import {
   loadAllDataFromDatabase,
@@ -150,6 +154,8 @@ class DataStore {
   private riceDeposits: RiceDeposit[] = [...INITIAL_RICE_DEPOSITS];
   private riceWithdrawals: RiceWithdrawalLog[] = [...INITIAL_RICE_WITHDRAWALS];
   private riceSnapshot: RiceStockSnapshot = { ...INITIAL_RICE_SNAPSHOT };
+  private lelangItems: LelangItem[] = [...INITIAL_LELANG_ITEMS];
+  private galleryItems: GalleryItem[] = [...INITIAL_GALLERY_ITEMS];
 
   private lastSyncedAt = 0;
   private syncPromise: Promise<void> | null = null;
@@ -2372,6 +2378,93 @@ class DataStore {
   public async updateRiceStockThreshold(thresholdKg: number): Promise<RiceStockSnapshot> {
     this.riceSnapshot.lowStockThresholdKg = thresholdKg;
     return { ...this.riceSnapshot };
+  }
+
+  // ================= LELANG INFAQ BARAKAH =================
+  public async getLelangItems(): Promise<LelangItem[]> {
+    await this.sync();
+    return [...this.lelangItems].sort((a, b) => {
+      // Prioritas lelang BERLANGSUNG
+      if (a.status === 'BERLANGSUNG' && b.status !== 'BERLANGSUNG') return -1;
+      if (a.status !== 'BERLANGSUNG' && b.status === 'BERLANGSUNG') return 1;
+      return new Date(a.deadlineDate).getTime() - new Date(b.deadlineDate).getTime();
+    });
+  }
+
+  public async addLelangItem(item: Omit<LelangItem, 'id'>): Promise<LelangItem> {
+    const newItem: LelangItem = {
+      ...item,
+      id: `llg-${Date.now()}`,
+    };
+    this.lelangItems.unshift(newItem);
+    return newItem;
+  }
+
+  public async placeLelangBid(id: string, bidAmount: number, bidderName?: string): Promise<LelangItem | null> {
+    const idx = this.lelangItems.findIndex((l) => l.id === id);
+    if (idx === -1) return null;
+    const item = this.lelangItems[idx];
+    if (bidAmount <= item.currentHighestBid) {
+      throw new Error(`Tawaran (Rp ${bidAmount.toLocaleString('id-ID')}) harus lebih besar dari tawaran saat ini (Rp ${item.currentHighestBid.toLocaleString('id-ID')})`);
+    }
+
+    const updated: LelangItem = {
+      ...item,
+      currentHighestBid: bidAmount,
+      currentBidderName: bidderName?.trim() || 'Hamba Allah',
+    };
+    this.lelangItems[idx] = updated;
+    return updated;
+  }
+
+  public async completeLelang(id: string, winnerName?: string, finalPrice?: number): Promise<LelangItem | null> {
+    const idx = this.lelangItems.findIndex((l) => l.id === id);
+    if (idx === -1) return null;
+    const item = this.lelangItems[idx];
+
+    const updated: LelangItem = {
+      ...item,
+      status: 'SELESAI',
+      winnerName: winnerName?.trim() || item.currentBidderName || 'Hamba Allah',
+      finalPrice: finalPrice || item.currentHighestBid,
+    };
+    this.lelangItems[idx] = updated;
+    return updated;
+  }
+
+  public async cancelLelang(id: string): Promise<LelangItem | null> {
+    const idx = this.lelangItems.findIndex((l) => l.id === id);
+    if (idx === -1) return null;
+    const updated: LelangItem = {
+      ...this.lelangItems[idx],
+      status: 'DIBATALKAN',
+    };
+    this.lelangItems[idx] = updated;
+    return updated;
+  }
+
+  // ================= GALERI KEGIATAN UNIVERSAL =================
+  public async getGalleryItems(category?: string): Promise<GalleryItem[]> {
+    await this.sync();
+    if (category && category !== 'ALL') {
+      return this.galleryItems.filter((g) => g.category === category);
+    }
+    return [...this.galleryItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  public async addGalleryItem(item: Omit<GalleryItem, 'id'>): Promise<GalleryItem> {
+    const newItem: GalleryItem = {
+      ...item,
+      id: `gal-${Date.now()}`,
+    };
+    this.galleryItems.unshift(newItem);
+    return newItem;
+  }
+
+  public async deleteGalleryItem(id: string): Promise<boolean> {
+    const prevLen = this.galleryItems.length;
+    this.galleryItems = this.galleryItems.filter((g) => g.id !== id);
+    return this.galleryItems.length < prevLen;
   }
 }
 

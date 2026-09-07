@@ -13,6 +13,7 @@ import { PhysicalProjectItem, ProjectStatus } from '@/types/project';
 import { INITIAL_PHYSICAL_PROJECTS } from '@/lib/mock-projects';
 import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/lib/toast-context';
+import ImageUploader from '@/components/shared/image-uploader';
 
 export default function PhysicalProjectsTracker() {
   const { isReadOnly } = useAuth();
@@ -26,7 +27,7 @@ export default function PhysicalProjectsTracker() {
   const [editPercentage, setEditPercentage] = useState<number>(0);
   const [editRealized, setEditRealized] = useState<number>(0);
   const [editStatus, setEditStatus] = useState<ProjectStatus>('DALAM_PENGERJAAN');
-  const [editPhotosText, setEditPhotosText] = useState<string>('');
+  const [editPhotos, setEditPhotos] = useState<string[]>([]);
 
   // Sync projects from server API on mount
   useEffect(() => {
@@ -89,10 +90,6 @@ export default function PhysicalProjectsTracker() {
     if (!editingProject) return;
 
     const targetId = editingProject.id;
-    const parsedPhotos = editPhotosText
-      .split('\n')
-      .map((s) => s.trim())
-      .filter((s) => s.startsWith('http://') || s.startsWith('https://'));
 
     setProjects((prev) =>
       prev.map((p) =>
@@ -102,7 +99,7 @@ export default function PhysicalProjectsTracker() {
               progressPercentage: editPercentage,
               realizedBudget: editRealized,
               status: editStatus,
-              photos: parsedPhotos,
+              photos: editPhotos,
               updatedAt: new Date().toISOString(),
             }
           : p
@@ -119,13 +116,19 @@ export default function PhysicalProjectsTracker() {
           progressPercentage: editPercentage,
           realizedBudget: editRealized,
           status: editStatus,
-          photos: parsedPhotos,
+          photos: editPhotos,
         }),
       });
-      toast.success(`Progres proyek ${editingProject.title} berhasil diperbarui (${editPercentage}%).`);
+      toast.success(
+        'Progres Diperbarui',
+        `Progres proyek "${editingProject.title}" berhasil disimpan.`
+      );
     } catch (err) {
-      console.error('Gagal menyimpan update progress proyek:', err);
-      toast.error('Gagal menyimpan pembaruan progres proyek.');
+      console.error('Gagal menyimpan progres proyek ke server:', err);
+      toast.error(
+        'Gagal Menyimpan',
+        'Terjadi kesalahan saat menyimpan perubahan ke server.'
+      );
     }
 
     setEditingProject(null);
@@ -269,7 +272,7 @@ export default function PhysicalProjectsTracker() {
                           setEditPercentage(project.progressPercentage);
                           setEditRealized(project.realizedBudget);
                           setEditStatus(project.status);
-                          setEditPhotosText((project.photos || []).join('\n'));
+                          setEditPhotos(project.photos || []);
                         }}
                         className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
                       >
@@ -500,19 +503,14 @@ export default function PhysicalProjectsTracker() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Foto Dokumentasi Lapangan (URL gambar, pisahkan dengan baris baru)
-                </label>
-                <textarea
-                  rows={3}
-                  value={editPhotosText}
-                  onChange={(e) => setEditPhotosText(e.target.value)}
-                  placeholder="https://images.unsplash.com/...&#10;https://..."
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                <ImageUploader
+                  multiple
+                  value={editPhotos}
+                  onChange={setEditPhotos}
+                  label="Foto Dokumentasi Lapangan"
+                  helperText="Unggah foto langsung dari kamera HP atau galeri (Maks. 6 foto)"
+                  maxFiles={6}
                 />
-                <p className="text-[10px] text-slate-400 mt-0.5">
-                  Foto ini akan tampil di Galeri Portal Publik &amp; Tracker Sarpras
-                </p>
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex flex-col-reverse md:flex-row items-center justify-end gap-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">

@@ -20,6 +20,8 @@ export async function GET() {
       riceWithdrawals,
       fridaySchedules,
       kajianSchedules,
+      lelangItems,
+      galleryItemsFromStore,
     ] = await Promise.all([
       store.getFinanceSummary(),
       store.getTransactions(),
@@ -32,6 +34,8 @@ export async function GET() {
       store.getRiceWithdrawals(),
       store.getFridaySchedules(),
       store.getKajianSchedules(),
+      store.getLelangItems(),
+      store.getGalleryItems(),
     ]);
 
     // 1. Hero Data
@@ -96,26 +100,59 @@ export async function GET() {
       notes: d.notes || 'Infaq beras lumbung',
     }));
 
-    // 6. Galeri Foto Progres Pembangunan
+    // 6. Galeri Terpadu Dokumentasi Kegiatan & Proyek
     const galleryItems: {
+      id: string;
       url: string;
       title: string;
+      caption?: string;
       category: string;
-      progress: number;
+      date: string;
     }[] = [];
 
+    // Tambahkan arsip kegiatan lintas divisi
+    galleryItemsFromStore.forEach((g) => {
+      galleryItems.push({
+        id: g.id,
+        url: g.photoUrl,
+        title: g.title,
+        caption: g.caption,
+        category: g.category,
+        date: g.date,
+      });
+    });
+
+    // Gabungkan dengan foto progres proyek fisik sarpras
     projects.forEach((proj) => {
       if (proj.photos && proj.photos.length > 0) {
-        proj.photos.forEach((photoUrl) => {
+        proj.photos.forEach((photoUrl, pIdx) => {
           galleryItems.push({
+            id: `${proj.id}-${pIdx}`,
             url: photoUrl,
             title: proj.title,
-            category: proj.category,
-            progress: proj.progressPercentage,
+            caption: `Progres Proyek Sarpras Fisik: ${proj.progressPercentage}% (${proj.status.replace('_', ' ')})`,
+            category: 'PEMBANGUNAN',
+            date: proj.updatedAt?.split('T')[0] || '2026-08-30',
           });
         });
       }
     });
+
+    // 6b. Lelang Infaq Berlangsung (Hanya lelang aktif)
+    const publicLelang = lelangItems
+      .filter((l) => l.status === 'BERLANGSUNG')
+      .map((l) => ({
+        id: l.id,
+        itemName: l.itemName,
+        description: l.description,
+        photoUrls: l.photoUrls,
+        startingBid: l.startingBid,
+        currentHighestBid: l.currentHighestBid,
+        currentBidderName: l.currentBidderName || 'Hamba Allah',
+        deadlineDate: l.deadlineDate,
+        coordinatorContact: l.coordinatorContact,
+        division: l.division,
+      }));
 
     // 7. Kalender Kegiatan Mendatang
     const upcomingFridays = fridaySchedules.slice(0, 4).map((f) => ({
@@ -140,6 +177,7 @@ export async function GET() {
       time: k.dayTime.includes('(') ? k.dayTime.split('(')[1]?.replace(')', '') : '05:30 WITA',
       location: k.location,
       description: `Materi: ${k.bookOrTopic} (Terbuka untuk umum, gratis snack & sarapan)`,
+      posterUrl: k.posterUrl,
     }));
 
     // 8. Tren Keuangan 6 Bulan Terakhir (Agregat)
@@ -185,6 +223,7 @@ export async function GET() {
           cumulativeDistributedKg: cumulativeRiceDistributedKg,
           recentPublicDeposits,
         },
+        lelang: publicLelang,
         gallery: galleryItems,
         calendarEvents: [...upcomingFridays, ...upcomingKajian],
         transparency: {

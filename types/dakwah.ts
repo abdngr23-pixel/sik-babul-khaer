@@ -32,6 +32,7 @@ export interface FridayScheduleItem {
   actualHonorDisbursed?: number;
   summaryNotes?: string;
   completedAt?: string;
+  posterUrl?: string;
 }
 
 export interface RawatibScheduleItem {
@@ -65,6 +66,7 @@ export interface KajianScheduleItem {
   actualHonorDisbursed?: number;
   summaryNotes?: string;
   completedAt?: string;
+  posterUrl?: string;
 }
 
 export interface RamadhanScheduleItem {
@@ -86,4 +88,5 @@ export interface RamadhanScheduleItem {
   actualHonorDisbursed?: number;
   summaryNotes?: string;
   completedAt?: string;
+  posterUrl?: string;
 }

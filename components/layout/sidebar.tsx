@@ -26,6 +26,8 @@ import {
   Award,
   BookOpen,
   Store,
+  Gavel,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { AppNavTab } from '@/types/navigation';
@@ -485,6 +487,34 @@ export default function Sidebar({
               >
                 <Store className="w-4 h-4" />
                 <span>UMKM & Gerai Muslimah</span>
+              </button>
+            )}
+
+            {canAccessTab('lelang') && (
+              <button
+                onClick={() => handleTabClick('lelang')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'lelang'
+                    ? 'bg-[#059669] text-white shadow-soft-md'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'
+                }`}
+              >
+                <Gavel className="w-4 h-4 text-amber-500" />
+                <span>Lelang Infaq Barakah</span>
+              </button>
+            )}
+
+            {canAccessTab('gallery') && (
+              <button
+                onClick={() => handleTabClick('gallery')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'gallery'
+                    ? 'bg-[#059669] text-white shadow-soft-md'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'
+                }`}
+              >
+                <ImageIcon className="w-4 h-4 text-teal-500" />
+                <span>Galeri Dokumentasi</span>
               </button>
             )}
           </nav>

@@ -14,6 +14,8 @@ import {
   Database,
   LogOut,
   ArrowLeft,
+  Gavel,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { AppNavTab } from '@/types/navigation';
 
@@ -226,6 +228,36 @@ export function ModuleTabSelector({
         >
           <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
           <span>Pengesahan Satu Pintu ({pendingApprovalsCount})</span>
+        </button>
+      )}
+
+      {/* Lelang Infaq Barakah */}
+      {canAccessTab('lelang') && (
+        <button
+          onClick={() => setActiveTab('lelang')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeTab === 'lelang'
+              ? 'bg-white dark:bg-slate-800 text-amber-900 dark:text-amber-300 shadow-soft-sm ring-1 ring-amber-500/20'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <Gavel className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+          <span>Lelang Infaq</span>
+        </button>
+      )}
+
+      {/* Galeri Kegiatan Universal */}
+      {canAccessTab('gallery') && (
+        <button
+          onClick={() => setActiveTab('gallery')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeTab === 'gallery'
+              ? 'bg-white dark:bg-slate-800 text-teal-900 dark:text-teal-300 shadow-soft-sm ring-1 ring-teal-500/20'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <ImageIcon className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+          <span>Galeri Dokumentasi</span>
         </button>
       )}
 

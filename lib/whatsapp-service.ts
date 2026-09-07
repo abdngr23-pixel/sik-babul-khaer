@@ -206,4 +206,30 @@ export const WhatsAppTemplates = {
       `Jazakumullahu Khairan Katsiran.`
     );
   },
+
+  /**
+   * Pengajuan Tawaran Lelang Infaq dari Jamaah ke Koordinator Panitia
+   */
+  lelangBidInquiry: (data: {
+    itemName: string;
+    currentBid: number;
+    bidderName?: string;
+    bidAmount?: number;
+    coordinatorContact?: string;
+  }) => {
+    const formatRp = (num: number) =>
+      new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+
+    return (
+      `Assalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
+      `Yth. Panitia Koordinator Lelang Infaq Masjid Babul Khaer,\n\n` +
+      `Saya ingin mengajukan tawaran infaq lelang untuk barang:\n` +
+      `🏷️ *Barang Lelang:* ${data.itemName}\n` +
+      `📈 *Tawaran Tertinggi Saat Ini:* ${formatRp(data.currentBid)}\n` +
+      `${data.bidAmount ? `💎 *Tawaran Saya:* *${formatRp(data.bidAmount)}*\n` : ''}` +
+      `${data.bidderName ? `👤 *Nama Penawar:* ${data.bidderName}\n` : '👤 *Nama Penawar:* Hamba Allah (Anonim)\n'}` +
+      `\nMohon dicatat dalam sistem buku lelang. Semoga infaq ini membawa keberkahan bagi pembangunan dan kemakmuran Masjid Babul Khaer.\n\n` +
+      `Jazakumullahu Khairan Katsiran.`
+    );
+  },
 };

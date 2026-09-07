@@ -25,7 +25,12 @@ import {
   FileSpreadsheet,
   Upload,
   Download,
+  Plus,
+  Maximize2,
+  X,
 } from 'lucide-react';
+import Image from 'next/image';
+import { useToast } from '@/lib/toast-context';
 import {
   INITIAL_KHATIB_DATABASE,
   INITIAL_FRIDAY_SCHEDULES,
@@ -44,6 +49,7 @@ import { useAuth } from '@/lib/auth-context';
 import CreateKhatibModal from './create-khatib-modal';
 import CompleteAgendaModal from './complete-agenda-modal';
 import DakwahUploadModal from './dakwah-upload-modal';
+import CreateKajianModal from './create-kajian-modal';
 import {
   downloadFridayScheduleTemplate,
   exportFridayScheduleToExcel,
@@ -100,10 +106,62 @@ export default function DakwahView() {
     defaultAttendance?: number;
   } | null>(null);
 
+  // Modal Tambah / Edit Kajian & Poster Lightbox
+  const { toast } = useToast();
+  const [isCreateKajianOpen, setIsCreateKajianOpen] = useState(false);
+  const [editingKajianData, setEditingKajianData] = useState<KajianScheduleItem | null>(null);
+  const [previewPosterUrl, setPreviewPosterUrl] = useState<string | null>(null);
+
   // Mobile Hardware Back Button handlers for Dakwah modals
   useModalBackHandler(isCreateKhatibOpen, () => setIsCreateKhatibOpen(false), 'dakwah-create-khatib');
   useModalBackHandler(uploadModalState.isOpen, () => setUploadModalState((prev) => ({ ...prev, isOpen: false })), 'dakwah-upload');
   useModalBackHandler(Boolean(completeModalTarget), () => setCompleteModalTarget(null), 'dakwah-complete-agenda');
+  useModalBackHandler(isCreateKajianOpen, () => { setIsCreateKajianOpen(false); setEditingKajianData(null); }, 'dakwah-create-kajian');
+  useModalBackHandler(Boolean(previewPosterUrl), () => setPreviewPosterUrl(null), 'dakwah-preview-poster');
+
+  const handleSaveKajian = async (item: Omit<KajianScheduleItem, 'id'>, editId?: string) => {
+    try {
+      if (editId) {
+        const res = await fetch('/api/dakwah', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update-kajian',
+            id: editId,
+            updates: item,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setKajianSchedules((prev) =>
+            prev.map((k) => (k.id === editId ? { ...k, ...item } : k))
+          );
+          toast.success('Agenda Diperbarui', `Jadwal kajian "${item.title}" berhasil diubah.`);
+        } else {
+          toast.error('Gagal Mengubah', data.error || 'Terjadi kesalahan.');
+        }
+      } else {
+        const res = await fetch('/api/dakwah', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create-kajian',
+            item,
+          }),
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          setKajianSchedules((prev) => [data.data, ...prev]);
+          toast.success('Kajian Diterbitkan', `Agenda kajian "${item.title}" berhasil ditambahkan.`);
+        } else {
+          toast.error('Gagal Menambahkan', data.error || 'Terjadi kesalahan.');
+        }
+      }
+    } catch (err) {
+      console.error('Error saving kajian:', err);
+      toast.error('Gagal Menyimpan', 'Terjadi gangguan koneksi ke server.');
+    }
+  };
 
   const [copiedMessage, setCopiedMessage] = useState<string | null>(null);
 
@@ -1124,24 +1182,40 @@ export default function DakwahView() {
                 Kebijakan Raker: Kajian pekanan maksimal 2x sepekan, pendanaan dicarikan sendiri (SWADAYA, tidak memakai kas operasional masjid).
               </p>
             </div>
-            <button
-              onClick={() => {
-                const text = kajianSchedules
-                  .map(
-                    (k) =>
-                      `📚 *${k.title}* ${k.isCompleted ? '✅ [TERLAKSANA]' : ''}\n🎙️ Pemateri: ${k.speakerName}\n📖 Tema: "${k.bookOrTopic}"\n⏰ Waktu: ${k.dayTime}\n📍 Tempat: ${k.location}\n`
-                  )
-                  .join('\n');
-                handleCopyWhatsAppText(
-                  `*AGENDA KAJIAN & PEMBINAAN MASJID BABUL KHAER BTP BLOK AE*\n\n${text}\n_Mari raih keberkahan ilmu di rumah Allah!_`,
-                  'Kajian Pekanan'
-                );
-              }}
-              className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              <span>Salin Jadwal Kajian ke WhatsApp</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingKajianData(null);
+                    setIsCreateKajianOpen(true);
+                  }}
+                  className="px-4 py-2 min-h-[40px] rounded-xl bg-teal-700 hover:bg-teal-800 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Agenda Kajian</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const text = kajianSchedules
+                    .map(
+                      (k) =>
+                        `📚 *${k.title}* ${k.isCompleted ? '✅ [TERLAKSANA]' : ''}\n🎙️ Pemateri: ${k.speakerName}\n📖 Tema: "${k.bookOrTopic}"\n⏰ Waktu: ${k.dayTime}\n📍 Tempat: ${k.location}\n`
+                    )
+                    .join('\n');
+                  handleCopyWhatsAppText(
+                    `*AGENDA KAJIAN & PEMBINAAN MASJID BABUL KHAER BTP BLOK AE*\n\n${text}\n_Mari raih keberkahan ilmu di rumah Allah!_`,
+                    'Kajian Pekanan'
+                  );
+                }}
+                className="px-4 py-2 min-h-[40px] rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Salin Jadwal ke WA</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -1192,10 +1266,32 @@ export default function DakwahView() {
                     )}
                   </div>
 
-                  <h4 className="text-base font-bold text-slate-900">{kjn.title}</h4>
-                  <p className="text-xs font-bold text-emerald-800 mt-1">
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">{kjn.title}</h4>
+                  <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400 mt-1">
                     Pemateri: {kjn.speakerName} {kjn.speakerTitle && `(${kjn.speakerTitle})`}
                   </p>
+
+                  {/* Poster Brosur Kajian Visual */}
+                  {kjn.posterUrl && (
+                    <div
+                      onClick={() => setPreviewPosterUrl(kjn.posterUrl!)}
+                      className="relative w-full h-44 rounded-xl overflow-hidden mt-3 border border-teal-100 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 group/img cursor-pointer"
+                      title="Klik untuk melihat poster ukuran penuh"
+                    >
+                      <Image
+                        src={kjn.posterUrl}
+                        alt={`Poster ${kjn.title}`}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover group-hover/img:scale-105 transition-transform duration-300"
+                        unoptimized={kjn.posterUrl.startsWith('/uploads/')}
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-bold backdrop-blur-[2px]">
+                        <Maximize2 className="w-4 h-4" />
+                        <span>Perbesar Poster</span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="mt-3.5 pt-3 border-t border-slate-100 space-y-2 text-xs text-slate-600">
                     <div className="flex items-start gap-2">
@@ -1237,23 +1333,35 @@ export default function DakwahView() {
                   <span>Kontak: {kjn.contactPerson}</span>
                   <div className="flex items-center gap-2">
                     {!isReadOnly && !kjn.isCompleted && (
-                      <button
-                        onClick={() =>
-                          setCompleteModalTarget({
-                            type: 'KAJIAN',
-                            id: kjn.id,
-                            title: kjn.title,
-                            speaker: kjn.speakerName,
-                            date: kjn.dayTime,
-                            defaultHonor: 200000,
-                            defaultAttendance: 50,
-                          })
-                        }
-                        className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Tandai Selesai</span>
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingKajianData(kjn);
+                            setIsCreateKajianOpen(true);
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+                        >
+                          Edit / Poster
+                        </button>
+                        <button
+                          onClick={() =>
+                            setCompleteModalTarget({
+                              type: 'KAJIAN',
+                              id: kjn.id,
+                              title: kjn.title,
+                              speaker: kjn.speakerName,
+                              date: kjn.dayTime,
+                              defaultHonor: 200000,
+                              defaultAttendance: 50,
+                            })
+                          }
+                          className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Tandai Selesai</span>
+                        </button>
+                      </>
                     )}
                     <button
                       onClick={() => {
@@ -1551,6 +1659,53 @@ export default function DakwahView() {
         onImportFriday={handleImportFriday}
         onImportRamadhan={handleImportRamadhan}
       />
+
+      {/* MODAL 4: Tambah / Edit Agenda Kajian & Poster */}
+      {isCreateKajianOpen && (
+        <CreateKajianModal
+          key={editingKajianData?.id || 'new'}
+          isOpen={isCreateKajianOpen}
+          initialData={editingKajianData}
+          onClose={() => {
+            setIsCreateKajianOpen(false);
+            setEditingKajianData(null);
+          }}
+          onSave={handleSaveKajian}
+        />
+      )}
+
+      {/* LIGHTBOX: Preview Poster Kajian Resolusi Tinggi */}
+      {previewPosterUrl && (
+        <div
+          role="dialog"
+          aria-label="Pratinjau Poster Kajian"
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewPosterUrl(null)}
+        >
+          <div
+            className="relative max-w-xl w-full max-h-[90vh] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewPosterUrl(null)}
+              className="absolute -top-12 right-0 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              title="Tutup"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="relative w-full h-[75vh] rounded-2xl overflow-hidden border border-white/20 shadow-2xl">
+              <Image
+                src={previewPosterUrl}
+                alt="Poster Kajian"
+                fill
+                className="object-contain"
+                unoptimized={previewPosterUrl.startsWith('/uploads/')}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

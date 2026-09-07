@@ -16,7 +16,9 @@ export type AppNavTab =
   | 'meetings'
   | 'adhoc'
   | 'tpa'
-  | 'umkm';
+  | 'umkm'
+  | 'lelang'
+  | 'gallery';
 
 export const TAB_LABELS: Record<AppNavTab, string> = {
   dashboard: 'Pusat Kendali',
@@ -37,4 +39,6 @@ export const TAB_LABELS: Record<AppNavTab, string> = {
   adhoc: 'Kepanitiaan Ad-hoc & SK',
   tpa: 'Modul TPA & Santri',
   umkm: 'UMKM & Gerai Muslimah',
+  lelang: 'Lelang Infaq Barakah',
+  gallery: 'Galeri Kegiatan Dokumentasi',
 };

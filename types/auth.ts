@@ -110,6 +110,10 @@ export interface RolePermission {
   canAccessSuperAdmin?: boolean;
   canAccessAtmBeras?: boolean;
   canMutateAtmBeras?: boolean;
+  canAccessLelang?: boolean;
+  canMutateLelang?: boolean;
+  canAccessGallery?: boolean;
+  canMutateGallery?: boolean;
   isReadOnly: boolean;
 }
 
