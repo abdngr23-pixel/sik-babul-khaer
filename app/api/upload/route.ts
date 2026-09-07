@@ -95,25 +95,40 @@ export async function POST(req: NextRequest) {
     }
 
     // 6. Fallback Lokal (untuk pengembangan offline/local dev tanpa Vercel Blob Token)
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    await fs.mkdir(uploadsDir, { recursive: true });
+    try {
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+      await fs.mkdir(uploadsDir, { recursive: true });
 
-    const localFilePath = path.join(uploadsDir, uniqueFileName);
-    await fs.writeFile(localFilePath, buffer);
+      const localFilePath = path.join(uploadsDir, uniqueFileName);
+      await fs.writeFile(localFilePath, buffer);
 
-    const publicUrl = `/uploads/${uniqueFileName}`;
+      const publicUrl = `/uploads/${uniqueFileName}`;
 
-    return NextResponse.json({
-      success: true,
-      url: publicUrl,
-      fileName: uniqueFileName,
-      size: file.size,
-      provider: 'local-storage',
-    });
-  } catch (error) {
+      return NextResponse.json({
+        success: true,
+        url: publicUrl,
+        fileName: uniqueFileName,
+        size: file.size,
+        provider: 'local-storage',
+      });
+    } catch (fsErr) {
+      console.warn('Local disk write failed, falling back to base64 Data URL:', fsErr);
+      const base64Data = buffer.toString('base64');
+      const dataUrl = `data:${file.type};base64,${base64Data}`;
+
+      return NextResponse.json({
+        success: true,
+        url: dataUrl,
+        fileName: uniqueFileName,
+        size: file.size,
+        provider: 'base64-data-url',
+      });
+    }
+  } catch (error: unknown) {
     console.error('Error during image upload:', error);
+    const message = error instanceof Error ? error.message : 'Terjadi kesalahan sistem saat mengunggah gambar.';
     return NextResponse.json(
-      { success: false, error: 'Terjadi kesalahan sistem saat mengunggah gambar.' },
+      { success: false, error: message },
       { status: 500 }
     );
   }

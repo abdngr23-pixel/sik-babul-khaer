@@ -54,3 +54,8 @@ next-env.d.ts
 # local credentials & secrets
 *.local.txt
 credentials-*.txt
+
+# user uploaded files in local development
+public/uploads/*
+!public/uploads/.gitkeep
+

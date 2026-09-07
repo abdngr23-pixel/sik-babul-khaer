@@ -169,9 +169,21 @@ export default function ImageUploader({
           body: formData,
         });
 
-        const data = await res.json();
+        const contentType = res.headers.get('content-type') || '';
+        let data: { success?: boolean; url?: string; error?: string } = {};
 
-        if (!res.ok || !data.success) {
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(
+            res.status === 404
+              ? 'Server belum memuat rute upload baru (404). Silakan restart server aplikasi.'
+              : `Kesalahan server (${res.status}): ${text.slice(0, 100)}`
+          );
+        }
+
+        if (!res.ok || !data.success || !data.url) {
           throw new Error(data.error || `Gagal mengunggah ${rawFile.name}`);
         }
 
