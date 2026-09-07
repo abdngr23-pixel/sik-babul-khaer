@@ -66,7 +66,7 @@ export default function BottomNavBar({
   pendingApprovalsCount = 0,
 }: BottomNavBarProps) {
   const { currentUser, isReadOnly, canAccessTab, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, isLargeText, toggleTextSize } = useTheme();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   // Bind the "Lainnya" bottom sheet drawer to mobile hardware back button
@@ -714,7 +714,7 @@ export default function BottomNavBar({
                 >
                   <div className="flex items-center gap-2">
                     {theme === 'dark' ? (
-                      <Sun className="w-4 h-4 text-amber-400" />
+                       <Sun className="w-4 h-4 text-amber-400" />
                     ) : (
                       <Moon className="w-4 h-4 text-slate-600" />
                     )}
@@ -722,6 +722,27 @@ export default function BottomNavBar({
                   </div>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                     {theme === 'dark' ? 'Gelap' : 'Terang'}
+                  </span>
+                </button>
+
+                {/* Mode Teks Besar Switcher (A+) */}
+                <button
+                  type="button"
+                  onClick={toggleTextSize}
+                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/80 flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-black text-[11px]">
+                      A+
+                    </span>
+                    <span>{isLargeText ? 'Mode Teks Besar (Aktif)' : 'Mode Teks Besar (Mudah Dibaca)'}</span>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    isLargeText
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                  }`}>
+                    {isLargeText ? 'Aktif' : 'Standar'}
                   </span>
                 </button>
 

@@ -127,29 +127,29 @@ export default function LetterArchiveTable({
     switch (status) {
       case 'DRAFT':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            <Clock className="w-3 h-3 text-amber-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+            <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
             <span>Draf</span>
           </span>
         );
       case 'APPROVED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
             <span>Disetujui</span>
           </span>
         );
       case 'SENT':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-            <Send className="w-3 h-3 text-blue-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            <Send className="w-3 h-3 text-blue-600 dark:text-blue-400" />
             <span>Terkirim</span>
           </span>
         );
       case 'ARCHIVED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-300">
-            <Archive className="w-3 h-3 text-slate-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+            <Archive className="w-3 h-3 text-slate-600 dark:text-slate-400" />
             <span>Diarsipkan</span>
           </span>
         );
@@ -159,7 +159,7 @@ export default function LetterArchiveTable({
   const getCategoryBadge = (category: LetterCategory) => {
     const info = LETTER_CATEGORIES[category];
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
         {info?.code || category}
       </span>
     );
@@ -168,25 +168,25 @@ export default function LetterArchiveTable({
   return (
     <div className="space-y-4">
       {/* Notice Banner Tata Usaha AD/ART & Anti-Duplikasi */}
-      <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs shadow-soft-sm">
-        <div className="flex items-center gap-2.5 text-emerald-950">
-          <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300/60">
+      <div className="bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/90 dark:border-emerald-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs shadow-soft-sm">
+        <div className="flex items-center gap-2.5 text-emerald-950 dark:text-emerald-200">
+          <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700">
             <CheckCircle2 className="w-4 h-4" />
           </div>
           <div>
-            <h4 className="font-bold text-slate-900">Tata Usaha Terpadu & Registry Nomor Anti-Duplikasi</h4>
-            <p className="text-emerald-800 text-[11px] mt-0.5">
+            <h4 className="font-bold text-slate-900 dark:text-slate-100">Tata Usaha Terpadu & Registry Nomor Anti-Duplikasi</h4>
+            <p className="text-emerald-800 dark:text-emerald-400 text-[11px] mt-0.5">
               Nomor urut otomatis tersinkronisasi terpusat antara Sekretaris I, Sekretaris II, dan Panitia PHBI sesuai AD/ART.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[11px] font-mono font-semibold px-3 py-1.5 rounded-xl bg-white border border-emerald-200 text-emerald-900 w-fit">
+        <div className="flex items-center gap-2 text-[11px] font-mono font-semibold px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 w-fit">
           <span>Format: [No]/[Bidang]/DKM-BK/[Romawi]/[Tahun]</span>
         </div>
       </div>
 
       {/* Search and Filters Toolbar */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-soft-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-soft-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -195,7 +195,7 @@ export default function LetterArchiveTable({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Cari nomor surat, perihal, atau nama penerima..."
-            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all text-slate-800"
+            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-emerald-500/20 focus:outline-hidden transition-all text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           />
         </div>
 
@@ -207,7 +207,7 @@ export default function LetterArchiveTable({
             <select
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value as LetterDepartment | 'ALL')}
-              className="text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-emerald-500/20"
+              className="text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500/20"
             >
               <option value="ALL">Semua Bidang</option>
               {Object.values(LETTER_DEPARTMENTS).map((d) => (
@@ -222,7 +222,7 @@ export default function LetterArchiveTable({
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-emerald-500/20"
+            className="text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500/20"
           >
             <option value="ALL">Semua Kategori</option>
             {Object.values(LETTER_CATEGORIES).map((c) => (
@@ -236,7 +236,7 @@ export default function LetterArchiveTable({
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-emerald-500/20"
+            className="text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500/20"
           >
             <option value="ALL">Semua Status</option>
             <option value="DRAFT">Draf</option>
@@ -248,10 +248,10 @@ export default function LetterArchiveTable({
           {/* Export CSV Buku Agenda */}
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold text-xs border border-emerald-300 transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300 dark:border-emerald-700 transition-colors cursor-pointer shrink-0"
             title="Unduh rekap buku agenda nomor surat keluar untuk audit"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-700" />
+            <Download className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
             <span>Ekspor Agenda</span>
           </button>
 
@@ -259,10 +259,10 @@ export default function LetterArchiveTable({
           {onOpenArchiveModal && !isReadOnly && (
             <button
               onClick={onOpenArchiveModal}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-xs border border-amber-300 transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-semibold text-xs border border-amber-300 dark:border-amber-700 transition-colors cursor-pointer shrink-0"
               title="Catat arsip surat fisik yang telah keluar sebelum tercatat di sistem"
             >
-              <FolderArchive className="w-3.5 h-3.5 text-amber-600" />
+              <FolderArchive className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span>Catat Arsip</span>
             </button>
           )}
@@ -270,11 +270,11 @@ export default function LetterArchiveTable({
       </div>
 
       {/* Table Container */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+              <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                 <th className="py-3 px-4">Nomor Surat</th>
                 <th className="py-3 px-4">Perihal & Kategori</th>
                 <th className="py-3 px-4">Penerima</th>
@@ -283,13 +283,13 @@ export default function LetterArchiveTable({
                 <th className="py-3 px-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs text-slate-700 dark:text-slate-200">
               {filteredLetters.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-slate-400">
-                    <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                    <p className="font-medium text-sm text-slate-600">Tidak ada surat ditemukan</p>
-                    <p className="text-xs text-slate-400">
+                  <td colSpan={6} className="py-10 text-center text-slate-400 dark:text-slate-500">
+                    <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                    <p className="font-medium text-sm text-slate-600 dark:text-slate-300">Tidak ada surat ditemukan</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">
                       Coba sesuaikan kata kunci pencarian atau filter kategori di atas.
                     </p>
                   </td>
@@ -298,19 +298,19 @@ export default function LetterArchiveTable({
                 paginatedLetters.map((letter) => (
                   <tr
                     key={letter.id}
-                    className="hover:bg-slate-50/80 transition-colors group"
+                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group"
                   >
                     {/* Nomor Surat */}
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900 whitespace-nowrap">
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
                         <span>{letter.letterNumber}</span>
                         <button
                           onClick={() => handleCopyNumber(letter.id, letter.letterNumber)}
                           title="Salin Nomor Surat"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-200 rounded text-slate-500 cursor-pointer"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400 cursor-pointer"
                         >
                           {copiedId === letter.id ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -323,23 +323,23 @@ export default function LetterArchiveTable({
                       <div className="flex items-center gap-1.5 mb-0.5">
                         {getCategoryBadge(letter.category)}
                         {letter.department && (
-                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                             {letter.department}
                           </span>
                         )}
                       </div>
-                      <p className="font-semibold text-slate-900 line-clamp-1">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100 line-clamp-1">
                         {letter.subject}
                       </p>
                     </td>
 
                     {/* Penerima */}
                     <td className="py-3 px-4 max-w-[180px]">
-                      <p className="font-medium text-slate-800 line-clamp-1">
+                      <p className="font-medium text-slate-800 dark:text-slate-200 line-clamp-1">
                         {letter.recipientName}
                       </p>
                       {letter.recipientAddress && (
-                        <p className="text-[11px] text-slate-400 line-clamp-1">
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
                           {letter.recipientAddress}
                         </p>
                       )}
@@ -347,8 +347,8 @@ export default function LetterArchiveTable({
 
                     {/* Tanggal */}
                     <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-slate-600">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                      <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                        <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                         <span>{formatIndonesianDate(letter.letterDate)}</span>
                       </div>
                     </td>
@@ -365,7 +365,7 @@ export default function LetterArchiveTable({
                               <button
                                 onClick={() => onUpdateStatus(letter.id, 'APPROVED')}
                                 title="Sahkan Surat (Ketua Umum)"
-                                className="p-1 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer"
+                                className="p-1 rounded bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 transition-colors cursor-pointer"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                               </button>
@@ -374,7 +374,7 @@ export default function LetterArchiveTable({
                               <button
                                 onClick={() => onUpdateStatus(letter.id, 'SENT')}
                                 title="Tandai Sudah Terkirim ke Penerima"
-                                className="p-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors cursor-pointer"
+                                className="p-1 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 transition-colors cursor-pointer"
                               >
                                 <Send className="w-3.5 h-3.5" />
                               </button>
@@ -383,7 +383,7 @@ export default function LetterArchiveTable({
                               <button
                                 onClick={() => onUpdateStatus(letter.id, 'ARCHIVED')}
                                 title="Simpan ke Arsip Permanen"
-                                className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                                className="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                               >
                                 <Archive className="w-3.5 h-3.5" />
                               </button>
@@ -397,7 +397,7 @@ export default function LetterArchiveTable({
                     <td className="py-3 px-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => onPreviewLetter(letter)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs transition-colors cursor-pointer border border-emerald-200/80"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-semibold text-xs transition-colors cursor-pointer border border-emerald-200/80 dark:border-emerald-800"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>Lihat Dokumen</span>

@@ -134,18 +134,18 @@ function JamaahFormContent({ initialData, onClose, onSaved }: FormContentProps) 
         )}
 
         {/* Banner Jaminan Keamanan & Privasi Data Warga */}
-        <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl p-4 flex items-start gap-3.5 text-emerald-900 shadow-2xs">
+        <div className="bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200/90 dark:border-emerald-800 rounded-2xl p-4 flex items-start gap-3.5 text-emerald-900 dark:text-emerald-200 shadow-2xs">
           <div className="p-2 bg-emerald-600 text-white rounded-xl shrink-0 mt-0.5 shadow-2xs">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="font-bold text-xs text-emerald-950 flex items-center gap-1.5">
+            <h4 className="font-bold text-xs text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
               <span>Jaminan Privasi & Keamanan Data Warga Jamaah</span>
-              <span className="text-[10px] bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[10px] bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 px-2 py-0.5 rounded-full font-bold">
                 Aman & Rahasia
               </span>
             </h4>
-            <p className="text-[11px] text-emerald-800/90 mt-1 leading-relaxed">
+            <p className="text-[11px] text-emerald-800/90 dark:text-emerald-400 mt-1 leading-relaxed">
               Data ini dikelola internal DKM Babul Khaer hanya untuk <strong>silaturahmi warga Kompleks BTP Blok AE, syiar dakwah, dan penyaluran program sosial keumatan</strong>. DKM menjamin kerahasiaan data dan tidak meminta berkas sensitif yang memberatkan warga.
             </p>
           </div>
@@ -153,8 +153,8 @@ function JamaahFormContent({ initialData, onClose, onSaved }: FormContentProps) 
 
         {/* Bagian 1: Data Pokok Warga */}
         <div className="space-y-3">
-          <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[11px] pb-1 border-b border-slate-200 flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-emerald-600" />
+          <h4 className="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[11px] pb-1 border-b border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>1. Identitas & Kontak Warga</span>
           </h4>
 
@@ -474,11 +474,11 @@ function JamaahFormContent({ initialData, onClose, onSaved }: FormContentProps) 
         </div>
 
         {/* Action Buttons */}
-        <div className="bg-slate-50 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 p-4 sm:p-6 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="bg-slate-50 dark:bg-slate-850 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer text-center flex items-center justify-center"
+            className="min-h-[44px] px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-xl transition-colors cursor-pointer text-center flex items-center justify-center"
           >
             Batal
           </button>
@@ -523,9 +523,9 @@ export default function JamaahFormModal({
       aria-labelledby="jamaah-modal-title"
       className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
     >
-      <div className="bg-white w-full md:max-w-3xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
+      <div className="bg-white dark:bg-slate-900 w-full md:max-w-3xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] text-slate-800 dark:text-slate-100 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
-        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
 
         {/* Header Modal */}
         <div className="bg-slate-900 text-white px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between border-b border-slate-800 shrink-0">

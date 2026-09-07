@@ -153,21 +153,21 @@ function AssetFormModalContent({
       aria-labelledby="asset-form-title"
       className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
     >
-      <div className="bg-white rounded-t-3xl md:rounded-2xl md:max-w-2xl w-full h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[90dvh] flex flex-col shadow-2xl border-t md:border border-slate-200 overflow-hidden text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
+      <div className="bg-white dark:bg-slate-900 rounded-t-3xl md:rounded-2xl md:max-w-2xl w-full h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[90dvh] flex flex-col shadow-2xl border-t md:border border-slate-200 dark:border-slate-800 overflow-hidden text-slate-800 dark:text-slate-100 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
-        <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
+        <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
 
         {/* Header */}
-        <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
+        <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/90 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200 shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center border border-emerald-200 dark:border-emerald-800 shrink-0">
               <Package className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h2 id="asset-form-title" className="font-bold text-slate-900 text-sm sm:text-base leading-tight">
+              <h2 id="asset-form-title" className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight">
                 {isEditing ? 'Perbarui Data Inventaris Sarpras' : 'Registrasi Aset Sarpras Baru'}
               </h2>
-              <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 leading-tight">
                 Inventaris fisik fasilitas DKM Masjid Babul Khaer BTP Blok AE
               </p>
             </div>
@@ -175,7 +175,7 @@ function AssetFormModalContent({
           <button
             onClick={onClose}
             aria-label="Tutup modal formulir aset"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -184,7 +184,7 @@ function AssetFormModalContent({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 overscroll-contain">
           {errorMessage && (
-            <div role="alert" aria-live="polite" className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-700 rounded-xl">
+            <div role="alert" aria-live="polite" className="p-3 text-xs bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:rose-300 rounded-xl">
               {errorMessage}
             </div>
           )}
@@ -192,7 +192,7 @@ function AssetFormModalContent({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Kode Aset */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Kode Aset
               </label>
               <input
@@ -202,12 +202,12 @@ function AssetFormModalContent({
                 placeholder="AST-AC-001 (Opsional)"
                 className="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden font-mono"
               />
-              <p className="text-[10px] text-slate-400 mt-1">Kosongkan untuk otomatis</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Kosongkan untuk otomatis</p>
             </div>
 
             {/* Nama Aset */}
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Nama Barang / Fasilitas <span className="text-rose-500">*</span>
               </label>
               <input
@@ -224,7 +224,7 @@ function AssetFormModalContent({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Kategori */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Kategori Fasilitas <span className="text-rose-500">*</span>
               </label>
               <select
@@ -242,7 +242,7 @@ function AssetFormModalContent({
 
             {/* Lokasi Penempatan */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Lokasi Penempatan <span className="text-rose-500">*</span>
               </label>
               <input
@@ -259,7 +259,7 @@ function AssetFormModalContent({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Nilai Perolehan */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Nilai Perolehan / Beli (Rp)
               </label>
               <input
@@ -273,7 +273,7 @@ function AssetFormModalContent({
 
             {/* Tanggal Beli */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Tanggal Pembelian
               </label>
               <input
@@ -286,7 +286,7 @@ function AssetFormModalContent({
 
             {/* Kondisi Fisik */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Kondisi Fisik Saat Ini <span className="text-rose-500">*</span>
               </label>
               <select
@@ -302,10 +302,10 @@ function AssetFormModalContent({
           </div>
 
           {/* Section: Pemeliharaan Rutin */}
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl space-y-3">
             <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                 Pengaturan Siklus Pemeliharaan Rutin
               </h3>
             </div>
@@ -313,7 +313,7 @@ function AssetFormModalContent({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Siklus Servis (Bulan) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                   Siklus Servis Rutin (Bulan)
                 </label>
                 <input
@@ -324,14 +324,14 @@ function AssetFormModalContent({
                   onChange={(e) => setMaintenanceCycleMonths(e.target.value)}
                   className="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden font-bold"
                 />
-                <p className="text-[10px] text-slate-500 mt-1">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   Standar: AC (3 bln), Genset (4 bln), Sound (6 bln)
                 </p>
               </div>
 
               {/* Tanggal Servis Terakhir */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                   Tanggal Servis Terakhir
                 </label>
                 <input
@@ -340,7 +340,7 @@ function AssetFormModalContent({
                   onChange={(e) => setLastMaintenanceDate(e.target.value)}
                   className="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
                 />
-                <p className="text-[10px] text-slate-500 mt-1">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   Tanggal servis berikutnya akan dihitung otomatis
                 </p>
               </div>
@@ -348,7 +348,7 @@ function AssetFormModalContent({
 
             {/* Catatan Servis / Fisik */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Catatan Pemeliharaan & Kontak Teknisi
               </label>
               <textarea
@@ -362,11 +362,11 @@ function AssetFormModalContent({
           </div>
 
           {/* Footer Buttons */}
-          <div className="pt-3 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 border-t border-slate-100 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="pt-3 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <button
               type="button"
               onClick={onClose}
-              className="min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-center flex items-center justify-center"
+              className="min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer text-center flex items-center justify-center"
             >
               Batal
             </button>

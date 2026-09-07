@@ -52,7 +52,7 @@ export default function Navbar({
   previousTabLabel,
 }: NavbarProps) {
   const { currentUser } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, isLargeText, toggleTextSize } = useTheme();
 
   // Lazy initializer to format date
   const [currentDateStr] = useState(() => {
@@ -163,6 +163,22 @@ export default function Navbar({
           ) : (
             <Moon className="w-4 h-4 text-slate-600" />
           )}
+        </button>
+
+        {/* Mode Teks Besar Toggle Button (A+) */}
+        <button
+          type="button"
+          onClick={toggleTextSize}
+          title={isLargeText ? 'Kembalikan Ukuran Teks Standar' : 'Aktifkan Mode Teks Besar (Aksesibilitas Senior)'}
+          aria-label={isLargeText ? 'Kembalikan Ukuran Teks Standar' : 'Aktifkan Mode Teks Besar'}
+          className={`px-2 py-1 sm:py-1.5 rounded-xl border transition-all cursor-pointer shrink-0 font-bold text-xs flex items-center gap-0.5 ${
+            isLargeText
+              ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-sm ring-2 ring-emerald-400/30'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800 border-slate-200/60 dark:border-slate-700/60'
+          }`}
+        >
+          <span className="text-[12px] sm:text-[13px] font-black">A</span>
+          <span className={`text-[10px] font-bold leading-none ${isLargeText ? 'text-emerald-100' : 'text-emerald-600 dark:text-emerald-400'}`}>+</span>
         </button>
 
         {/* Link Portal Publik & QRIS */}

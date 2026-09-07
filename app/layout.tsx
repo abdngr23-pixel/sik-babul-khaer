@@ -74,6 +74,12 @@ export default function RootLayout({
                 } else {
                   document.documentElement.classList.remove('dark');
                 }
+                var sz = localStorage.getItem('text_size');
+                if (sz === 'large') {
+                  document.documentElement.classList.add('large-text');
+                } else {
+                  document.documentElement.classList.remove('large-text');
+                }
               } catch (e) {}
             `,
           }}

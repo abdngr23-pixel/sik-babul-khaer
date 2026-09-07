@@ -3,16 +3,22 @@
 import React, { createContext, useContext, useSyncExternalStore } from 'react';
 
 type Theme = 'light' | 'dark';
+type TextSize = 'normal' | 'large';
 
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
+  textSize: TextSize;
+  isLargeText: boolean;
+  toggleTextSize: () => void;
+  setTextSize: (size: TextSize) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-function getSnapshot(): Theme {
+// ================= THEME STORE =================
+function getThemeSnapshot(): Theme {
   if (typeof window === 'undefined') return 'light';
   try {
     const saved = localStorage.getItem('theme');
@@ -23,15 +29,15 @@ function getSnapshot(): Theme {
   }
 }
 
-function getServerSnapshot(): Theme {
+function getServerThemeSnapshot(): Theme {
   return 'light';
 }
 
-const listeners = new Set<() => void>();
-function subscribe(callback: () => void) {
-  listeners.add(callback);
+const themeListeners = new Set<() => void>();
+function subscribeTheme(callback: () => void) {
+  themeListeners.add(callback);
   return () => {
-    listeners.delete(callback);
+    themeListeners.delete(callback);
   };
 }
 
@@ -48,11 +54,52 @@ function notifyThemeChange(newTheme: Theme) {
       document.documentElement.classList.remove('dark');
     }
   }
-  listeners.forEach((l) => l());
+  themeListeners.forEach((l) => l());
+}
+
+// ================= TEXT SIZE STORE =================
+function getTextSizeSnapshot(): TextSize {
+  if (typeof window === 'undefined') return 'normal';
+  try {
+    const saved = localStorage.getItem('text_size');
+    if (saved === 'large' || saved === 'normal') return saved;
+    return 'normal';
+  } catch {
+    return 'normal';
+  }
+}
+
+function getServerTextSizeSnapshot(): TextSize {
+  return 'normal';
+}
+
+const textSizeListeners = new Set<() => void>();
+function subscribeTextSize(callback: () => void) {
+  textSizeListeners.add(callback);
+  return () => {
+    textSizeListeners.delete(callback);
+  };
+}
+
+function notifyTextSizeChange(newSize: TextSize) {
+  try {
+    localStorage.setItem('text_size', newSize);
+  } catch {
+    // Ignore
+  }
+  if (typeof document !== 'undefined') {
+    if (newSize === 'large') {
+      document.documentElement.classList.add('large-text');
+    } else {
+      document.documentElement.classList.remove('large-text');
+    }
+  }
+  textSizeListeners.forEach((l) => l());
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const theme = useSyncExternalStore(subscribeTheme, getThemeSnapshot, getServerThemeSnapshot);
+  const textSize = useSyncExternalStore(subscribeTextSize, getTextSizeSnapshot, getServerTextSizeSnapshot);
 
   const setTheme = (newTheme: Theme) => {
     notifyThemeChange(newTheme);
@@ -62,8 +109,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const setTextSize = (newSize: TextSize) => {
+    notifyTextSizeChange(newSize);
+  };
+
+  const toggleTextSize = () => {
+    setTextSize(textSize === 'large' ? 'normal' : 'large');
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        toggleTheme,
+        setTheme,
+        textSize,
+        isLargeText: textSize === 'large',
+        toggleTextSize,
+        setTextSize,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -76,6 +141,10 @@ export function useTheme(): ThemeContextType {
       theme: 'light',
       toggleTheme: () => {},
       setTheme: () => {},
+      textSize: 'normal',
+      isLargeText: false,
+      toggleTextSize: () => {},
+      setTextSize: () => {},
     };
   }
   return context;

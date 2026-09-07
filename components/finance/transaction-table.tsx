@@ -80,11 +80,11 @@ export default function TransactionTable({
     const info = FINANCE_CATEGORIES[category];
     const color = info?.badgeColor || 'slate';
 
-    let bgClass = 'bg-slate-100 text-slate-800 border-slate-200';
-    if (color === 'blue') bgClass = 'bg-blue-50 text-blue-800 border-blue-200';
-    if (color === 'amber') bgClass = 'bg-amber-50 text-amber-900 border-amber-300 font-bold';
-    if (color === 'purple') bgClass = 'bg-purple-50 text-purple-800 border-purple-200';
-    if (color === 'teal') bgClass = 'bg-teal-50 text-teal-800 border-teal-200';
+    let bgClass = 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700';
+    if (color === 'blue') bgClass = 'bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+    if (color === 'amber') bgClass = 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-700 font-bold';
+    if (color === 'purple') bgClass = 'bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+    if (color === 'teal') bgClass = 'bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800';
 
     return (
       <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium border ${bgClass}`}>
@@ -133,7 +133,7 @@ export default function TransactionTable({
   return (
     <div className="space-y-4">
       {/* Search and Action Bar */}
-      <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -142,7 +142,7 @@ export default function TransactionTable({
             placeholder="Cari uraian transaksi, pihak pembayar, kwitansi..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-200 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800"
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           />
         </div>
 
@@ -152,7 +152,7 @@ export default function TransactionTable({
           <select
             value={selectedCategory}
             onChange={(e) => onSelectCategory(e.target.value)}
-            className="text-xs py-2 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-hidden focus:border-emerald-500"
+            className="text-xs py-2 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium focus:outline-hidden focus:border-emerald-500"
           >
             <option value="ALL">Semua Pos Kas</option>
             <option value="KAS_OPERASIONAL">Kas Operasional Rutin</option>
@@ -163,13 +163,13 @@ export default function TransactionTable({
           </select>
 
           {/* Type Filter Buttons */}
-          <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs">
+          <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-slate-50 dark:bg-slate-800 text-xs">
             <button
               onClick={() => handleSelectType('ALL')}
               className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
                 selectedType === 'ALL'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Semua
@@ -179,7 +179,7 @@ export default function TransactionTable({
               className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
                 selectedType === 'INCOME'
                   ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-emerald-700'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400'
               }`}
             >
               Masuk
@@ -189,7 +189,7 @@ export default function TransactionTable({
               className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
                 selectedType === 'EXPENSE'
                   ? 'bg-rose-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-rose-700'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-rose-700 dark:hover:text-rose-400'
               }`}
             >
               Keluar
@@ -199,20 +199,20 @@ export default function TransactionTable({
           {/* Cetak Laporan Kas Jumat */}
           <button
             onClick={() => setIsFridayReportOpen(true)}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-all cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all cursor-pointer shadow-2xs"
             title="Buka format cetak resmi pengumuman kas mingguan Sholat Jumat"
           >
-            <Printer className="w-3.5 h-3.5 text-emerald-700" />
+            <Printer className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
             <span className="hidden sm:inline">Laporan Kas Jumat</span>
           </button>
 
           {/* Export to Excel */}
           <button
             onClick={exportToExcel}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all cursor-pointer"
             title="Ekspor buku kas ke Microsoft Excel"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-600" />
+            <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span className="hidden sm:inline">Ekspor Excel</span>
           </button>
 
@@ -230,10 +230,10 @@ export default function TransactionTable({
       </div>
 
       {/* Transactions Table Card */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 uppercase text-[10px] tracking-wider">
+            <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-700 uppercase text-[10px] tracking-wider">
               <tr>
                 <th className="py-3 px-4">Tanggal & Bukti</th>
                 <th className="py-3 px-4">Pos Anggaran</th>
@@ -246,10 +246,10 @@ export default function TransactionTable({
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={!isReadOnly && (onEdit || onDelete) ? 7 : 6} className="py-12 text-center text-slate-400">
+                  <td colSpan={!isReadOnly && (onEdit || onDelete) ? 7 : 6} className="py-12 text-center text-slate-400 dark:text-slate-500">
                     Belum ada transaksi kas yang sesuai dengan kriteria filter.
                   </td>
                 </tr>
@@ -258,18 +258,18 @@ export default function TransactionTable({
                   const isIncome = t.type === 'INCOME';
 
                   return (
-                    <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
                       {/* Tanggal & No Bukti */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <p className="font-semibold text-slate-900">{t.date}</p>
-                        <span className="text-[10px] text-slate-400 font-mono">
+                        <p className="font-semibold text-slate-900 dark:text-slate-100">{t.date}</p>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                           {t.receiptNumber || `TX-${t.id.slice(0, 6)}`}
                         </span>
                       </td>
 
                       {/* Deskripsi & Kategori */}
                       <td className="py-3 px-4">
-                        <p className="font-medium text-slate-900 line-clamp-2 leading-snug">
+                        <p className="font-medium text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug">
                           {t.description}
                         </p>
                         <div className="mt-1 flex items-center gap-1.5 flex-wrap">
@@ -279,8 +279,8 @@ export default function TransactionTable({
 
                       {/* Pihak Terkait & Metode */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <p className="font-medium text-slate-800">{t.payerOrPayee || '-'}</p>
-                        <span className="text-[10px] text-slate-500 font-mono">
+                        <p className="font-medium text-slate-800 dark:text-slate-200">{t.payerOrPayee || '-'}</p>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                           {t.paymentMethod.replace('_', ' ')}
                         </span>
                       </td>
@@ -289,13 +289,13 @@ export default function TransactionTable({
                       <td className="py-3 px-4 text-right whitespace-nowrap font-bold">
                         <span
                           className={`inline-flex items-center gap-1 ${
-                            isIncome ? 'text-emerald-700' : 'text-rose-700'
+                            isIncome ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
                           }`}
                         >
                           {isIncome ? (
-                            <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           ) : (
-                            <ArrowDownLeft className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                            <ArrowDownLeft className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
                           )}
                           <span>
                             {isIncome ? '+' : '-'}
@@ -305,7 +305,7 @@ export default function TransactionTable({
                       </td>
 
                       {/* Saldo Berjalan */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap font-mono font-semibold text-slate-900">
+                      <td className="py-3 px-4 text-right whitespace-nowrap font-mono font-semibold text-slate-900 dark:text-slate-100">
                         {formatRupiah(t.balanceAfter)}
                       </td>
 
@@ -316,7 +316,7 @@ export default function TransactionTable({
                             {onEdit && (
                               <button
                                 onClick={() => onEdit(t)}
-                                className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors cursor-pointer"
+                                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors cursor-pointer"
                                 title="Edit transaksi"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -325,7 +325,7 @@ export default function TransactionTable({
                             {onDelete && (
                               <button
                                 onClick={() => onDelete(t.id, t.description)}
-                                className="p-1 text-rose-400 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                                className="p-1 text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors cursor-pointer"
                                 title="Hapus transaksi"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
