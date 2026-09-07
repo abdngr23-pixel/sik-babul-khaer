@@ -23,6 +23,7 @@ import { useModalBackHandler } from '@/lib/back-button-handler';
 import RecordSSSModal from './record-sss-modal';
 import CreateAidModal from './create-aid-modal';
 import AidReceiptModal from './aid-receipt-modal';
+import { MuzakkiView } from './muzakki-view';
 
 interface ZiswafViewProps {
   jamaahList?: Jamaah[];
@@ -30,7 +31,8 @@ interface ZiswafViewProps {
 
 export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
   const { isReadOnly } = useAuth();
-  const [activeSubTab, setActiveSubTab] = useState<'sss' | 'bansos' | 'pemerataan'>('sss');
+  const [activeSubTab, setActiveSubTab] = useState<'sss' | 'bansos' | 'muzakki' | 'pemerataan'>('sss');
+
 
   // SSS State
   const [sssCans, setSssCans] = useState<SSSCanItem[]>(INITIAL_SSS_CANS);
@@ -329,6 +331,18 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
             }`}>
               {aidList.length} Penyaluran
             </span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab('muzakki')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeSubTab === 'muzakki'
+                ? 'bg-teal-800 text-white shadow-soft-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+            }`}
+          >
+            <HeartHandshake className="w-3.5 h-3.5 text-teal-300" />
+            <span>Penerimaan Muzakki & UPZ</span>
           </button>
 
           <button
@@ -701,7 +715,14 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
       )}
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 3: PEMETAAN & PEMERATAAN MUSTAHIQ 5 RT                             */}
+      {/* SUB-TAB 3: PENERIMAAN MUZAKKI & UPZ BAZNAS                                */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'muzakki' && (
+        <MuzakkiView />
+      )}
+
+      {/* ========================================================================= */}
+      {/* SUB-TAB 4: PEMETAAN & PEMERATAAN MUSTAHIQ 5 RT                             */}
       {/* ========================================================================= */}
       {activeSubTab === 'pemerataan' && (
         <div className="space-y-4">

@@ -82,7 +82,9 @@ export type ApprovalType =
   | 'SURAT_KELUAR'
   | 'PENCAIRAN_DANA'
   | 'PENGADAAN_SARPRAS'
-  | 'DRAF_LPJ';
+  | 'DRAF_LPJ'
+  | 'USULAN_PROGRAM';
+
 
 export type ApprovalStatus =
   | 'MENUNGGU_VERIFIKASI'

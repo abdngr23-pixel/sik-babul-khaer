@@ -26,6 +26,12 @@ import ExecutiveKPI from '@/components/reports/executive-kpi';
 import ApprovalBoard from '@/components/reports/approval-board';
 import DakwahView from '@/components/dakwah/dakwah-view';
 import SuperAdminView from '@/components/admin/super-admin-view';
+import ProgramKerjaView from '@/components/executive/program-kerja-view';
+import IntegratedMeetingModule from '@/components/minutes/integrated-meeting-module';
+import { AdhocCommitteeView } from '@/components/organization/adhoc-committee-view';
+import { TpaView } from '@/components/tpa/tpa-view';
+import { UmkmView } from '@/components/umkm/umkm-view';
+
 
 import { OfficialLetter, LetterStatus } from '@/types/letter';
 import { MeetingMinutes } from '@/types/letter';
@@ -520,7 +526,7 @@ export default function MainContentRouter(props: MainContentRouterProps) {
                 isReadOnly={isReadOnly}
                 externalSearchTerm={globalSearchQuery}
               />
-              <RakerBudgetTracker />
+              <RakerBudgetTracker transactions={transactions} />
             </div>
           )}
 
@@ -652,6 +658,41 @@ export default function MainContentRouter(props: MainContentRouterProps) {
                 onOpenAuditLogs={onOpenAuditLogs}
                 onOpenBackupModal={onOpenBackupModal}
               />
+            </div>
+          )}
+
+          {/* Monitoring 74 Program Kerja Raker 2026-2029 */}
+          {activeTab === 'program-kerja' && (
+            <div className="space-y-4">
+              <ProgramKerjaView transactions={transactions} />
+            </div>
+          )}
+
+          {/* Rapat Terpadu: Undangan, Presensi, Notulen, Cetak */}
+          {activeTab === 'meetings' && (
+            <div className="space-y-4">
+              <IntegratedMeetingModule />
+            </div>
+          )}
+
+          {/* Kepanitiaan Ad-hoc & SK Penetapan */}
+          {activeTab === 'adhoc' && (
+            <div className="space-y-4">
+              <AdhocCommitteeView />
+            </div>
+          )}
+
+          {/* Modul TPA & Pembinaan Santri */}
+          {activeTab === 'tpa' && (
+            <div className="space-y-4">
+              <TpaView />
+            </div>
+          )}
+
+          {/* Sentra UMKM Jamaah & Gerai Muslimah */}
+          {activeTab === 'umkm' && (
+            <div className="space-y-4">
+              <UmkmView />
             </div>
           )}
         </>

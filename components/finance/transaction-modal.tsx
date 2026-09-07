@@ -11,6 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { FinanceTransaction, FinanceCategory, TransactionType, PaymentMethod, FINANCE_CATEGORIES } from '@/types/finance';
+import { OFFICIAL_RAKER_BUDGETS } from '@/lib/raker-budget-data';
 import { useToast } from '@/lib/toast-context';
 
 interface TransactionModalProps {
@@ -58,6 +59,7 @@ function TransactionModalContent({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(() => initialData?.paymentMethod || 'TUNAI');
   const [receiptNumber, setReceiptNumber] = useState(() => initialData?.receiptNumber || '');
   const [notes, setNotes] = useState(() => initialData?.notes || '');
+  const [programKerjaId, setProgramKerjaId] = useState(() => initialData?.programKerjaId || '');
 
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -87,6 +89,7 @@ function TransactionModalContent({
       paymentMethod,
       receiptNumber: generatedReceipt,
       notes: notes.trim(),
+      programKerjaId: programKerjaId ? programKerjaId.trim() : undefined,
     };
 
     try {
@@ -289,6 +292,29 @@ function TransactionModalContent({
                 <option value="QRIS">QRIS Masjid</option>
               </select>
             </div>
+          </div>
+
+          {/* Keterkaitan Program Kerja Raker 2026-2029 (Realisasi Anggaran) */}
+          <div>
+            <label htmlFor="trx-program-kerja" className="block font-semibold text-slate-700 dark:text-slate-200 mb-1">
+              Alokasi Program Kerja Raker (Realisasi Anggaran)
+            </label>
+            <select
+              id="trx-program-kerja"
+              value={programKerjaId}
+              onChange={(e) => setProgramKerjaId(e.target.value)}
+              className="w-full border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+            >
+              <option value="">-- Tidak Terkait Program Kerja Tertentu (Kas Rutin) --</option>
+              {OFFICIAL_RAKER_BUDGETS.map((prog) => (
+                <option key={prog.id} value={prog.id}>
+                  [{prog.id}] {prog.seksiName} — {prog.programName}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              Pilih program kerja jika pengeluaran/pemasukan ini bagian dari realisasi anggaran Raker DKM.
+            </p>
           </div>
 
           {/* Nomor Kwitansi & Catatan */}

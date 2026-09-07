@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #F8FAFC;
   --foreground: #0F172A;
@@ -13,6 +15,16 @@
   --container-border: #E2E8F0;
 }
 
+.dark {
+  --background: #0B1120;
+  --foreground: #F8FAFC;
+  --card-surface: #1E293B;
+  --container-low: #0F172A;
+  --container-border: #334155;
+  --emerald-light: #064E3B;
+  --emerald-border: #047857;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -20,8 +32,8 @@
 }
 
 body {
-  background: #F8FAFC;
-  color: #0F172A;
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-plus-jakarta-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }

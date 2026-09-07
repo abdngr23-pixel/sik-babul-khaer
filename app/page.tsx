@@ -181,8 +181,8 @@ export default function DashboardPage() {
           onOpenSwitchRole={() => logout()}
           onOpenAuditLogs={() => modals.setIsAuditLogModalOpen(true)}
           pendingApprovalsCount={stats.pendingApprovalsCount}
-          globalSearchQuery={globalSearchQuery}
-          onGlobalSearchChange={setGlobalSearchQuery}
+          globalSearchQuery={filters.globalSearchQuery}
+          onGlobalSearchChange={filters.setGlobalSearchQuery}
           onToggleMobileMenu={() => modals.setIsMobileMenuOpen((prev) => !prev)}
           activeTab={activeTab}
           onGoBack={handleGoBack}
@@ -203,7 +203,7 @@ export default function DashboardPage() {
 
           {/* Quick Back & Breadcrumb Bar (Visible when not on Dashboard) */}
           {activeTab !== 'dashboard' && (
-            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 bg-white/95 backdrop-blur-md p-2 sm:p-2.5 px-3 sm:px-4 rounded-2xl border border-slate-200/90 shadow-soft-sm animate-in fade-in slide-in-from-left-2 duration-200">
+            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-2.5 px-3 sm:px-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-soft-sm animate-in fade-in slide-in-from-left-2 duration-200">
               <button
                 type="button"
                 onClick={handleGoBack}
@@ -214,17 +214,17 @@ export default function DashboardPage() {
                 <span className="truncate max-w-[200px] sm:max-w-none">Kembali ke {previousTabLabel}</span>
               </button>
 
-              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 font-medium overflow-hidden">
+              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium overflow-hidden">
                 <button
                   type="button"
                   onClick={() => handleNavigateTab('dashboard')}
-                  className="hover:text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer transition-colors shrink-0"
+                  className="hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer transition-colors shrink-0"
                 >
-                  <LayoutDashboard className="w-3.5 h-3.5 text-emerald-600" />
+                  <LayoutDashboard className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span className="hidden sm:inline">Pusat Kendali</span>
                 </button>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="font-bold text-slate-800 truncate">{currentTabLabel}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{currentTabLabel}</span>
               </nav>
             </div>
           )}
@@ -242,12 +242,12 @@ export default function DashboardPage() {
             onOpenArchiveLetterModal={() => modals.setIsArchiveLetterModalOpen(true)}
             onOpenFridayReport={() => modals.setIsFridayReportOpen(true)}
             onOpenMustahiq={() => {
-              setSelectedStatus('MUSTAHIQ_ALL');
+              filters.setSelectedStatus('MUSTAHIQ_ALL');
               handleNavigateTab('mustahiq');
             }}
             onOpenMinutes={() => handleNavigateTab('minutes')}
             assetStats={stats.assetStats}
-            onFilterAssetOnlyDue={() => setAssetOnlyDueFilter(true)}
+            onFilterAssetOnlyDue={() => filters.setAssetOnlyDueFilter(true)}
             onGoBack={handleGoBack}
             previousTabLabel={previousTabLabel}
           />

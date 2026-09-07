@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       payerOrPayee: body.payerOrPayee ? body.payerOrPayee.trim() : '-',
       paymentMethod: (body.paymentMethod as PaymentMethod) || 'TUNAI',
       notes: body.notes ? body.notes.trim() : '',
+      programKerjaId: body.programKerjaId ? body.programKerjaId.trim() : undefined,
     });
 
     const summary = await store.getFinanceSummary();

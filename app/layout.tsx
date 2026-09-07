@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ToastProvider } from "@/lib/toast-context";
 import { ConfirmProvider } from "@/lib/confirm-context";
+import { ThemeProvider } from "@/lib/theme-context";
 import PWARegister from "@/components/pwa-register";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -54,17 +55,36 @@ export default function RootLayout({
   return (
     <html
       lang="id"
+      suppressHydrationWarning
       className={`${plusJakartaSans.variable} h-full antialiased overflow-x-hidden`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-[#F8FAFC] text-[#0F172A] overflow-x-hidden">
-        <AuthProvider>
-          <ToastProvider>
-            <ConfirmProvider>
-              {children}
-              <PWARegister />
-            </ConfirmProvider>
-          </ToastProvider>
-        </AuthProvider>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var t = localStorage.getItem('theme');
+                if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col font-sans bg-[#F8FAFC] dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 overflow-x-hidden transition-colors duration-200">
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <ConfirmProvider>
+                {children}
+                <PWARegister />
+              </ConfirmProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

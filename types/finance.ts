@@ -60,6 +60,7 @@ export interface FinanceTransaction {
   payerOrPayee?: string;
   paymentMethod: PaymentMethod;
   balanceAfter: number;
+  programKerjaId?: string;
   notes?: string;
   createdAt: string;
 }

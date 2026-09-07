@@ -163,6 +163,7 @@ export async function initTursoSchema(client: Client): Promise<void> {
       paymentMethod TEXT NOT NULL,
       balanceAfter REAL NOT NULL,
       notes TEXT,
+      programKerjaId TEXT,
       createdAt TEXT NOT NULL
     );
   `);
@@ -454,6 +455,13 @@ export async function initTursoSchema(client: Client): Promise<void> {
       updatedAt TEXT NOT NULL
     );
   `);
+
+  // Safe schema migrations for new columns
+  try {
+    await client.execute('ALTER TABLE transactions ADD COLUMN programKerjaId TEXT;');
+  } catch {
+    // Ignore error if column already exists
+  }
 
   // Auto seed initial data if empty
   await seedTursoIfEmpty(client);
@@ -1116,6 +1124,7 @@ const parseTransaction = (r: Record<string, unknown>): FinanceTransaction => ({
   payerOrPayee: (r.payerOrPayee as string) || undefined,
   paymentMethod: r.paymentMethod as FinanceTransaction['paymentMethod'],
   balanceAfter: Number(r.balanceAfter),
+  programKerjaId: (r.programKerjaId as string) || undefined,
   notes: (r.notes as string) || undefined,
   createdAt: r.createdAt as string,
 });
@@ -1634,8 +1643,8 @@ export async function tursoInsertTransaction(client: Client, t: FinanceTransacti
     sql: `
       INSERT INTO transactions (
         id, date, type, category, description, amount, receiptNumber, payerOrPayee,
-        paymentMethod, balanceAfter, notes, createdAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        paymentMethod, balanceAfter, notes, programKerjaId, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     args: [
       t.id,
@@ -1649,6 +1658,7 @@ export async function tursoInsertTransaction(client: Client, t: FinanceTransacti
       t.paymentMethod,
       t.balanceAfter || 0,
       t.notes || null,
+      t.programKerjaId || null,
       t.createdAt,
     ],
   });
@@ -1660,7 +1670,7 @@ export async function tursoUpdateTransaction(client: Client, t: FinanceTransacti
     sql: `
       UPDATE transactions SET
         date = ?, type = ?, category = ?, description = ?, amount = ?,
-        receiptNumber = ?, payerOrPayee = ?, paymentMethod = ?, balanceAfter = ?, notes = ?
+        receiptNumber = ?, payerOrPayee = ?, paymentMethod = ?, balanceAfter = ?, notes = ?, programKerjaId = ?
       WHERE id = ?
     `,
     args: [
@@ -1674,6 +1684,7 @@ export async function tursoUpdateTransaction(client: Client, t: FinanceTransacti
       t.paymentMethod,
       t.balanceAfter || 0,
       t.notes || null,
+      t.programKerjaId || null,
       t.id,
     ],
   });

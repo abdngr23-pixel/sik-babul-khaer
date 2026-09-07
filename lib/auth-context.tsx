@@ -293,6 +293,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         case 'reports':
           return true;
 
+        // Modul Monitoring Granular 74 Program Kerja
+        case 'program-kerja':
+          return true;
+
+        // Modul Rapat Terpadu (Sekretaris, Ketua Umum, Super Admin)
+        case 'meetings':
+          return currentUser.role === 'SEKRETARIS';
+
+        // Modul Kepanitiaan Ad-hoc, TPA & UMKM (Dapat diakses oleh seluruh pengurus)
+        case 'adhoc':
+        case 'tpa':
+        case 'umkm':
+          return true;
+
         // Modul Pengesahan Satu Pintu (Eksklusif Ketua Umum & Super Admin)
         case 'approvals':
           return false;
@@ -326,6 +340,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         case 'minutes':
           return currentUser.role === 'SEKRETARIS';
 
+        case 'meetings':
+        case 'adhoc':
+          return currentUser.role === 'SEKRETARIS';
+
+        case 'tpa':
+        case 'umkm':
         case 'jamaah':
         case 'mustahiq':
         case 'dakwah':
@@ -337,6 +357,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         case 'assets':
           return currentUser.role === 'SARPRAS';
+
+        case 'program-kerja':
+          return false;
 
         case 'approvals':
           return false;

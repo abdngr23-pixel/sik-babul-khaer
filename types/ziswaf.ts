@@ -65,12 +65,31 @@ export interface ZiswafAidItem {
   notes: string;
 }
 
-export interface ZiswafSummaryKPI {
-  totalSssCans: number;
-  activeSssCans: number;
-  readyToCollectCans: number;
-  totalSssAccumulated: number;
-  totalAidRecipients: number;
-  totalAidDisbursedRp: number;
-  totalRiceDisbursedKg: number;
+export interface MuzakkiItem {
+  id: string;
+  receiptNumber: string; // e.g. "BK-ZIS/2026/09/001"
+  name: string;
+  phone: string;
+  address: string;
+  zakatType: 'ZAKAT_FITRAH' | 'ZAKAT_MAL' | 'FIDYAH' | 'INFAQ_SEDEKAH' | 'WAKAF_TUNAI';
+  amountRp: number;
+  riceKg?: number;
+  personCount?: number;
+  paymentMethod: 'TUNAI' | 'TRANSFER_BSI' | 'QRIS';
+  date: string;
+  officer: string;
+  reportedToBaznas: boolean;
+  notes?: string;
 }
+
+export interface BaznasSyncStatus {
+  upzNumber: string; // "400.10/SK-UPZ/BAZNAS-MKS/2025"
+  upzStatus: 'TERDAFTAR_RESMI' | 'MENUNGGU_PERPANJANGAN';
+  lastReportDate: string;
+  totalMuzakkiReported: number;
+  totalZakatFitrahRp: number;
+  totalZakatFitrahKg: number;
+  totalZakatMalRp: number;
+  totalInfaqRp: number;
+}
+

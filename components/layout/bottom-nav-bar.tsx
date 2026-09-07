@@ -22,8 +22,14 @@ import {
   Shield,
   Eye,
   Plus,
+  Sun,
+  Moon,
+  Award,
+  BookOpen,
+  Store,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useTheme } from '@/lib/theme-context';
 import { AppNavTab } from '@/types/navigation';
 import { useModalBackHandler } from '@/lib/back-button-handler';
 
@@ -60,6 +66,7 @@ export default function BottomNavBar({
   pendingApprovalsCount = 0,
 }: BottomNavBarProps) {
   const { currentUser, isReadOnly, canAccessTab, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   // Bind the "Lainnya" bottom sheet drawer to mobile hardware back button
@@ -156,7 +163,7 @@ export default function BottomNavBar({
       {/* -------------------------------------------------------------------- */}
       <nav
         aria-label="Navigasi Bawah Ponsel"
-        className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 md:hidden pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
+        className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200/90 dark:border-slate-800 md:hidden pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] transition-colors"
       >
         <div className="grid grid-cols-5 h-16 max-w-lg mx-auto items-center px-1">
           {navSlots.map((slot) => {
@@ -178,28 +185,28 @@ export default function BottomNavBar({
                 }}
                 className={`relative min-h-[56px] flex flex-col items-center justify-center gap-1 transition-all cursor-pointer rounded-xl mx-0.5 active:scale-95 ${
                   isSlotActive
-                    ? 'text-emerald-700 font-bold'
-                    : 'text-slate-500 hover:text-slate-800 font-medium'
+                    ? 'text-emerald-700 dark:text-emerald-400 font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium'
                 }`}
               >
                 {/* Active Indicator Bar on Top (Gaya Telkomsel / By.U) */}
                 {isSlotActive && (
-                  <span className="absolute top-0 w-8 h-1 bg-emerald-600 rounded-full animate-in fade-in zoom-in-75 duration-150" />
+                  <span className="absolute top-0 w-8 h-1 bg-emerald-600 dark:bg-emerald-400 rounded-full animate-in fade-in zoom-in-75 duration-150" />
                 )}
 
                 {/* Icon Container with Notification Badge */}
                 <div
                   className={`p-1.5 rounded-xl transition-all relative ${
                     isSlotActive
-                      ? 'bg-emerald-100 text-emerald-800 scale-105 shadow-2xs'
-                      : 'hover:bg-slate-100'
+                      ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 scale-105 shadow-2xs'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
 
                   {/* Notification Badge */}
                   {slot.badgeCount && slot.badgeCount > 0 ? (
-                    <span className="absolute -top-1 -right-1.5 px-1.5 py-0.2 min-w-[16px] h-4 bg-rose-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-white shadow-2xs">
+                    <span className="absolute -top-1 -right-1.5 px-1.5 py-0.2 min-w-[16px] h-4 bg-rose-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900 shadow-2xs">
                       {slot.badgeCount > 99 ? '99+' : slot.badgeCount}
                     </span>
                   ) : null}
@@ -229,24 +236,24 @@ export default function BottomNavBar({
 
           {/* Bottom Sheet Modal Body */}
           <div
-            className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl max-h-[88dvh] flex flex-col md:hidden shadow-2xl border-t border-slate-200 overflow-hidden animate-slide-up pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-slate-900 rounded-t-3xl max-h-[88dvh] flex flex-col md:hidden shadow-2xl border-t border-slate-200 dark:border-slate-800 overflow-hidden animate-slide-up pb-[max(1.5rem,env(safe-area-inset-bottom))] transition-colors"
             role="dialog"
             aria-label="Menu Lengkap SIK-MBH"
           >
             {/* Mobile Drag Handle Bar */}
-            <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 shrink-0" />
+            <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 shrink-0" />
 
             {/* Header Drawer */}
-            <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/70">
+            <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/70 dark:bg-slate-800/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold">
                   <Layers className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
                     Menu & Modul Lainnya
                   </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     Akses cepat seluruh modul DKM Babul Khaer
                   </p>
                 </div>
@@ -508,11 +515,136 @@ export default function BottomNavBar({
                         <Shield className="w-4 h-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-slate-900 truncate">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           Pusat Data IT
                         </p>
-                        <p className="text-[10px] text-slate-500 truncate">
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                           Super Admin
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* 74 Program Raker */}
+                  {canAccessTab('program-kerja') && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab('program-kerja')}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                        activeTab === 'program-kerja'
+                          ? 'bg-emerald-50/80 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 ring-2 ring-emerald-500/20'
+                          : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 shrink-0">
+                        <Layers className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          74 Program Raker
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          Monitoring Seksi
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Rapat & Presensi */}
+                  {canAccessTab('meetings') && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab('meetings')}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                        activeTab === 'meetings'
+                          ? 'bg-emerald-50/80 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 ring-2 ring-emerald-500/20'
+                          : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 shrink-0">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          Rapat Terpadu
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          Presensi & Notulen
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Panitia Ad-hoc & SK */}
+                  {canAccessTab('adhoc') && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab('adhoc')}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                        activeTab === 'adhoc'
+                          ? 'bg-emerald-50/80 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 ring-2 ring-emerald-500/20'
+                          : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 shrink-0">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          Panitia Ad-hoc
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          Generator SK DKM
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* TPA & Santri */}
+                  {canAccessTab('tpa') && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab('tpa')}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                        activeTab === 'tpa'
+                          ? 'bg-emerald-50/80 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 ring-2 ring-emerald-500/20'
+                          : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 shrink-0">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          TPA & Santri
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          Hafalan & SPP
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* UMKM & Gerai Muslimah */}
+                  {canAccessTab('umkm') && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab('umkm')}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                        activeTab === 'umkm'
+                          ? 'bg-emerald-50/80 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 ring-2 ring-emerald-500/20'
+                          : 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 shrink-0">
+                        <Store className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          Sentra UMKM
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                          Gerai & Qardh
                         </p>
                       </div>
                     </button>
@@ -573,7 +705,26 @@ export default function BottomNavBar({
               )}
 
               {/* System & Security Actions */}
-              <div className="pt-2 border-t border-slate-100 space-y-1.5">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                {/* Dark Mode Switcher */}
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/80 flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === 'dark' ? (
+                      <Sun className="w-4 h-4 text-amber-400" />
+                    ) : (
+                      <Moon className="w-4 h-4 text-slate-600" />
+                    )}
+                    <span>{theme === 'dark' ? 'Mode Gelap (Ubah ke Terang)' : 'Mode Terang (Ubah ke Gelap)'}</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    {theme === 'dark' ? 'Gelap' : 'Terang'}
+                  </span>
+                </button>
+
                 {onOpenAuditLogs && (
                   <button
                     type="button"
@@ -581,10 +732,10 @@ export default function BottomNavBar({
                       setIsMoreOpen(false);
                       onOpenAuditLogs();
                     }}
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between border border-slate-200/60 transition-colors cursor-pointer"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/80 flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                      <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                       <span>Log Audit & Keamanan DKM</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -598,10 +749,10 @@ export default function BottomNavBar({
                       setIsMoreOpen(false);
                       onOpenBackupModal();
                     }}
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between border border-slate-200/60 transition-colors cursor-pointer"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/80 flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
-                      <Database className="w-4 h-4 text-emerald-600" />
+                      <Database className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       <span>Cadangkan & Pulihkan Basis Data</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -614,7 +765,7 @@ export default function BottomNavBar({
                     setIsMoreOpen(false);
                     logout();
                   }}
-                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center justify-between border border-rose-100 transition-colors cursor-pointer"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center justify-between border border-rose-100 dark:border-rose-900/40 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <LogOut className="w-4 h-4 text-rose-500" />

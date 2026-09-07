@@ -22,6 +22,10 @@ import {
   LogOut,
   Calendar,
   X,
+  Layers,
+  Award,
+  BookOpen,
+  Store,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { AppNavTab } from '@/types/navigation';
@@ -90,10 +94,10 @@ export default function Sidebar({
       )}
 
       <aside
-        className="hidden md:flex md:sticky top-0 inset-y-0 left-0 z-30 w-72 bg-white text-slate-800 flex-col border-r border-slate-200/80 shrink-0 h-screen overflow-y-auto shadow-soft-sm"
+        className="hidden md:flex md:sticky top-0 inset-y-0 left-0 z-30 w-72 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex-col border-r border-slate-200/80 dark:border-slate-800 shrink-0 h-screen overflow-y-auto shadow-soft-sm transition-colors"
       >
         {/* Brand Header: Official Logo + Mosque Identity */}
-        <div className="p-5 border-b border-slate-100 bg-gradient-to-b from-emerald-50/50 via-white to-white">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-b from-emerald-50/50 dark:from-emerald-950/20 via-white dark:via-slate-900 to-white dark:to-slate-900">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <div className="relative w-12 h-12 rounded-2xl bg-white p-1.5 shadow-soft-md border border-emerald-100 flex items-center justify-center shrink-0">
@@ -401,6 +405,90 @@ export default function Sidebar({
             </nav>
           </div>
         )}
+
+        {/* Program & Kemaslahatan Umat (Raker 2026) */}
+        <div>
+          <div className="px-3 mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Program & Raker 2026
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200/60">
+              8 Seksi
+            </span>
+          </div>
+
+          <nav className="space-y-1">
+            {canAccessTab('program-kerja') && (
+              <button
+                onClick={() => handleTabClick('program-kerja')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'program-kerja'
+                    ? 'bg-[#059669] text-white shadow-soft-md'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>74 Program Raker</span>
+              </button>
+            )}
+
+            {canAccessTab('meetings') && (
+              <button
+                onClick={() => handleTabClick('meetings')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'meetings'
+                    ? 'bg-[#059669] text-white shadow-soft-md'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'
+                }`}
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Rapat & Presensi</span>
+              </button>
+            )}
+
+            {canAccessTab('adhoc') && (
+              <button
+                onClick={() => handleTabClick('adhoc')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'adhoc'
+                    ? 'bg-[#059669] text-white shadow-soft-md'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'
+                }`}
+              >
+                <Award className="w-4 h-4" />
+                <span>Panitia Ad-hoc & SK</span>
+              </button>
+            )}
+
+            {canAccessTab('tpa') && (
+              <button
+                onClick={() => handleTabClick('tpa')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'tpa'
+                    ? 'bg-[#059669] text-white shadow-soft-md'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>TPA & Santri</span>
+              </button>
+            )}
+
+            {canAccessTab('umkm') && (
+              <button
+                onClick={() => handleTabClick('umkm')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'umkm'
+                    ? 'bg-[#059669] text-white shadow-soft-md'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'
+                }`}
+              >
+                <Store className="w-4 h-4" />
+                <span>UMKM & Gerai Muslimah</span>
+              </button>
+            )}
+          </nav>
+        </div>
 
         {/* Laporan & Pengesahan */}
         {showPhase4 && (
