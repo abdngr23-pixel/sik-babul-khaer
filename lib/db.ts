@@ -1022,37 +1022,42 @@ function seedIfEmpty(db: DatabaseSync) {
     }
   }
 
-  // 19. Users
-  const userCount = Number(
-    (db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number | bigint }).count
-  );
-  if (userCount === 0 && OFFICIAL_USERS.length > 0) {
-    const insertUser = db.prepare(`
-      INSERT INTO users (
-        id, name, title, role, roleLabel, email, phone, department,
-        isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const now = new Date().toISOString();
-    for (const u of OFFICIAL_USERS) {
-      insertUser.run(
-        u.id,
-        u.name,
-        u.title,
-        u.role,
-        u.roleLabel,
-        u.email,
-        u.phone,
-        u.department,
-        u.isReadOnly ? 1 : 0,
-        u.pinHash || '',
-        u.status || 'AKTIF',
-        u.bio || null,
-        u.avatarUrl || null,
-        now,
-        now
-      );
-    }
+  // 19. Users - Role migration and ensure all official users exist
+  db.exec(`
+    UPDATE users SET role = 'SEKSI_PERIBADATAN_DAKWAH', roleLabel = 'Peribadatan & Dakwah' WHERE role = 'KEMASJIDAN';
+    UPDATE users SET role = 'SEKSI_SARPRAS', roleLabel = 'Sarana & Prasarana' WHERE role = 'SARPRAS';
+  `);
+
+  const insertOrUpdateUser = db.prepare(`
+    INSERT INTO users (
+      id, name, title, role, roleLabel, email, phone, department,
+      isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      role = excluded.role,
+      roleLabel = excluded.roleLabel,
+      title = excluded.title,
+      department = excluded.department
+  `);
+  const now = new Date().toISOString();
+  for (const u of OFFICIAL_USERS) {
+    insertOrUpdateUser.run(
+      u.id,
+      u.name,
+      u.title,
+      u.role,
+      u.roleLabel,
+      u.email,
+      u.phone,
+      u.department,
+      u.isReadOnly ? 1 : 0,
+      u.pinHash || '',
+      u.status || 'AKTIF',
+      u.bio || null,
+      u.avatarUrl || null,
+      now,
+      now
+    );
   }
 
   // Save Meta initialization date

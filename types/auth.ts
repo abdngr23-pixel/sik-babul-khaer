@@ -1,10 +1,19 @@
 export type UserRole =
   | 'SUPER_ADMIN'
   | 'KETUA_UMUM'
+  | 'KETUA_I'
+  | 'KETUA_II'
   | 'SEKRETARIS'
+  | 'WAKIL_SEKRETARIS'
   | 'BENDAHARA'
-  | 'SARPRAS'
-  | 'KEMASJIDAN'
+  | 'WAKIL_BENDAHARA'
+  | 'SEKSI_PERIBADATAN_DAKWAH'
+  | 'SEKSI_ORGANISASI_PENDIDIKAN_REMAJA'
+  | 'SEKSI_HUMAS_SOSIAL'
+  | 'SEKSI_PEMBERDAYAAN_PEREMPUAN'
+  | 'SEKSI_PEMBANGUNAN'
+  | 'SEKSI_SARPRAS'
+  | 'SEKSI_KEAMANAN_KEBERSIHAN'
   | 'DEWAN_PENGAWAS';
 
 export interface User {
@@ -110,10 +119,21 @@ export interface RolePermission {
   canAccessSuperAdmin?: boolean;
   canAccessAtmBeras?: boolean;
   canMutateAtmBeras?: boolean;
-  canAccessLelang?: boolean;
-  canMutateLelang?: boolean;
-  canAccessGallery?: boolean;
-  canMutateGallery?: boolean;
+  canAccessZiswaf: boolean;
+  canMutateZiswaf: boolean;
+  canAccessDakwah: boolean;
+  canMutateDakwah: boolean;
+  canAccessTPA: boolean;
+  canMutateTPA: boolean;
+  canAccessUMKM: boolean;
+  canMutateUMKM: boolean;
+  canAccessProjects: boolean;
+  canMutateProjects: boolean;
+  canAccessLelang: boolean;
+  canMutateLelang: boolean;
+  canAccessGallery: boolean;
+  canMutateGallery: boolean;
+  canAccessKeamananKebersihan: boolean;
   isReadOnly: boolean;
 }
 

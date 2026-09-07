@@ -21,6 +21,11 @@ import {
   Loader2,
   ChevronLeft,
   Database,
+  Hammer,
+  BookOpen,
+  HeartHandshake,
+  Store,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface LoginModalProps {
@@ -86,14 +91,29 @@ export default function LoginModal({ isOpen, onClose, onSuccessToast }: LoginMod
     switch (role) {
       case 'KETUA_UMUM':
         return <Shield className="w-5 h-5 text-indigo-500" />;
+      case 'KETUA_I':
+      case 'KETUA_II':
+        return <Shield className="w-5 h-5 text-blue-500" />;
       case 'SEKRETARIS':
+      case 'WAKIL_SEKRETARIS':
         return <FileText className="w-5 h-5 text-emerald-500" />;
       case 'BENDAHARA':
+      case 'WAKIL_BENDAHARA':
         return <Wallet className="w-5 h-5 text-amber-500" />;
-      case 'SARPRAS':
-        return <Wrench className="w-5 h-5 text-orange-500" />;
-      case 'KEMASJIDAN':
+      case 'SEKSI_PERIBADATAN_DAKWAH':
         return <Users className="w-5 h-5 text-teal-500" />;
+      case 'SEKSI_ORGANISASI_PENDIDIKAN_REMAJA':
+        return <BookOpen className="w-5 h-5 text-cyan-500" />;
+      case 'SEKSI_HUMAS_SOSIAL':
+        return <HeartHandshake className="w-5 h-5 text-rose-500" />;
+      case 'SEKSI_PEMBERDAYAAN_PEREMPUAN':
+        return <Store className="w-5 h-5 text-pink-500" />;
+      case 'SEKSI_PEMBANGUNAN':
+        return <Hammer className="w-5 h-5 text-violet-500" />;
+      case 'SEKSI_SARPRAS':
+        return <Wrench className="w-5 h-5 text-orange-500" />;
+      case 'SEKSI_KEAMANAN_KEBERSIHAN':
+        return <ShieldCheck className="w-5 h-5 text-slate-500" />;
       case 'DEWAN_PENGAWAS':
         return <Eye className="w-5 h-5 text-purple-500" />;
       case 'SUPER_ADMIN':
@@ -105,47 +125,86 @@ export default function LoginModal({ isOpen, onClose, onSuccessToast }: LoginMod
 
   const getRoleTheme = (role: UserRole) => {
     switch (role) {
+      case 'SUPER_ADMIN':
+        return {
+          border: 'hover:border-slate-800/80',
+          activeBorder: 'border-slate-900 dark:border-slate-700 bg-slate-900 text-teal-300 ring-2 ring-teal-500/20',
+          badgeBg: 'bg-slate-900 dark:bg-slate-800 text-teal-300 border-slate-700',
+        };
       case 'KETUA_UMUM':
         return {
           border: 'hover:border-indigo-500/80',
           activeBorder: 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20',
           badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200',
         };
+      case 'KETUA_I':
+      case 'KETUA_II':
+        return {
+          border: 'hover:border-blue-500/80',
+          activeBorder: 'border-blue-600 bg-blue-50/40 ring-2 ring-blue-500/20',
+          badgeBg: 'bg-blue-100 text-blue-800 border-blue-200',
+        };
       case 'SEKRETARIS':
+      case 'WAKIL_SEKRETARIS':
         return {
           border: 'hover:border-emerald-500/80',
           activeBorder: 'border-emerald-600 bg-emerald-50/40 ring-2 ring-emerald-500/20',
           badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200',
         };
       case 'BENDAHARA':
+      case 'WAKIL_BENDAHARA':
         return {
           border: 'hover:border-amber-500/80',
           activeBorder: 'border-amber-600 bg-amber-50/40 dark:bg-amber-950/40 ring-2 ring-amber-500/20',
           badgeBg: 'bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800',
         };
-      case 'SARPRAS':
+      case 'SEKSI_PERIBADATAN_DAKWAH':
+        return {
+          border: 'hover:border-teal-500/80',
+          activeBorder: 'border-teal-600 bg-teal-50/40 dark:bg-teal-950/40 ring-2 ring-teal-500/20',
+          badgeBg: 'bg-teal-100 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800',
+        };
+      case 'SEKSI_ORGANISASI_PENDIDIKAN_REMAJA':
+        return {
+          border: 'hover:border-cyan-500/80',
+          activeBorder: 'border-cyan-600 bg-cyan-50/40 dark:bg-cyan-950/40 ring-2 ring-cyan-500/20',
+          badgeBg: 'bg-cyan-100 dark:bg-cyan-950/50 text-cyan-800 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
+        };
+      case 'SEKSI_HUMAS_SOSIAL':
+        return {
+          border: 'hover:border-rose-500/80',
+          activeBorder: 'border-rose-600 bg-rose-50/40 dark:bg-rose-950/40 ring-2 ring-rose-500/20',
+          badgeBg: 'bg-rose-100 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+        };
+      case 'SEKSI_PEMBERDAYAAN_PEREMPUAN':
+        return {
+          border: 'hover:border-pink-500/80',
+          activeBorder: 'border-pink-600 bg-pink-50/40 dark:bg-pink-950/40 ring-2 ring-pink-500/20',
+          badgeBg: 'bg-pink-100 dark:bg-pink-950/50 text-pink-800 dark:text-pink-300 border-pink-200 dark:border-pink-800',
+        };
+      case 'SEKSI_PEMBANGUNAN':
+        return {
+          border: 'hover:border-violet-500/80',
+          activeBorder: 'border-violet-600 bg-violet-50/40 dark:bg-violet-950/40 ring-2 ring-violet-500/20',
+          badgeBg: 'bg-violet-100 dark:bg-violet-950/50 text-violet-800 dark:text-violet-300 border-violet-200 dark:border-violet-800',
+        };
+      case 'SEKSI_SARPRAS':
         return {
           border: 'hover:border-orange-500/80',
           activeBorder: 'border-orange-600 bg-orange-50/40 dark:bg-orange-950/40 ring-2 ring-orange-500/20',
           badgeBg: 'bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800',
         };
-      case 'KEMASJIDAN':
+      case 'SEKSI_KEAMANAN_KEBERSIHAN':
         return {
-          border: 'hover:border-teal-500/80',
-          activeBorder: 'border-teal-600 bg-teal-50/40 dark:bg-teal-950/40 ring-2 ring-teal-500/20',
-          badgeBg: 'bg-teal-100 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800',
+          border: 'hover:border-slate-400',
+          activeBorder: 'border-slate-600 bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-400/20',
+          badgeBg: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700',
         };
       case 'DEWAN_PENGAWAS':
         return {
           border: 'hover:border-purple-500/80',
           activeBorder: 'border-purple-600 bg-purple-50/40 dark:bg-purple-950/40 ring-2 ring-purple-500/20',
           badgeBg: 'bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-        };
-      case 'SUPER_ADMIN':
-        return {
-          border: 'hover:border-slate-800/80',
-          activeBorder: 'border-slate-900 dark:border-slate-700 bg-slate-900 text-teal-300 ring-2 ring-teal-500/20',
-          badgeBg: 'bg-slate-900 dark:bg-slate-800 text-teal-300 border-slate-700',
         };
       default:
         return {

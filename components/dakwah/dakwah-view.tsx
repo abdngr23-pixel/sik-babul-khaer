@@ -58,7 +58,8 @@ import {
 } from '@/lib/dakwah-excel-helper';
 
 export default function DakwahView() {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, permissions } = useAuth();
+  const canMutate = !isReadOnly && Boolean(permissions.canMutateDakwah);
   const [activeSubTab, setActiveSubTab] = useState<'asatidz' | 'khatib' | 'rawatib' | 'kajian' | 'ramadhan'>('khatib');
 
   // Periode Tahun Terpilih (Default 2026)
@@ -616,7 +617,7 @@ export default function DakwahView() {
               </p>
             </div>
 
-            {!isReadOnly && (
+            {canMutate && (
               <button
                 onClick={() => setIsCreateKhatibOpen(true)}
                 className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold flex items-center gap-2 shadow-soft-sm transition-all cursor-pointer shrink-0"
@@ -826,7 +827,7 @@ export default function DakwahView() {
               </button>
 
               {/* Upload Jadwal Excel */}
-              {!isReadOnly && (
+              {canMutate && (
                 <button
                   type="button"
                   onClick={() => setUploadModalState({ isOpen: true, type: 'FRIDAY' })}
@@ -981,7 +982,7 @@ export default function DakwahView() {
                 </div>
 
                 {/* Status Toggle & Mark As Complete Action */}
-                {!isReadOnly && (
+                {canMutate && (
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs gap-2 flex-wrap">
                     {!item.isCompleted ? (
                       <>
@@ -1183,7 +1184,7 @@ export default function DakwahView() {
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              {!isReadOnly && (
+              {canMutate && (
                 <button
                   type="button"
                   onClick={() => {
@@ -1332,7 +1333,7 @@ export default function DakwahView() {
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                   <span>Kontak: {kjn.contactPerson}</span>
                   <div className="flex items-center gap-2">
-                    {!isReadOnly && !kjn.isCompleted && (
+                    {canMutate && !kjn.isCompleted && (
                       <>
                         <button
                           type="button"
@@ -1437,7 +1438,7 @@ export default function DakwahView() {
               </button>
 
               {/* Upload Jadwal Ramadhan */}
-              {!isReadOnly && (
+              {canMutate && (
                 <button
                   type="button"
                   onClick={() => setUploadModalState({ isOpen: true, type: 'RAMADHAN' })}
@@ -1504,7 +1505,7 @@ export default function DakwahView() {
                   <th className="px-4 py-3">Imam Sholat Tarawih</th>
                   <th className="px-4 py-3">Tuan Rumah Buka Puasa</th>
                   <th className="px-4 py-3 text-center">Status Pelaksanaan</th>
-                  {!isReadOnly && <th className="px-4 py-3 text-right">Aksi</th>}
+                  {canMutate && <th className="px-4 py-3 text-right">Aksi</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1560,7 +1561,7 @@ export default function DakwahView() {
                         </span>
                       )}
                     </td>
-                    {!isReadOnly && (
+                    {canMutate && (
                       <td className="px-4 py-3.5 text-right">
                         {!rmd.isCompleted ? (
                           <button

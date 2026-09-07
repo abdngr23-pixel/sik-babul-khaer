@@ -32,7 +32,8 @@ interface ZiswafViewProps {
 }
 
 export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, canMutateTab } = useAuth();
+  const canMutate = !isReadOnly && canMutateTab('mustahiq');
   const [activeSubTab, setActiveSubTab] = useState<'sss' | 'bansos' | 'muzakki' | 'atm-beras' | 'pemerataan'>('sss');
 
 
@@ -483,7 +484,7 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
               </select>
             </div>
 
-            {!isReadOnly && (
+            {canMutate && (
               <button
                 onClick={() => setIsAddCanOpen(true)}
                 className="px-4 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold flex items-center gap-2 shadow-soft-sm transition-all cursor-pointer shrink-0"
@@ -506,7 +507,7 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
                     <th className="px-4 py-3.5">Terakhir Ditarik</th>
                     <th className="px-4 py-3.5 text-right">Akumulasi Swadaya</th>
                     <th className="px-4 py-3.5 text-center">Status</th>
-                    {!isReadOnly && <th className="px-4 py-3.5 text-right">Aksi</th>}
+                    {canMutate && <th className="px-4 py-3.5 text-right">Aksi</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -555,7 +556,7 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
                             {can.status === 'SIAP_TARIK' ? 'Siap Ditarik' : 'Terdistribusi'}
                           </span>
                         </td>
-                        {!isReadOnly && (
+                        {canMutate && (
                           <td className="px-4 py-3.5 text-right">
                             <button
                               onClick={() => setSelectedCanForCollection(can)}
@@ -649,7 +650,7 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
               </select>
             </div>
 
-            {!isReadOnly && (
+            {canMutate && (
               <button
                 onClick={() => setIsCreateAidOpen(true)}
                 className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold flex items-center gap-2 shadow-soft-sm transition-all cursor-pointer shrink-0"

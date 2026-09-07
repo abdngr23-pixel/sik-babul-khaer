@@ -71,23 +71,43 @@ export default function Navbar({
 
   const getRoleBadgeStyle = (role: UserRole) => {
     switch (role) {
+      case 'SUPER_ADMIN':
+        return 'bg-slate-900 text-teal-300 border-teal-500/40';
       case 'KETUA_UMUM':
         return 'bg-indigo-50 text-indigo-900 border-indigo-200/80';
+      case 'KETUA_I':
+      case 'KETUA_II':
+        return 'bg-blue-50 text-blue-900 border-blue-200/80';
       case 'SEKRETARIS':
+      case 'WAKIL_SEKRETARIS':
         return 'bg-emerald-50 text-emerald-900 border-emerald-200/80';
       case 'BENDAHARA':
+      case 'WAKIL_BENDAHARA':
         return 'bg-amber-50 text-amber-900 border-amber-200/80';
-      case 'SARPRAS':
-        return 'bg-orange-50 text-orange-900 border-orange-200/80';
-      case 'KEMASJIDAN':
+      case 'SEKSI_PERIBADATAN_DAKWAH':
         return 'bg-teal-50 text-teal-900 border-teal-200/80';
+      case 'SEKSI_ORGANISASI_PENDIDIKAN_REMAJA':
+        return 'bg-cyan-50 text-cyan-900 border-cyan-200/80';
+      case 'SEKSI_HUMAS_SOSIAL':
+        return 'bg-rose-50 text-rose-900 border-rose-200/80';
+      case 'SEKSI_PEMBERDAYAAN_PEREMPUAN':
+        return 'bg-pink-50 text-pink-900 border-pink-200/80';
+      case 'SEKSI_PEMBANGUNAN':
+        return 'bg-violet-50 text-violet-900 border-violet-200/80';
+      case 'SEKSI_SARPRAS':
+        return 'bg-orange-50 text-orange-900 border-orange-200/80';
+      case 'SEKSI_KEAMANAN_KEBERSIHAN':
+        return 'bg-slate-100 text-slate-900 border-slate-300';
       case 'DEWAN_PENGAWAS':
         return 'bg-purple-50 text-purple-900 border-purple-300';
+      default:
+        return 'bg-slate-50 text-slate-900 border-slate-200';
     }
   };
 
   const getRoleIcon = (role: UserRole) => {
     if (role === 'DEWAN_PENGAWAS') return <Eye className="w-3.5 h-3.5 text-purple-600" />;
+    if (role === 'SUPER_ADMIN') return <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />;
     return <Shield className="w-3.5 h-3.5 text-emerald-600" />;
   };
 

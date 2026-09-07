@@ -6,7 +6,7 @@ import { authorizeMutation } from '@/lib/auth-session';
 export async function POST(request: NextRequest) {
   try {
     const authResult = await authorizeMutation(request, {
-      allowedRoles: ['KETUA_UMUM', 'KEMASJIDAN'],
+      allowedRoles: ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKSI_PERIBADATAN_DAKWAH'],
     });
     if (authResult instanceof NextResponse) {
       return authResult;

@@ -6,6 +6,7 @@ import PhysicalProjectsTracker from './physical-projects-tracker';
 import AssetTable from './asset-table';
 import SarprasMaintenanceView from './sarpras-maintenance-view';
 import { AssetItem } from '@/types/asset';
+import { useAuth } from '@/lib/auth-context';
 
 interface SarprasViewProps {
   assets: AssetItem[];
@@ -38,7 +39,9 @@ export default function SarprasView({
   isReadOnly = false,
   externalSearchTerm = '',
 }: SarprasViewProps) {
+  const { permissions } = useAuth();
   const [activeSubTab, setActiveSubTab] = useState<'projects' | 'inventory' | 'maintenance'>('projects');
+  const isInventoryReadOnly = isReadOnly || !permissions.canMutateAssets;
 
   return (
     <div className="space-y-6">
@@ -116,7 +119,7 @@ export default function SarprasView({
           onEdit={onEdit}
           onDelete={onDelete}
           onRecordMaintenance={onRecordMaintenance}
-          isReadOnly={isReadOnly}
+          isReadOnly={isInventoryReadOnly}
           externalSearchTerm={externalSearchTerm}
         />
       )}

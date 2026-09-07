@@ -23,7 +23,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/lib/toast-context';
 
 export function TpaView() {
-  const { currentUser, isReadOnly } = useAuth();
+  const { isReadOnly, permissions } = useAuth();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<'santri' | 'teachers' | 'hafalan'>('santri');
@@ -46,7 +46,7 @@ export function TpaView() {
   const [newSppStatus, setNewSppStatus] = useState<SppStatus>('LUNAS');
   const [newTeacherId, setNewTeacherId] = useState(teachers[0]?.id || '');
 
-  const canManage = (currentUser.role === 'KETUA_UMUM' || currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'SEKRETARIS') && !isReadOnly;
+  const canManage = !isReadOnly && Boolean(permissions.canMutateTPA);
 
   const filteredSantri = santriList.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

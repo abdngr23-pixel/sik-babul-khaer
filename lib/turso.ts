@@ -1012,38 +1012,46 @@ async function seedTursoIfEmpty(client: Client): Promise<void> {
     await client.batch(stmts, 'write');
   }
 
-  // 19. Users
-  const userRes = await client.execute('SELECT COUNT(*) as count FROM users');
-  const userCount = Number(userRes.rows[0]?.count || 0);
-  if (userCount === 0 && OFFICIAL_USERS.length > 0) {
-    const now = new Date().toISOString();
-    const stmts: InStatement[] = OFFICIAL_USERS.map((u) => ({
-      sql: `
-        INSERT INTO users (
-          id, name, title, role, roleLabel, email, phone, department,
-          isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      args: [
-        u.id,
-        u.name,
-        u.title,
-        u.role,
-        u.roleLabel,
-        u.email,
-        u.phone,
-        u.department,
-        u.isReadOnly ? 1 : 0,
-        u.pinHash || '',
-        u.status || 'AKTIF',
-        u.bio || null,
-        u.avatarUrl || null,
-        now,
-        now,
-      ],
-    }));
-    await client.batch(stmts, 'write');
+  // 19. Users - Role migration and ensure all official users exist
+  try {
+    await client.execute(`UPDATE users SET role = 'SEKSI_PERIBADATAN_DAKWAH', roleLabel = 'Peribadatan & Dakwah' WHERE role = 'KEMASJIDAN'`);
+    await client.execute(`UPDATE users SET role = 'SEKSI_SARPRAS', roleLabel = 'Sarana & Prasarana' WHERE role = 'SARPRAS'`);
+  } catch (err) {
+    console.warn('Turso role migration notice:', err);
   }
+
+  const now = new Date().toISOString();
+  const userStmts: InStatement[] = OFFICIAL_USERS.map((u) => ({
+    sql: `
+      INSERT INTO users (
+        id, name, title, role, roleLabel, email, phone, department,
+        isReadOnly, pinHash, status, bio, avatarUrl, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        role = excluded.role,
+        roleLabel = excluded.roleLabel,
+        title = excluded.title,
+        department = excluded.department
+    `,
+    args: [
+      u.id,
+      u.name,
+      u.title,
+      u.role,
+      u.roleLabel,
+      u.email,
+      u.phone,
+      u.department,
+      u.isReadOnly ? 1 : 0,
+      u.pinHash || '',
+      u.status || 'AKTIF',
+      u.bio || null,
+      u.avatarUrl || null,
+      now,
+      now,
+    ],
+  }));
+  await client.batch(userStmts, 'write');
 
   await client.execute({
     sql: 'INSERT OR REPLACE INTO meta_kv (key, value) VALUES (?, ?)',

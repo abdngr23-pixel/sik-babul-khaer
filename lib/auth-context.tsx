@@ -264,56 +264,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return tab === 'reports';
       }
 
+      const p = ROLE_PERMISSIONS[currentUser.role] || ROLE_PERMISSIONS.KETUA_UMUM;
+
       switch (tab) {
-        // Modul Kesekretariatan & Persuratan (Hanya Sekretaris)
+        // Modul Kesekretariatan & Persuratan
         case 'archive':
+          return p.canAccessArchive;
         case 'create':
+          return p.canCreateLetter;
         case 'minutes':
-          return currentUser.role === 'SEKRETARIS';
+          return p.canAccessMinutes;
 
-        // Modul Basis Data Warga & Dakwah
+        // Modul Basis Data Warga
         case 'jamaah':
+          return p.canAccessJamaah;
+
+        // Modul Peribadatan & Dakwah
         case 'dakwah':
-          return currentUser.role === 'KEMASJIDAN';
+          return p.canAccessDakwah;
 
-        // Modul ZISWAF, SSS, dan Bansos (Kemasjidan & Bendahara)
+        // Modul Mustahiq, ZISWAF, SSS
         case 'mustahiq':
-          return currentUser.role === 'KEMASJIDAN' || currentUser.role === 'BENDAHARA';
+          return p.canAccessZiswaf;
 
-        // Modul Keuangan & Kas (Hanya Bendahara)
+        // Modul Lelang Infaq Barakah
+        case 'lelang':
+          return p.canAccessLelang;
+
+        // Modul TPA & Remaja Masjid
+        case 'tpa':
+          return p.canAccessTPA;
+
+        // Modul UMKM & Gerai Muslimah
+        case 'umkm':
+          return p.canAccessUMKM;
+
+        // Modul Keuangan & Kas & Donatur
         case 'finance':
         case 'donors':
-          return currentUser.role === 'BENDAHARA';
+          return p.canAccessFinance;
 
-        // Modul Sarana & Prasarana (Hanya Sarpras)
+        // Modul Sarana Prasarana & Proyek Fisik
         case 'assets':
-          return currentUser.role === 'SARPRAS';
+          return p.canAccessAssets || p.canAccessProjects;
 
-        // Modul Evaluasi Kinerja & LPJ (Dapat dilihat oleh semua divisi untuk laporannya)
+        // Modul Evaluasi Kinerja & LPJ
         case 'reports':
-          return true;
+          return p.canAccessReports;
 
         // Modul Monitoring Granular 74 Program Kerja
         case 'program-kerja':
           return true;
 
-        // Modul Rapat Terpadu (Sekretaris, Ketua Umum, Super Admin)
+        // Modul Rapat Terpadu (Sekretariat & Pimpinan)
         case 'meetings':
-          return currentUser.role === 'SEKRETARIS';
+          return p.canAccessMinutes;
 
-        // Modul Kepanitiaan Ad-hoc, TPA & UMKM (Dapat diakses oleh seluruh pengurus)
+        // Modul Galeri Dokumentasi Kegiatan
+        case 'gallery':
+          return p.canAccessGallery;
+
+        // Modul Kepanitiaan Ad-hoc
         case 'adhoc':
-        case 'tpa':
-        case 'umkm':
           return true;
 
         // Modul Pengesahan Satu Pintu (Eksklusif Ketua Umum & Super Admin)
         case 'approvals':
-          return false;
+          return p.canAccessApprovals;
 
-        // Modul Super Admin (Khusus Super Admin & Ketua Umum, sudah ditangani di atas)
+        // Modul Super Admin
         case 'superadmin':
-          return false;
+          return Boolean(p.canAccessSuperAdmin);
 
         default:
           return false;
@@ -334,41 +355,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return true;
       }
 
+      // Ketua I & Ketua II: pengawasan bidang, tanpa mutasi operasional langsung
+      if (currentUser.role === 'KETUA_I' || currentUser.role === 'KETUA_II') {
+        return false;
+      }
+
+      const p = ROLE_PERMISSIONS[currentUser.role] || ROLE_PERMISSIONS.KETUA_UMUM;
+
       switch (tab) {
         case 'archive':
         case 'create':
-        case 'minutes':
-          return currentUser.role === 'SEKRETARIS';
+          return p.canCreateLetter;
 
+        case 'minutes':
         case 'meetings':
+          return p.canAccessMinutes && (currentUser.role === 'SEKRETARIS' || currentUser.role === 'WAKIL_SEKRETARIS');
+
         case 'adhoc':
-          return currentUser.role === 'SEKRETARIS';
+          return currentUser.role === 'SEKRETARIS' || currentUser.role === 'WAKIL_SEKRETARIS';
+
+        case 'jamaah':
+          return p.canMutateJamaah;
+
+        case 'dakwah':
+          return p.canMutateDakwah;
+
+        case 'mustahiq':
+          return p.canMutateZiswaf;
 
         case 'tpa':
+          return p.canMutateTPA;
+
         case 'umkm':
-        case 'jamaah':
-        case 'mustahiq':
-        case 'dakwah':
-          return currentUser.role === 'KEMASJIDAN';
+          return p.canMutateUMKM;
+
+        case 'lelang':
+          return p.canMutateLelang;
+
+        case 'gallery':
+          return p.canMutateGallery;
 
         case 'finance':
         case 'donors':
-          return currentUser.role === 'BENDAHARA';
+          return p.canMutateFinance;
 
         case 'assets':
-          return currentUser.role === 'SARPRAS';
+          return p.canMutateAssets || p.canMutateProjects;
 
         case 'program-kerja':
           return false;
 
         case 'approvals':
-          return false;
+          return p.canExecuteDispositions;
 
         case 'reports':
-          return currentUser.role === 'SEKRETARIS';
+          return currentUser.role === 'SEKRETARIS' || currentUser.role === 'WAKIL_SEKRETARIS';
 
         case 'superadmin':
-          return false;
+          return Boolean(p.canAccessSuperAdmin);
 
         default:
           return false;

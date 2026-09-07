@@ -22,7 +22,23 @@ export async function POST(request: NextRequest) {
   try {
     // Semua pengurus terdaftar dapat mengunggah foto galeri
     const authResult = await authorizeMutation(request, {
-      allowedRoles: ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKRETARIS', 'BENDAHARA', 'SARPRAS', 'KEMASJIDAN'],
+      allowedRoles: [
+        'SUPER_ADMIN',
+        'KETUA_UMUM',
+        'KETUA_I',
+        'KETUA_II',
+        'SEKRETARIS',
+        'WAKIL_SEKRETARIS',
+        'BENDAHARA',
+        'WAKIL_BENDAHARA',
+        'SEKSI_PERIBADATAN_DAKWAH',
+        'SEKSI_ORGANISASI_PENDIDIKAN_REMAJA',
+        'SEKSI_HUMAS_SOSIAL',
+        'SEKSI_PEMBERDAYAAN_PEREMPUAN',
+        'SEKSI_PEMBANGUNAN',
+        'SEKSI_SARPRAS',
+        'SEKSI_KEAMANAN_KEBERSIHAN',
+      ],
     });
     if (authResult instanceof NextResponse) {
       return authResult;

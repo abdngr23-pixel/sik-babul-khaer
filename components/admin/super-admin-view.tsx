@@ -52,7 +52,7 @@ export default function SuperAdminView({
   // New User Form State
   const [newUserData, setNewUserData] = useState({
     name: '',
-    role: 'SARPRAS' as UserRole,
+    role: 'SEKSI_SARPRAS' as UserRole,
     title: '',
     phone: '',
     pin: '123456',
@@ -249,7 +249,7 @@ export default function SuperAdminView({
         setNewUserData({
           name: '',
           title: '',
-          role: 'SARPRAS',
+          role: 'SEKSI_SARPRAS',
           phone: '',
           pin: '123456',
         });
@@ -950,13 +950,22 @@ export default function SuperAdminView({
                     }
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold"
                   >
-                    <option value="SARPRAS">SARPRAS (Sarana & Prasarana)</option>
-                    <option value="KEMASJIDAN">KEMASJIDAN (Dakwah & Jamaah)</option>
-                    <option value="BENDAHARA">BENDAHARA (Keuangan & Kas)</option>
-                    <option value="SEKRETARIS">SEKRETARIS (Persuratan & Notulensi)</option>
-                    <option value="KETUA_UMUM">KETUA_UMUM (Eksekutif)</option>
-                    <option value="SUPER_ADMIN">SUPER_ADMIN (Pusat Data IT)</option>
-                    <option value="DEWAN_PENGAWAS">DEWAN_PENGAWAS (Read-Only)</option>
+                    <option value="KETUA_UMUM">KETUA_UMUM (Ketua Umum)</option>
+                    <option value="KETUA_I">KETUA_I (Ketua I - Keagamaan & Pendidikan)</option>
+                    <option value="KETUA_II">KETUA_II (Ketua II - Pembangunan & Sarpras)</option>
+                    <option value="SEKRETARIS">SEKRETARIS (Sekretaris Umum)</option>
+                    <option value="WAKIL_SEKRETARIS">WAKIL_SEKRETARIS (Wakil Sekretaris)</option>
+                    <option value="BENDAHARA">BENDAHARA (Bendahara Umum)</option>
+                    <option value="WAKIL_BENDAHARA">WAKIL_BENDAHARA (Wakil Bendahara)</option>
+                    <option value="SEKSI_PERIBADATAN_DAKWAH">SEKSI_PERIBADATAN_DAKWAH (Peribadatan & Dakwah)</option>
+                    <option value="SEKSI_ORGANISASI_PENDIDIKAN_REMAJA">SEKSI_ORGANISASI_PENDIDIKAN_REMAJA (Organisasi, Pendidikan & Remaja)</option>
+                    <option value="SEKSI_HUMAS_SOSIAL">SEKSI_HUMAS_SOSIAL (Humas & Sosial Kemasyarakatan)</option>
+                    <option value="SEKSI_PEMBERDAYAAN_PEREMPUAN">SEKSI_PEMBERDAYAAN_PEREMPUAN (Pemberdayaan Perempuan & UMKM)</option>
+                    <option value="SEKSI_PEMBANGUNAN">SEKSI_PEMBANGUNAN (Pembangunan Fisik)</option>
+                    <option value="SEKSI_SARPRAS">SEKSI_SARPRAS (Sarana & Prasarana)</option>
+                    <option value="SEKSI_KEAMANAN_KEBERSIHAN">SEKSI_KEAMANAN_KEBERSIHAN (Keamanan & Kebersihan)</option>
+                    <option value="DEWAN_PENGAWAS">DEWAN_PENGAWAS (Dewan Pengawas - Read-Only)</option>
+                    <option value="SUPER_ADMIN">SUPER_ADMIN (Pusat Data & IT Master)</option>
                   </select>
                 </div>
               </div>

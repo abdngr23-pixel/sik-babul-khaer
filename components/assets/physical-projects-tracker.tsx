@@ -16,7 +16,8 @@ import { useToast } from '@/lib/toast-context';
 import ImageUploader from '@/components/shared/image-uploader';
 
 export default function PhysicalProjectsTracker() {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, permissions } = useAuth();
+  const canMutate = !isReadOnly && Boolean(permissions.canMutateProjects);
   const { toast } = useToast();
   const [projects, setProjects] = useState<PhysicalProjectItem[]>(INITIAL_PHYSICAL_PROJECTS);
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
@@ -50,7 +51,7 @@ export default function PhysicalProjectsTracker() {
   const completedProjectsCount = projects.filter((p) => p.status === 'SELESAI').length;
 
   const handleToggleMilestone = async (projectId: string, milestoneId: string) => {
-    if (isReadOnly) return;
+    if (!canMutate) return;
     setProjects((prev) =>
       prev.map((proj) => {
         if (proj.id !== projectId) return proj;
@@ -265,7 +266,7 @@ export default function PhysicalProjectsTracker() {
 
                   {/* Actions & Milestone Expand Toggle */}
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
-                    {!isReadOnly && (
+                    {canMutate && (
                       <button
                         onClick={() => {
                           setEditingProject(project);
@@ -352,7 +353,7 @@ export default function PhysicalProjectsTracker() {
                     <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                       Tahapan Pekerjaan & Milestones ({project.milestones.filter((m) => m.isDone).length}/{project.milestones.length})
                     </h4>
-                    {!isReadOnly && (
+                    {canMutate && (
                       <span className="text-[11px] text-slate-400 italic">
                         Klik checkbox untuk menandai tahapan selesai
                       </span>
@@ -371,7 +372,7 @@ export default function PhysicalProjectsTracker() {
                           m.isDone
                             ? 'bg-emerald-50/60 border-emerald-200 text-emerald-950 font-semibold'
                             : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
-                        } ${!isReadOnly ? 'cursor-pointer' : 'cursor-default'}`}
+                        } ${canMutate ? 'cursor-pointer' : 'cursor-default'}`}
                       >
                         <input
                           type="checkbox"

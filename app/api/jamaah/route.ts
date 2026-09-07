@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const authResult = await authorizeMutation(request, {
-      allowedRoles: ['KETUA_UMUM', 'KEMASJIDAN'],
+      allowedRoles: ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKSI_PERIBADATAN_DAKWAH'],
     });
     if (authResult instanceof NextResponse) {
       return authResult;
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const authResult = await authorizeMutation(request, {
-      allowedRoles: ['KETUA_UMUM', 'KEMASJIDAN'],
+      allowedRoles: ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKSI_PERIBADATAN_DAKWAH'],
     });
     if (authResult instanceof NextResponse) {
       return authResult;
@@ -135,7 +135,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const authResult = await authorizeMutation(request, {
-      allowedRoles: ['KETUA_UMUM', 'KEMASJIDAN'],
+      allowedRoles: ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKSI_PERIBADATAN_DAKWAH'],
     });
     if (authResult instanceof NextResponse) {
       return authResult;

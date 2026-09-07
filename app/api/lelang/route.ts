@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     // Semua koordinator divisi dapat mengelola lelang
     const authResult = await authorizeMutation(request, {
-      allowedRoles: ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKRETARIS', 'BENDAHARA', 'SARPRAS', 'KEMASJIDAN'],
+      allowedRoles: ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKSI_HUMAS_SOSIAL'],
     });
     if (authResult instanceof NextResponse) {
       return authResult;

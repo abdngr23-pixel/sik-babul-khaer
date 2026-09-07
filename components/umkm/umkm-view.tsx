@@ -21,7 +21,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/lib/toast-context';
 
 export function UmkmView() {
-  const { currentUser, isReadOnly } = useAuth();
+  const { isReadOnly, permissions } = useAuth();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<'katalog' | 'qardh' | 'bazar'>('katalog');
@@ -43,7 +43,7 @@ export function UmkmView() {
   const [newPriceRange, setNewPriceRange] = useState('');
   const [newBazar, setNewBazar] = useState(true);
 
-  const canManage = (currentUser.role === 'KETUA_UMUM' || currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'BENDAHARA') && !isReadOnly;
+  const canManage = !isReadOnly && Boolean(permissions.canMutateUMKM);
 
   const filteredBusinesses = businesses.filter(b => {
     const matchSearch = b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

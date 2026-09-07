@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const authResult = await authorizeMutation(request, {
-      allowedRoles: ['KETUA_UMUM', 'SARPRAS', 'SUPER_ADMIN', 'BENDAHARA', 'SEKRETARIS'],
+      allowedRoles: ['SUPER_ADMIN', 'KETUA_UMUM', 'SEKSI_PEMBANGUNAN', 'SEKSI_SARPRAS'],
     });
     if (authResult instanceof NextResponse) {
       return authResult;

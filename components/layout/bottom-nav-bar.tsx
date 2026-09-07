@@ -96,9 +96,14 @@ export default function BottomNavBar({
     }> = [
       { id: 'archive', label: 'Surat', icon: Inbox },
       { id: 'finance', label: 'Kas', icon: Wallet },
+      { id: 'mustahiq', label: 'ZISWAF', icon: HeartHandshake },
       { id: 'jamaah', label: 'Jamaah', icon: Users },
       { id: 'assets', label: 'Sarpras', icon: Wrench },
       { id: 'dakwah', label: 'Dakwah', icon: Calendar },
+      { id: 'tpa', label: 'TPA', icon: BookOpen },
+      { id: 'umkm', label: 'UMKM', icon: Store },
+      { id: 'lelang', label: 'Lelang', icon: Gavel },
+      { id: 'gallery', label: 'Galeri', icon: ImageIcon },
       {
         id: 'approvals',
         label: 'Pengesahan',
@@ -107,6 +112,7 @@ export default function BottomNavBar({
       },
       { id: 'reports', label: 'Laporan', icon: BarChart3 },
       { id: 'donors', label: 'Donatur', icon: HeartHandshake },
+      { id: 'program-kerja', label: 'Proker', icon: Layers },
     ];
 
     // Pick 3 accessible candidate modules for slots 2, 3, 4

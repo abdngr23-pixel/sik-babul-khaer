@@ -16,6 +16,8 @@ import {
   ArrowLeft,
   Gavel,
   Image as ImageIcon,
+  BookOpen,
+  Store,
 } from 'lucide-react';
 import { AppNavTab } from '@/types/navigation';
 
@@ -228,6 +230,36 @@ export function ModuleTabSelector({
         >
           <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
           <span>Pengesahan Satu Pintu ({pendingApprovalsCount})</span>
+        </button>
+      )}
+
+      {/* TPA & Santri */}
+      {canAccessTab('tpa') && (
+        <button
+          onClick={() => setActiveTab('tpa')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeTab === 'tpa'
+              ? 'bg-white dark:bg-slate-800 text-teal-900 dark:text-teal-300 shadow-soft-sm ring-1 ring-teal-500/20'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+          <span>TPA & Santri</span>
+        </button>
+      )}
+
+      {/* UMKM & Gerai Muslimah */}
+      {canAccessTab('umkm') && (
+        <button
+          onClick={() => setActiveTab('umkm')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeTab === 'umkm'
+              ? 'bg-white dark:bg-slate-800 text-teal-900 dark:text-teal-300 shadow-soft-sm ring-1 ring-teal-500/20'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <Store className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+          <span>UMKM Muslimah</span>
         </button>
       )}
 
