@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ZiswafAidItem, AidType, RecipientCategory } from '@/types/ziswaf';
 import { Jamaah } from '@/types/jamaah';
+import { useToast } from '@/lib/toast-context';
 import { HeartHandshake, X, AlertCircle, UserCheck } from 'lucide-react';
 
 interface CreateAidModalProps {
@@ -18,6 +19,7 @@ export default function CreateAidModal({
   jamaahList,
   onSaveAid,
 }: CreateAidModalProps) {
+  const { toast } = useToast();
   const [selectedJamaahId, setSelectedJamaahId] = useState<string>('');
   const [recipientName, setRecipientName] = useState<string>('');
   const [recipientCategory, setRecipientCategory] = useState<RecipientCategory>('MUSTAHIQ_DHUAFA');
@@ -88,16 +90,21 @@ export default function CreateAidModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!recipientName.trim()) {
-      setError('Nama penerima bantuan wajib diisi.');
+      const msg = 'Nama penerima bantuan wajib diisi.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
     const numAmount = parseInt(amountValue.replace(/\D/g, ''), 10);
     if (isNaN(numAmount) || numAmount < 0) {
-      setError('Nilai estimasi / nominal bantuan harus berupa angka valid.');
+      const msg = 'Nilai estimasi / nominal bantuan harus berupa angka valid.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
+    toast.success(`Penyaluran bantuan untuk ${recipientName.trim()} berhasil dicatat.`);
     onSaveAid({
       jamaahId: selectedJamaahId || undefined,
       recipientName: recipientName.trim(),
@@ -116,7 +123,12 @@ export default function CreateAidModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-aid-title"
+      className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -128,12 +140,13 @@ export default function CreateAidModal({
               <HeartHandshake className="w-5 h-5 text-emerald-300" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold truncate">Catat Penyaluran ZISWAF & Bansos</h3>
+              <h3 id="create-aid-title" className="text-sm sm:text-base font-bold truncate">Catat Penyaluran ZISWAF & Bansos</h3>
               <p className="text-xs text-emerald-200 truncate">Seksi Sosial & UPZ DKM Babul Khaer</p>
             </div>
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup modal pencatatan penyaluran ZISWAF"
             className="p-1.5 rounded-lg text-slate-300 hover:text-white transition-colors shrink-0 ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
@@ -142,7 +155,7 @@ export default function CreateAidModal({
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6 space-y-4">
           {error && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+            <div role="alert" aria-live="polite" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{error}</span>
             </div>

@@ -12,9 +12,11 @@ import {
 import { PhysicalProjectItem, ProjectStatus } from '@/types/project';
 import { INITIAL_PHYSICAL_PROJECTS } from '@/lib/mock-projects';
 import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/lib/toast-context';
 
 export default function PhysicalProjectsTracker() {
   const { isReadOnly } = useAuth();
+  const { toast } = useToast();
   const [projects, setProjects] = useState<PhysicalProjectItem[]>(INITIAL_PHYSICAL_PROJECTS);
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>('prj-001');
@@ -112,8 +114,10 @@ export default function PhysicalProjectsTracker() {
           status: editStatus,
         }),
       });
+      toast.success(`Progres proyek ${editingProject.title} berhasil diperbarui (${editPercentage}%).`);
     } catch (err) {
       console.error('Gagal menyimpan update progress proyek:', err);
+      toast.error('Gagal menyimpan pembaruan progres proyek.');
     }
 
     setEditingProject(null);
@@ -396,18 +400,24 @@ export default function PhysicalProjectsTracker() {
 
       {/* Modal Update Progres */}
       {editingProject && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="project-progress-title"
+          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in"
+        >
           <div className="bg-white w-full max-w-md rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-slide-up md:animate-none">
             {/* Mobile Drag Handle */}
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
 
             <div className="px-4 md:px-6 py-4 md:py-5 bg-amber-900 text-white flex items-center justify-between shrink-0">
               <div className="min-w-0">
-                <h3 className="text-sm md:text-base font-bold truncate">Update Progres Proyek Fisik</h3>
+                <h3 id="project-progress-title" className="text-sm md:text-base font-bold truncate">Update Progres Proyek Fisik</h3>
                 <p className="text-xs text-amber-200 truncate">{editingProject.title}</p>
               </div>
               <button
                 onClick={() => setEditingProject(null)}
+                aria-label="Tutup modal update progres proyek"
                 className="text-amber-200 hover:text-white p-2 md:p-1 rounded-lg shrink-0 ml-2 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center cursor-pointer"
               >
                 ✕

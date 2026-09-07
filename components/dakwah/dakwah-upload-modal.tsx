@@ -117,7 +117,12 @@ export default function DakwahUploadModal({
   const totalValid = type === 'FRIDAY' ? parsedFriday.length : parsedRamadhan.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dakwah-upload-title"
+      className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in"
+    >
       <div className="bg-white w-full max-w-2xl rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-slide-up md:animate-none">
         {/* Mobile Drag Handle */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -129,7 +134,7 @@ export default function DakwahUploadModal({
               <FileSpreadsheet className="w-5 h-5 text-teal-200" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm md:text-base font-bold tracking-tight truncate">
+              <h3 id="dakwah-upload-title" className="text-sm md:text-base font-bold tracking-tight truncate">
                 {type === 'FRIDAY'
                   ? `Upload Jadwal Jumat — ${selectedYear}`
                   : `Upload Jadwal Ramadhan — ${hijriYear}`}
@@ -142,6 +147,7 @@ export default function DakwahUploadModal({
           <button
             onClick={onClose}
             type="button"
+            aria-label="Tutup modal upload jadwal dakwah"
             className="p-2 md:p-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-2 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
           >
             <X className="w-5 h-5" />

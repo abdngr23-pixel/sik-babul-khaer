@@ -67,19 +67,24 @@ DKM Babul Khaer Periode 2026-2029
     jamaah.economicStatus === 'LANSIA_DHUAFA';
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="jamaah-detail-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[90dvh] text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
 
         {/* Header Modal */}
         <div className="bg-slate-900 text-white p-4 sm:p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-bold text-base shadow-sm shrink-0">
               {jamaah.fullName.charAt(0)}
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-sm sm:text-base leading-tight truncate">
+              <h3 id="jamaah-detail-title" className="font-bold text-sm sm:text-base leading-tight truncate">
                 {jamaah.fullName}
               </h3>
               <p className="text-[11px] sm:text-xs text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">

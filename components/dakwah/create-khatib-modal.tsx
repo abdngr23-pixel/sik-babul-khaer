@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { KhatibItem } from '@/types/dakwah';
+import { useToast } from '@/lib/toast-context';
 
 interface CreateKhatibModalProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ export default function CreateKhatibModal({
   onClose,
   onSave,
 }: CreateKhatibModalProps) {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     title: '',
@@ -58,28 +60,25 @@ export default function CreateKhatibModal({
     notes: '',
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   if (!isOpen) return null;
 
   const validate = () => {
-    const newErrors: { [key: string]: string } = {};
-    if (!formData.name.trim()) {
-      newErrors.name = 'Nama lengkap dan gelar wajib diisi.';
-    }
-    if (!formData.institution.trim()) {
-      newErrors.institution = 'Asal lembaga / ormas wajib diisi.';
-    }
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Nomor WhatsApp wajib diisi untuk koordinasi penugasan.';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const errs: Record<string, string> = {};
+    if (!formData.name.trim()) errs.name = 'Nama lengkap asatidz wajib diisi.';
+    if (!formData.phone.trim()) errs.phone = 'Nomor WhatsApp / telepon wajib diisi.';
+    return errs;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    const errs = validate();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      toast.error('Mohon lengkapi formulir pendaftaran asatidz.');
+      return;
+    }
 
     onSave({
       name: formData.name.trim(),
@@ -91,6 +90,8 @@ export default function CreateKhatibModal({
       status: formData.status,
       notes: formData.notes.trim() || undefined,
     });
+
+    toast.success(`Data asatidz ${formData.name.trim()} berhasil didaftarkan.`);
 
     // Reset form
     setFormData({
@@ -108,7 +109,12 @@ export default function CreateKhatibModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-khatib-title"
+      className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in"
+    >
       <div className="bg-white w-full max-w-xl rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-slide-up md:animate-none">
         {/* Mobile Drag Handle */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -120,7 +126,7 @@ export default function CreateKhatibModal({
               <UserPlus className="w-5 h-5 text-teal-200" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm md:text-base font-bold tracking-tight truncate">Tambah Khatib & Penceramah Baru</h3>
+              <h3 id="create-khatib-title" className="text-sm md:text-base font-bold tracking-tight truncate">Tambah Khatib & Penceramah Baru</h3>
               <p className="text-xs text-teal-100/80 truncate">
                 Pendaftaran data asatidz untuk penugasan Sholat Jumat dan Kajian.
               </p>
@@ -129,6 +135,7 @@ export default function CreateKhatibModal({
           <button
             onClick={onClose}
             type="button"
+            aria-label="Tutup modal pendaftaran khatib"
             className="p-2 md:p-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-2 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
           >
             <X className="w-5 h-5" />

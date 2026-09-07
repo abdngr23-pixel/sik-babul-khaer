@@ -11,6 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { FinanceTransaction, FinanceCategory, TransactionType, PaymentMethod, FINANCE_CATEGORIES } from '@/types/finance';
+import { useToast } from '@/lib/toast-context';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -58,6 +59,7 @@ function TransactionModalContent({
   const [receiptNumber, setReceiptNumber] = useState(() => initialData?.receiptNumber || '');
   const [notes, setNotes] = useState(() => initialData?.notes || '');
 
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -99,20 +101,30 @@ function TransactionModalContent({
 
       const data = await res.json();
       if (data.success && data.data) {
+        toast.success(isEditing ? 'Perubahan transaksi kas berhasil disimpan!' : 'Transaksi kas baru berhasil dibukukan!');
         onSaved(data.data);
         onClose();
       } else {
-        setErrorMessage(data.error || 'Gagal menyimpan transaksi');
+        const err = data.error || 'Gagal menyimpan transaksi';
+        toast.error(err);
+        setErrorMessage(err);
       }
     } catch {
-      setErrorMessage('Terjadi kendala jaringan saat menghubungi server');
+      const err = 'Terjadi kendala jaringan saat menghubungi server';
+      toast.error(err);
+      setErrorMessage(err);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="transaction-modal-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -124,7 +136,7 @@ function TransactionModalContent({
               <Wallet className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base leading-tight">Catat Mutasi Kas Masjid</h3>
+              <h3 id="transaction-modal-title" className="font-bold text-sm sm:text-base leading-tight">Catat Mutasi Kas Masjid</h3>
               <p className="text-[11px] sm:text-xs text-slate-400 leading-tight">
                 Pencatatan kas operasional, swadaya PHBI, atau ZISWAF
               </p>
@@ -132,6 +144,7 @@ function TransactionModalContent({
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup formulir transaksi"
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
@@ -141,7 +154,7 @@ function TransactionModalContent({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs overscroll-contain">
           {errorMessage && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
+            <div aria-live="polite" className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>

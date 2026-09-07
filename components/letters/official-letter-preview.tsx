@@ -53,7 +53,12 @@ ${letter.signatory1.name}               ${letter.signatory2.name}
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden print:p-0 print:bg-white">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="letter-preview-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden print:p-0 print:bg-white"
+    >
       {/* Container Dialog */}
       <div className="bg-white w-full md:max-w-4xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95 print:max-h-none print:shadow-none print:border-none print:rounded-none">
         {/* Drag Handle Bar (Mobile Only) */}
@@ -64,7 +69,7 @@ ${letter.signatory1.name}               ${letter.signatory2.name}
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
             <FileCheck2 className="w-5 h-5 text-emerald-400 shrink-0" />
             <div className="min-w-0">
-              <h3 className="font-semibold text-xs sm:text-sm truncate">
+              <h3 id="letter-preview-title" className="font-semibold text-xs sm:text-sm truncate">
                 Pratinjau Dokumen Surat Resmi
               </h3>
               <p className="text-[10px] sm:text-xs text-slate-400 font-mono truncate">

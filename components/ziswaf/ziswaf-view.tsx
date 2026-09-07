@@ -802,7 +802,12 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
       {/* MODAL: TAMBAH DISTRIBUSI KALENG SSS BARU                                  */}
       {/* ========================================================================= */}
       {isAddCanOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-can-modal-title"
+          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in"
+        >
           <div className="bg-white w-full max-w-md rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-slide-up md:animate-none">
             {/* Mobile Drag Handle */}
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -813,12 +818,13 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
                   <Coins className="w-5 h-5 text-amber-300" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm md:text-base font-bold truncate">Distribusi Kaleng SSS Baru</h3>
+                  <h3 id="add-can-modal-title" className="text-sm md:text-base font-bold truncate">Distribusi Kaleng SSS Baru</h3>
                   <p className="text-xs text-teal-200 truncate">Program Sedekah Seribu Sehari</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAddCanOpen(false)}
+                aria-label="Tutup modal distribusi kaleng SSS"
                 className="p-2 md:p-1 rounded-lg text-slate-300 hover:text-white shrink-0 ml-2 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center cursor-pointer"
               >
                 ✕

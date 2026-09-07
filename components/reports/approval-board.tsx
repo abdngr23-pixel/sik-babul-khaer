@@ -376,12 +376,17 @@ export default function ApprovalBoard({
 
       {/* Modal Prompt Disposisi Ketua */}
       {activeActionItem && (
-        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden animate-in fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="disposition-modal-title"
+          className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden animate-in fade-in"
+        >
           <div className="bg-white rounded-t-3xl md:rounded-2xl max-w-md w-full p-5 md:p-6 shadow-2xl border border-slate-200 space-y-4 animate-slide-up md:animate-none pb-[max(1rem,env(safe-area-inset-bottom))]">
             {/* Mobile Drag Handle */}
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-1 md:hidden shrink-0" />
             <div>
-              <h3 className="text-sm font-bold text-slate-900">
+              <h3 id="disposition-modal-title" className="text-sm font-bold text-slate-900">
                 {activeActionItem.action === 'DISETUJUI'
                   ? 'Pengesahan Satu Pintu Ketua Umum'
                   : 'Pengembalian untuk Revisi'}
@@ -414,12 +419,14 @@ export default function ApprovalBoard({
                   setActiveActionItem(null);
                   setDispositionNotes('');
                 }}
+                aria-label="Batal disposisi"
                 className="w-full md:w-auto px-4 py-2.5 min-h-[44px] text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer text-center flex items-center justify-center"
               >
                 Batal
               </button>
               <button
                 onClick={handleConfirmDisposition}
+                aria-label={activeActionItem.action === 'DISETUJUI' ? 'Konfirmasi pengesahan disposisi' : 'Kirimkan catatan revisi disposisi'}
                 className={`w-full md:w-auto px-4 py-2.5 min-h-[44px] text-xs font-bold text-white rounded-xl shadow-xs cursor-pointer text-center flex items-center justify-center ${
                   activeActionItem.action === 'DISETUJUI'
                     ? 'bg-emerald-600 hover:bg-emerald-700'
@@ -437,11 +444,16 @@ export default function ApprovalBoard({
 
       {/* Modal Ajukan Pengesahan Baru */}
       {isSubmitModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden animate-in fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="submit-approval-title"
+          className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden animate-in fade-in"
+        >
           <div className="bg-white rounded-t-3xl md:rounded-2xl max-w-lg w-full p-5 md:p-6 shadow-2xl border border-slate-200 space-y-4 h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] overflow-y-auto overscroll-contain animate-slide-up md:animate-none pb-[max(1rem,env(safe-area-inset-bottom))]">
             {/* Mobile Drag Handle */}
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-1 md:hidden shrink-0" />
-            <h3 className="text-base font-bold text-slate-900 border-b pb-2">
+            <h3 id="submit-approval-title" className="text-base font-bold text-slate-900 border-b pb-2">
               Pengajuan Disposisi / Pengesahan Baru
             </h3>
 

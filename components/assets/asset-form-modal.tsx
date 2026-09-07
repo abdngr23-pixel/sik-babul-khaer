@@ -7,6 +7,7 @@ import {
   AssetCondition,
   ASSET_CATEGORIES
 } from '@/types/asset';
+import { useToast } from '@/lib/toast-context';
 import { X, Save, Package, Loader2, Info } from 'lucide-react';
 
 interface AssetFormModalProps {
@@ -43,6 +44,7 @@ function AssetFormModalContent({
   initialData?: AssetItem | null;
   onSaved: (asset: AssetItem) => void;
 }) {
+  const { toast } = useToast();
   const isEditing = Boolean(initialData);
 
   // Form State
@@ -89,11 +91,15 @@ function AssetFormModalContent({
     setErrorMessage('');
 
     if (!name.trim()) {
-      setErrorMessage('Nama barang / aset inventaris wajib diisi');
+      const msg = 'Nama barang / aset inventaris wajib diisi';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
     if (!location.trim()) {
-      setErrorMessage('Lokasi penempatan aset wajib diisi');
+      const msg = 'Lokasi penempatan aset wajib diisi';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
@@ -128,18 +134,25 @@ function AssetFormModalContent({
         throw new Error(data.error || 'Gagal menyimpan data inventaris');
       }
 
+      toast.success(isEditing ? `Perubahan aset ${data.data.name} berhasil disimpan.` : `Aset ${data.data.name} berhasil didaftarkan.`);
       onSaved(data.data);
       onClose();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Terjadi kesalahan sistem';
       setErrorMessage(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="asset-form-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white rounded-t-3xl md:rounded-2xl md:max-w-2xl w-full h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[90dvh] flex flex-col shadow-2xl border-t md:border border-slate-200 overflow-hidden text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -151,7 +164,7 @@ function AssetFormModalContent({
               <Package className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h2 className="font-bold text-slate-900 text-sm sm:text-base leading-tight">
+              <h2 id="asset-form-title" className="font-bold text-slate-900 text-sm sm:text-base leading-tight">
                 {isEditing ? 'Perbarui Data Inventaris Sarpras' : 'Registrasi Aset Sarpras Baru'}
               </h2>
               <p className="text-[11px] sm:text-xs text-slate-500 leading-tight">
@@ -161,6 +174,7 @@ function AssetFormModalContent({
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup modal formulir aset"
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
@@ -170,7 +184,7 @@ function AssetFormModalContent({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 overscroll-contain">
           {errorMessage && (
-            <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-700 rounded-xl">
+            <div role="alert" aria-live="polite" className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-700 rounded-xl">
               {errorMessage}
             </div>
           )}

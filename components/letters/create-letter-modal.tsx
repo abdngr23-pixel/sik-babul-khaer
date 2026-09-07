@@ -10,6 +10,7 @@ import {
   LetterStatus,
 } from '@/types/letter';
 import { DKM_INFO, generateLetterNumber, generateVerificationCode } from '@/lib/letter-numbering';
+import { useToast } from '@/lib/toast-context';
 import {
   Sparkles,
   Save,
@@ -177,6 +178,7 @@ export default function CreateLetterModal({
   onLetterCreated,
   onPreviewLetter,
 }: CreateLetterModalProps) {
+  const { toast } = useToast();
   const [category, setCategory] = useState<LetterCategory>('UND');
   const [department, setDepartment] = useState<LetterDepartment>('SEKR');
   const [letterDate, setLetterDate] = useState(new Date().toISOString().split('T')[0]);
@@ -375,10 +377,12 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
 
   const handleGenerateAi = async () => {
     if (!subject && !aiPrompt) {
+      const msg = 'Silakan isi Perihal atau ketik poin arahan surat terlebih dahulu.';
       setAiMessage({
-        text: 'Silakan isi Perihal atau ketik poin arahan surat terlebih dahulu.',
+        text: msg,
         type: 'error',
       });
+      toast.error(msg);
       return;
     }
 
@@ -404,23 +408,29 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
       const data = await res.json();
       if (data.success && data.content) {
         setContent(data.content);
+        const successMsg = data.isAiGenerated
+          ? 'Draf surat berhasil dibuat dengan Gemini 2.5 Flash!'
+          : 'Draf surat berhasil disusun dengan Template Cerdas DKM.';
         setAiMessage({
-          text: data.isAiGenerated
-            ? 'Draf surat berhasil dibuat dengan Gemini 2.5 Flash!'
-            : 'Draf surat berhasil disusun dengan Template Cerdas DKM.',
+          text: successMsg,
           type: 'success',
         });
+        toast.success(successMsg);
       } else {
+        const errMsg = data.error || 'Gagal menghasilkan draf surat';
         setAiMessage({
-          text: data.error || 'Gagal menghasilkan draf surat',
+          text: errMsg,
           type: 'error',
         });
+        toast.error(errMsg);
       }
     } catch {
+      const errMsg = 'Terjadi kesalahan saat menghubungkan ke asisten AI.';
       setAiMessage({
-        text: 'Terjadi kesalahan saat menghubungkan ke asisten AI.',
+        text: errMsg,
         type: 'error',
       });
+      toast.error(errMsg);
     } finally {
       setIsAiLoading(false);
     }
@@ -431,7 +441,9 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
     setErrorMessage('');
 
     if (!recipientName.trim() || !subject.trim() || !content.trim()) {
-      setErrorMessage('Mohon lengkapi Nama Penerima, Perihal, dan Isi Surat.');
+      const msg = 'Mohon lengkapi Nama Penerima, Perihal, dan Isi Surat.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
@@ -508,20 +520,30 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
       });
       const data = await res.json();
       if (data.success && data.data) {
+        toast.success(`Surat resmi ${data.data.letterNumber || ''} berhasil dibuat & tersimpan!`);
         onLetterCreated(data.data);
         onClose();
       } else {
-        setErrorMessage(data.error || 'Gagal menyimpan surat');
+        const msg = data.error || 'Gagal menyimpan surat';
+        setErrorMessage(msg);
+        toast.error(msg);
       }
     } catch {
-      setErrorMessage('Terjadi kendala koneksi ke server');
+      const msg = 'Terjadi kendala koneksi ke server';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-letter-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-4xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -533,7 +555,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
               <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base leading-tight">Buat Surat Resmi Baru</h3>
+              <h3 id="create-letter-title" className="font-bold text-sm sm:text-base leading-tight">Buat Surat Resmi Baru</h3>
               <p className="text-[11px] sm:text-xs text-slate-400 leading-tight">
                 Penomoran otomatis & integrasi asisten Gemini AI
               </p>
@@ -541,6 +563,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup modal pembuatan surat resmi"
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
@@ -550,7 +573,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh.`;
         {/* Content Body */}
         <form onSubmit={(e) => handleSubmit(e, false)} className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1 text-slate-800 overscroll-contain">
           {errorMessage && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 flex items-center gap-2">
+            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>

@@ -48,14 +48,19 @@ export default function FridayReportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden print:p-0 print:bg-white animate-in fade-in duration-150">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="friday-report-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden print:p-0 print:bg-white animate-in fade-in duration-150"
+    >
       <div className="bg-white w-full md:max-w-4xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[96dvh] text-slate-800 print:max-h-none print:shadow-none print:border-none print:rounded-none animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0 print:hidden" />
 
         {/* Top Control Bar (Hidden on Print) */}
         <div className="px-4 py-3 sm:px-6 sm:py-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 print:hidden shrink-0">
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white p-1 border border-emerald-300 flex items-center justify-center shrink-0 shadow-2xs">
               <Image
                 src="/logo-babul-khaer.png"
@@ -65,11 +70,11 @@ export default function FridayReportModal({
                 className="w-full h-full object-contain"
               />
             </div>
-            <div>
-              <h2 className="text-xs font-bold text-white uppercase tracking-wider leading-tight">
+            <div className="min-w-0">
+              <h2 id="friday-report-title" className="text-xs font-bold text-white uppercase tracking-wider leading-tight truncate">
                 Laporan Kas Keuangan Mingguan Sholat Jumat
               </h2>
-              <p className="text-[10px] sm:text-[11px] text-slate-400 leading-tight">
+              <p className="text-[10px] sm:text-[11px] text-slate-400 leading-tight truncate">
                 Format Standar Cetak Pengumuman Mimbar Jumat & Papan Bicara
               </p>
             </div>

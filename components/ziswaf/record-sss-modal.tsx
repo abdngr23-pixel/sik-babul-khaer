@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { SSSCanItem } from '@/types/ziswaf';
 import { formatRupiah } from '@/components/finance/finance-stats';
+import { useToast } from '@/lib/toast-context';
 import { HeartHandshake, X, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface RecordSSSModalProps {
@@ -18,6 +19,7 @@ export default function RecordSSSModal({
   onClose,
   onSaveCollection,
 }: RecordSSSModalProps) {
+  const { toast } = useToast();
   const [amount, setAmount] = useState<string>('100000');
   const [collector, setCollector] = useState<string>('Marbot Firman');
   const [notes, setNotes] = useState<string>('Penarikan rutin kaleng Sedekah Seribu Sehari');
@@ -29,16 +31,24 @@ export default function RecordSSSModal({
     e.preventDefault();
     const numAmount = parseInt(amount.replace(/\D/g, ''), 10);
     if (isNaN(numAmount) || numAmount <= 0) {
-      setError('Nominal sedekah harus berupa angka positif.');
+      const msg = 'Nominal sedekah harus berupa angka positif.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
+    toast.success(`Penarikan kaleng ${can.canCode} (${formatRupiah(numAmount)}) berhasil dicatat.`);
     onSaveCollection(can.id, numAmount, collector, notes);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="record-sss-title"
+      className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -50,12 +60,13 @@ export default function RecordSSSModal({
               <HeartHandshake className="w-5 h-5 text-teal-300" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold truncate">Catat Penarikan Kaleng SSS</h3>
+              <h3 id="record-sss-title" className="text-sm sm:text-base font-bold truncate">Catat Penarikan Kaleng SSS</h3>
               <p className="text-xs text-teal-200 truncate">{can.canCode} • {can.rt}</p>
             </div>
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup modal penarikan kaleng SSS"
             className="p-1.5 rounded-lg text-slate-300 hover:text-white transition-colors shrink-0 ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
@@ -82,7 +93,7 @@ export default function RecordSSSModal({
           </div>
 
           {error && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+            <div role="alert" aria-live="polite" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{error}</span>
             </div>

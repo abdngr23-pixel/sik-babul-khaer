@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { DonorItem, DONOR_CATEGORIES } from '@/types/donor';
 import { FinanceTransaction, PaymentMethod } from '@/types/finance';
+import { useToast } from '@/lib/toast-context';
 import {
   X,
   CreditCard,
@@ -26,6 +27,7 @@ interface FormContentProps {
 }
 
 function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProps) {
+  const { toast } = useToast();
   const [amount, setAmount] = useState<number>(donor.commitmentAmount || 250000);
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(donor.paymentMethod || 'TRANSFER_BANK');
@@ -41,7 +43,9 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
     setErrorMessage('');
 
     if (!amount || amount <= 0) {
-      setErrorMessage('Nominal setoran donasi harus lebih dari Rp 0.');
+      const msg = 'Nominal setoran donasi harus lebih dari Rp 0.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
@@ -63,13 +67,18 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
 
       const data = await res.json();
       if (data.success && data.data && data.transaction) {
+        toast.success(`Setoran infaq Rp ${amount.toLocaleString('id-ID')} berhasil dicatat ke buku kas!`);
         onPaymentRecorded(data.data, data.transaction);
         onClose();
       } else {
-        setErrorMessage(data.error || 'Gagal mencatat setoran kas');
+        const err = data.error || 'Gagal mencatat setoran kas';
+        setErrorMessage(err);
+        toast.error(err);
       }
     } catch {
-      setErrorMessage('Terjadi kendala jaringan saat menghubungi server.');
+      const err = 'Terjadi kendala jaringan saat menghubungi server.';
+      setErrorMessage(err);
+      toast.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +90,12 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
   };
 
   return (
-    <div className="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="donor-payment-title"
+      className="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95"
+    >
       {/* Drag Handle Bar (Mobile Only) */}
       <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
 
@@ -92,7 +106,7 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
             <CreditCard className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-bold text-sm sm:text-base truncate">
+            <h3 id="donor-payment-title" className="font-bold text-sm sm:text-base truncate">
               Catat Setoran Infaq Rutin ke Buku Kas
             </h3>
             <p className="text-xs text-emerald-200 truncate">
@@ -102,6 +116,7 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
         </div>
         <button
           onClick={onClose}
+          aria-label="Tutup modal pencatatan setoran infaq"
           className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer shrink-0 ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           <X className="w-5 h-5" />
@@ -111,7 +126,7 @@ function DonorPaymentForm({ donor, onClose, onPaymentRecorded }: FormContentProp
       {/* Form Body */}
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4 text-slate-800 text-xs flex-1">
         {errorMessage && (
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
+          <div role="alert" aria-live="polite" className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>

@@ -112,7 +112,12 @@ export default function JamaahExcelModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="jamaah-excel-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-4xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -124,7 +129,7 @@ export default function JamaahExcelModal({
               <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base leading-tight">
+              <h3 id="jamaah-excel-title" className="font-bold text-sm sm:text-base leading-tight">
                 Import & Ekspor Data Massal (Excel)
               </h3>
               <p className="text-[11px] sm:text-xs text-slate-400 leading-tight">
@@ -134,6 +139,7 @@ export default function JamaahExcelModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup modal import data Excel"
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { DonorItem, DonorCategory, DONOR_CATEGORIES, DonorStatus } from '@/types/donor';
 import { PaymentMethod } from '@/types/finance';
+import { useToast } from '@/lib/toast-context';
 import {
   X,
   HeartHandshake,
@@ -24,6 +25,7 @@ export default function DonorModal({
   onSaved,
   initialData,
 }: DonorModalProps) {
+  const { toast } = useToast();
   const isEditing = Boolean(initialData);
 
   const [donorName, setDonorName] = useState(initialData?.donorName || '');
@@ -49,7 +51,9 @@ export default function DonorModal({
     setErrorMessage('');
 
     if (!donorName.trim() || !phone.trim() || !commitmentAmount) {
-      setErrorMessage('Nama donatur, kontak WhatsApp, dan nominal komitmen wajib diisi.');
+      const msg = 'Nama donatur, kontak WhatsApp, dan nominal komitmen wajib diisi.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
@@ -80,20 +84,30 @@ export default function DonorModal({
 
       const data = await res.json();
       if (data.success && data.data) {
+        toast.success(isEditing ? 'Data donatur berhasil diperbarui.' : 'Donatur tetap baru berhasil didaftarkan.');
         onSaved(data.data);
         onClose();
       } else {
-        setErrorMessage(data.error || 'Gagal menyimpan data donatur');
+        const err = data.error || 'Gagal menyimpan data donatur';
+        setErrorMessage(err);
+        toast.error(err);
       }
     } catch {
-      setErrorMessage('Terjadi kendala jaringan saat menghubungi server.');
+      const err = 'Terjadi kendala jaringan saat menghubungi server.';
+      setErrorMessage(err);
+      toast.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="donor-modal-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -105,7 +119,7 @@ export default function DonorModal({
               <HeartHandshake className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-sm sm:text-base truncate">
+              <h3 id="donor-modal-title" className="font-bold text-sm sm:text-base truncate">
                 {isEditing ? 'Perbarui Data Donatur Tetap' : 'Daftarkan Donatur Tetap Baru'}
               </h3>
               <p className="text-xs text-slate-300 truncate">
@@ -115,6 +129,7 @@ export default function DonorModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup modal pendaftaran donatur"
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer shrink-0 ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
@@ -124,7 +139,7 @@ export default function DonorModal({
         {/* Content Body */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4 flex-1 text-slate-800 text-xs">
           {errorMessage && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
+            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -312,6 +327,7 @@ export default function DonorModal({
             <button
               type="submit"
               disabled={isLoading}
+              aria-label={isLoading ? 'Sedang menyimpan donatur...' : (isEditing ? 'Simpan perubahan donatur' : 'Daftarkan donatur tetap baru')}
               className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-700 hover:from-teal-700 hover:to-emerald-800 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 text-center"
             >
               {isLoading ? (

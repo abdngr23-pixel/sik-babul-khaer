@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { LetterCategory, LETTER_CATEGORIES, OfficialLetter, LetterStatus } from '@/types/letter';
 import { DKM_INFO } from '@/lib/letter-numbering';
+import { useToast } from '@/lib/toast-context';
 import {
   Archive,
   X,
@@ -24,6 +25,7 @@ export default function ArchiveLetterModal({
   onClose,
   onLetterArchived,
 }: ArchiveLetterModalProps) {
+  const { toast } = useToast();
   const [customNumber, setCustomNumber] = useState('');
   const [category, setCategory] = useState<LetterCategory>('UND');
   const [letterDate, setLetterDate] = useState(new Date().toISOString().split('T')[0]);
@@ -48,19 +50,27 @@ export default function ArchiveLetterModal({
     setErrorMessage('');
 
     if (!customNumber.trim()) {
-      setErrorMessage('Nomor surat fisik wajib diisi sesuai dokumen asli.');
+      const msg = 'Nomor surat fisik wajib diisi sesuai dokumen asli.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
     if (!subject.trim()) {
-      setErrorMessage('Perihal surat wajib diisi.');
+      const msg = 'Perihal surat wajib diisi.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
     if (!recipientName.trim()) {
-      setErrorMessage('Nama pihak/instansi penerima wajib diisi.');
+      const msg = 'Nama pihak/instansi penerima wajib diisi.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
     if (!content.trim()) {
-      setErrorMessage('Ringkasan isi / naskah surat fisik wajib diisi.');
+      const msg = 'Ringkasan isi / naskah surat fisik wajib diisi.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
@@ -96,20 +106,30 @@ export default function ArchiveLetterModal({
 
       const data = await res.json();
       if (data.success && data.data) {
+        toast.success(`Arsip surat ${customNumber.trim()} berhasil dicatat.`);
         onLetterArchived(data.data);
         onClose();
       } else {
-        setErrorMessage(data.error || 'Gagal menyimpan arsip surat');
+        const msg = data.error || 'Gagal menyimpan arsip surat';
+        setErrorMessage(msg);
+        toast.error(msg);
       }
     } catch {
-      setErrorMessage('Terjadi kendala jaringan saat menghubungkan ke server.');
+      const msg = 'Terjadi kendala jaringan saat menghubungkan ke server.';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="archive-letter-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-3xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -121,7 +141,7 @@ export default function ArchiveLetterModal({
               <FolderArchive className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base flex items-center gap-2 leading-tight">
+              <h3 id="archive-letter-title" className="font-bold text-sm sm:text-base flex items-center gap-2 leading-tight">
                 <span>Catat Arsip Surat Keluar</span>
                 <span className="text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded">
                   Fisik / Lampau
@@ -134,6 +154,7 @@ export default function ArchiveLetterModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup modal arsip surat"
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-700/60 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
@@ -143,7 +164,7 @@ export default function ArchiveLetterModal({
         {/* Content Body */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1 text-slate-800 text-xs overscroll-contain">
           {errorMessage && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
+            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>

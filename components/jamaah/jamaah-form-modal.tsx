@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Jamaah, Gender, ResidencyStatus, EconomicStatus, FamilyRole } from '@/types/jamaah';
+import { useToast } from '@/lib/toast-context';
 import {
   X,
   Save,
@@ -57,6 +58,7 @@ function JamaahFormContent({ initialData, onClose, onSaved }: FormContentProps) 
   const [email, setEmail] = useState(initialData?.email || '');
 
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,13 +105,18 @@ function JamaahFormContent({ initialData, onClose, onSaved }: FormContentProps) 
 
       const data = await res.json();
       if (data.success && data.data) {
+        toast.success(isEditing ? 'Data profil jamaah berhasil diperbarui!' : 'Data jamaah baru berhasil ditambahkan!');
         onSaved(data.data);
         onClose();
       } else {
-        setErrorMessage(data.error || 'Gagal menyimpan data jamaah.');
+        const err = data.error || 'Gagal menyimpan data jamaah.';
+        toast.error(err);
+        setErrorMessage(err);
       }
     } catch {
-      setErrorMessage('Terjadi kendala jaringan saat menghubungi server.');
+      const err = 'Terjadi kendala jaringan saat menghubungi server.';
+      toast.error(err);
+      setErrorMessage(err);
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +127,7 @@ function JamaahFormContent({ initialData, onClose, onSaved }: FormContentProps) 
       {/* Content Form */}
       <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1 text-xs overscroll-contain">
         {errorMessage && (
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
+          <div aria-live="polite" className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -510,7 +517,12 @@ export default function JamaahFormModal({
   const isEditing = Boolean(initialData);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="jamaah-modal-title"
+      className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 overflow-hidden"
+    >
       <div className="bg-white w-full md:max-w-3xl rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] text-slate-800 animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -522,7 +534,7 @@ export default function JamaahFormModal({
               <User className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base leading-tight">
+              <h3 id="jamaah-modal-title" className="font-bold text-sm sm:text-base leading-tight">
                 {isEditing ? 'Ubah Data Profil Jamaah' : 'Pendaftaran Warga Jamaah Baru'}
               </h3>
               <p className="text-[11px] sm:text-xs text-slate-400 leading-tight">
@@ -532,6 +544,7 @@ export default function JamaahFormModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup formulir data jamaah"
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />

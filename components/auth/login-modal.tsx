@@ -157,7 +157,12 @@ export default function LoginModal({ isOpen, onClose, onSuccessToast }: LoginMod
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="login-modal-title"
+      className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-hidden"
+    >
       <div className="bg-white rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 w-full md:max-w-3xl h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[90dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -175,7 +180,7 @@ export default function LoginModal({ isOpen, onClose, onSuccessToast }: LoginMod
               />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5 sm:gap-2 leading-tight truncate">
+              <h3 id="login-modal-title" className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5 sm:gap-2 leading-tight truncate">
                 <span className="truncate">Hak Akses Pengurus</span>
                 <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 sm:px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
                   PIN Aman

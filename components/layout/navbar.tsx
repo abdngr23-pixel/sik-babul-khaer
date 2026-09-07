@@ -42,7 +42,6 @@ export default function Navbar({
   pendingApprovalsCount = 0,
   globalSearchQuery = '',
   onGlobalSearchChange,
-  onToggleMobileMenu: _onToggleMobileMenu,
   activeTab = 'dashboard',
   onGoBack,
   previousTabLabel,

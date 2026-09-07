@@ -117,13 +117,18 @@ export default function AuditLogModal({ isOpen, onClose }: AuditLogModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="audit-log-title"
+      className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-hidden"
+    >
       <div className="bg-white rounded-t-3xl md:rounded-2xl shadow-2xl border-t md:border border-slate-200 w-full md:max-w-4xl h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300 md:zoom-in-95">
         {/* Drag Handle Bar (Mobile Only) */}
         <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
 
         {/* Header */}
-        <div className="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div className="px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-slate-900 via-slate-855 to-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white p-1 shadow-soft-sm border border-purple-200 flex items-center justify-center shrink-0">
               <Image
@@ -135,7 +140,7 @@ export default function AuditLogModal({ isOpen, onClose }: AuditLogModalProps) {
               />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5 sm:gap-2 leading-tight truncate">
+              <h3 id="audit-log-title" className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5 sm:gap-2 leading-tight truncate">
                 <span className="truncate">Log Audit Aktivitas Sistem</span>
                 <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase shrink-0">
                   Pengawas

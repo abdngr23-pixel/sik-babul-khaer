@@ -782,7 +782,12 @@ export default function SuperAdminView({
       {/* MODAL: RESET / GANTI PIN PENGURUS                                         */}
       {/* ========================================================================= */}
       {resetPinTarget && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-pin-modal-title"
+          className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in"
+        >
           <div className="bg-white w-full max-w-md rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-slide-up md:animate-none">
             {/* Mobile Drag Handle */}
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -793,12 +798,13 @@ export default function SuperAdminView({
                   <KeyRound className="w-5 h-5 text-teal-300" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm md:text-base font-bold truncate">Ubah / Reset PIN Pengurus</h3>
+                  <h3 id="reset-pin-modal-title" className="text-sm md:text-base font-bold truncate">Ubah / Reset PIN Pengurus</h3>
                   <p className="text-xs text-slate-300 truncate">Akun: {resetPinTarget.name}</p>
                 </div>
               </div>
               <button
                 onClick={() => setResetPinTarget(null)}
+                aria-label="Tutup modal reset PIN"
                 className="p-2 md:p-1 rounded-lg text-slate-400 hover:text-white shrink-0 ml-2 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -871,7 +877,7 @@ export default function SuperAdminView({
       {/* MODAL: TAMBAH PENGURUS BARU                                               */}
       {/* ========================================================================= */}
       {isAddUserOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
+        <div role="dialog" aria-modal="true" aria-labelledby="add-user-modal-title" className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center bg-slate-900/70 backdrop-blur-xs p-0 md:p-4 overflow-hidden animate-in fade-in">
           <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-2xl shadow-soft-xl border border-slate-200 overflow-hidden flex flex-col h-[88dvh] max-h-[90dvh] md:h-auto md:max-h-[92dvh] animate-slide-up md:animate-none">
             {/* Mobile Drag Handle */}
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5 md:hidden shrink-0" />
@@ -882,7 +888,7 @@ export default function SuperAdminView({
                   <Users className="w-5 h-5 text-teal-300" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm md:text-base font-bold truncate">Pendaftaran Akun Pengurus Baru</h3>
+                  <h3 id="add-user-modal-title" className="text-sm md:text-base font-bold truncate">Pendaftaran Akun Pengurus Baru</h3>
                   <p className="text-xs text-slate-300 truncate">Penambahan pengurus DKM Babul Khaer</p>
                 </div>
               </div>
