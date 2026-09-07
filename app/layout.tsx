@@ -6,6 +6,7 @@ import { ToastProvider } from "@/lib/toast-context";
 import { ConfirmProvider } from "@/lib/confirm-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import PWARegister from "@/components/pwa-register";
+import SplashScreen from "@/components/splash-screen";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -79,6 +80,7 @@ export default function RootLayout({
           <AuthProvider>
             <ToastProvider>
               <ConfirmProvider>
+                <SplashScreen />
                 {children}
                 <PWARegister />
               </ConfirmProvider>
