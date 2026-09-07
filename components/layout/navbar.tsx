@@ -10,7 +10,6 @@ import {
   Shield,
   Search,
   Bell,
-  Menu,
   ArrowLeft,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -43,7 +42,7 @@ export default function Navbar({
   pendingApprovalsCount = 0,
   globalSearchQuery = '',
   onGlobalSearchChange,
-  onToggleMobileMenu,
+  onToggleMobileMenu: _onToggleMobileMenu,
   activeTab = 'dashboard',
   onGoBack,
   previousTabLabel,

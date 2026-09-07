@@ -102,8 +102,11 @@ export function useModalBackHandler(
   const generatedId = useId();
   const id = modalName ? `${modalName}-${generatedId}` : generatedId;
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
   const wasOpenRef = useRef(false);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     ensurePopStateListener();

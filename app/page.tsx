@@ -89,8 +89,20 @@ export default function DashboardPage() {
     isAuthenticated,
     logout,
   } = useAuth();
-  const [requestedTab, setRequestedTab] = useState<AppNavTab>('dashboard');
-  const [tabHistory, setTabHistory] = useState<AppNavTab[]>([]);
+  const [requestedTab, setRequestedTab] = useState<AppNavTab>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '') as AppNavTab;
+      if (hash && hash !== 'dashboard') return hash;
+    }
+    return 'dashboard';
+  });
+  const [tabHistory, setTabHistory] = useState<AppNavTab[]>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '') as AppNavTab;
+      if (hash && hash !== 'dashboard') return ['dashboard'];
+    }
+    return [];
+  });
 
   // Initialize browser history & hash routing on initial mount
   useEffect(() => {
@@ -100,8 +112,6 @@ export default function DashboardPage() {
     if (hash && hash !== 'dashboard' && canAccessTab(hash)) {
       replaceTabHistory('dashboard');
       pushTabHistory(hash);
-      setRequestedTab(hash);
-      setTabHistory(['dashboard']);
     } else {
       replaceTabHistory('dashboard');
     }

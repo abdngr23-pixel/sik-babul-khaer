@@ -11,7 +11,15 @@ interface BeforeInstallPromptEvent extends Event {
 export default function PWARegister() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as unknown as { standalone?: boolean }).standalone === true
+      );
+    }
+    return false;
+  });
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
@@ -100,7 +108,6 @@ export default function PWARegister() {
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 
     if (isStandalone) {
-      setIsInstalled(true);
       return;
     }
 

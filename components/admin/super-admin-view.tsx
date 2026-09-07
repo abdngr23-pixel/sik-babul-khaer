@@ -160,6 +160,7 @@ export default function SuperAdminView({
         setNewPinInput('');
         setConfirmPinInput('');
         setPinModalError('');
+        fetchUsers();
         setTimeout(() => setAlertNotification(null), 4000);
 
         await logAction(

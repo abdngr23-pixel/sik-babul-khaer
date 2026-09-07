@@ -118,6 +118,8 @@ import {
   tursoInsertUser,
   tursoUpdateUserPin,
   tursoUpdateUserStatus,
+  tursoGetUsers,
+  tursoGetUserById,
 } from './turso';
 
 // Dual-Engine Persistent Store:
@@ -2202,11 +2204,39 @@ class DataStore {
 
   // ---------------- USER MANAGEMENT ----------------
   public async getUsers(): Promise<User[]> {
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          const users = await tursoGetUsers(client);
+          this.users = users;
+          return users;
+        } catch (err) {
+          console.error('Failed to get users directly from Turso:', err);
+        }
+      }
+    }
     await this.sync();
     return [...this.users];
   }
 
   public async getUserById(id: string): Promise<User | null> {
+    if (isTursoConfigured()) {
+      const client = getTursoClient();
+      if (client) {
+        try {
+          const user = await tursoGetUserById(client, id);
+          if (user) {
+            const idx = this.users.findIndex((u) => u.id === id);
+            if (idx !== -1) this.users[idx] = user;
+            else this.users.push(user);
+            return user;
+          }
+        } catch (err) {
+          console.error('Failed to get user by id directly from Turso:', err);
+        }
+      }
+    }
     await this.sync();
     const found = this.users.find((u) => u.id === id);
     return found ? { ...found } : null;

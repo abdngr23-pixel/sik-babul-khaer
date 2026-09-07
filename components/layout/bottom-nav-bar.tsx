@@ -54,7 +54,7 @@ export default function BottomNavBar({
   onOpenCreateLetter,
   onOpenCreateJamaah,
   onOpenCreateTransaction,
-  onOpenCreateAsset,
+  onOpenCreateAsset: _onOpenCreateAsset,
   onOpenSwitchRole,
   onOpenAuditLogs,
   onOpenBackupModal,

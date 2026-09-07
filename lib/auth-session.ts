@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { User, UserRole, AuthSessionPayload } from '@/types/auth';
-import { OFFICIAL_USERS } from '@/lib/mock-auth';
+import { store } from '@/lib/store';
 
 export const SESSION_COOKIE_NAME = 'sik_session';
 const SESSION_DURATION_SECONDS = 7 * 24 * 60 * 60; // 7 hari
@@ -139,7 +139,7 @@ export async function getSessionUser(req: Request): Promise<User | null> {
   const payload = verifySessionToken(token);
   if (!payload) return null;
 
-  const found = OFFICIAL_USERS.find((u) => u.id === payload.userId);
+  const found = await store.getUserById(payload.userId);
   return found || null;
 }
 
