@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/lib/toast-context';
 import { User, UserRole } from '@/types/auth';
 
 interface SuperAdminViewProps {
@@ -29,7 +30,9 @@ export default function SuperAdminView({
   onOpenBackupModal,
 }: SuperAdminViewProps) {
   const { currentUser, logAction } = useAuth();
+  const { toast } = useToast();
   const [activeSubTab, setActiveSubTab] = useState<'users' | 'turso' | 'backup' | 'audit'>('users');
+  const [isSyncingRoles, setIsSyncingRoles] = useState(false);
 
   // Users State
   const [userList, setUserList] = useState<User[]>([]);
@@ -298,6 +301,34 @@ export default function SuperAdminView({
     }
   };
 
+  // Handler Sinkronisasi Akun dari Kode (Idempoten: hanya tambah yang belum ada, jangan timpa)
+  const handleSyncRolesFromCode = async () => {
+    setIsSyncingRoles(true);
+    try {
+      const res = await fetch('/api/admin/sync-roles', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(
+          'Sinkronisasi Akun Selesai',
+          `${data.inserted} akun baru ditambahkan, ${data.skipped} akun sudah ada (dilewati tanpa diubah).`
+        );
+        fetchUsers();
+        await logAction(
+          'UPDATE_USER',
+          'Sinkronisasi Akun dari Kode',
+          'AUTENTIKASI',
+          `Super Admin menyinkronkan daftar akun dari kode (${data.inserted} ditambahkan, ${data.skipped} dilewati)`
+        );
+      } else {
+        toast.error('Gagal Sinkronisasi', data.error || 'Gagal menyinkronkan akun dari kode.');
+      }
+    } catch {
+      toast.error('Kesalahan Jaringan', 'Terjadi kesalahan koneksi saat menyinkronkan akun.');
+    } finally {
+      setIsSyncingRoles(false);
+    }
+  };
+
   const filteredUsers = userList.filter((u) => {
     const matchQuery =
       u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -458,13 +489,24 @@ export default function SuperAdminView({
                 Kelola akun resmi seluruh pengurus, ubah/reset PIN, atau tambahkan staf divisi baru.
               </p>
             </div>
-            <button
-              onClick={() => setIsAddUserOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-2 shadow-soft-sm transition-all cursor-pointer shrink-0"
-            >
-              <Plus className="w-4 h-4 text-teal-400" />
-              <span>Tambah Pengurus Baru</span>
-            </button>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <button
+                onClick={handleSyncRolesFromCode}
+                disabled={isSyncingRoles}
+                className="px-3.5 py-2.5 rounded-xl bg-teal-50 border border-teal-300 hover:bg-teal-100 text-teal-950 text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer shrink-0 disabled:opacity-60"
+                title="Sinkronkan akun resmi dari kode (lib/mock-auth.ts) ke database Turso tanpa menimpa data yang sudah ada"
+              >
+                <RefreshCw className={`w-4 h-4 text-teal-700 ${isSyncingRoles ? 'animate-spin' : ''}`} />
+                <span>{isSyncingRoles ? 'Menyinkronkan...' : 'Sinkronkan Akun dari Kode'}</span>
+              </button>
+              <button
+                onClick={() => setIsAddUserOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-2 shadow-soft-sm transition-all cursor-pointer shrink-0"
+              >
+                <Plus className="w-4 h-4 text-teal-400" />
+                <span>Tambah Pengurus Baru</span>
+              </button>
+            </div>
           </div>
 
           {/* Search & Filter Toolbar */}
