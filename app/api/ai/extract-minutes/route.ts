@@ -1,16 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractMeetingMinutesAI } from '@/lib/gemini';
 import { store } from '@/lib/store';
+import { getSessionUser } from '@/lib/auth-session';
+import { aiMinutesSchema, validateRequestBody } from '@/lib/validations';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { rawNotes, saveToStore = false } = body;
-
-    if (!rawNotes || rawNotes.trim().length < 5) {
+    // 1. Otorisasi Sesi Pengurus (API-Level Auth)
+    const user = await getSessionUser(request);
+    if (!user) {
       return NextResponse.json(
-        { success: false, error: 'Silakan masukkan teks notulensi rapat mentah' },
-        { status: 400 }
+        { success: false, error: 'Akses ditolak: Fitur AI Ekstraksi Notulensi hanya dapat diakses oleh pengurus DKM yang sedang login.' },
+        { status: 401 }
+      );
+    }
+
+    // 2. Validasi Input Zod
+    const rawBody = await request.json().catch(() => ({}));
+    const validation = validateRequestBody(aiMinutesSchema, rawBody);
+    if (!validation.success) {
+      return validation.response;
+    }
+
+    const { rawNotes, saveToStore } = validation.data;
+
+    if (saveToStore && user.isReadOnly) {
+      return NextResponse.json(
+        { success: false, error: 'Akses ditolak: Akun Pengawas (Read-Only) tidak diizinkan menyimpan hasil notulensi ke database.' },
+        { status: 403 }
       );
     }
 

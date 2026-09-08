@@ -44,7 +44,24 @@ Dokumen ini mendefinisikan standar keamanan data dan privasi untuk aplikasi SIK-
 
 ---
 
-## 4. Pelaporan Celah Keamanan (Vulnerability Disclosure)
+## 4. Implementasi 8 Poin Ceklis Keamanan Vibe Coding
+
+SIK-MBH menerapkan 8 pilar standar keamanan web modern:
+
+| No | Pilar Keamanan | Mekanisme Implementasi di SIK-MBH | Lokasi Kode |
+|---|---|---|---|
+| **1** | **Rate Limiting** | Batas laju per-IP (General 120 req/menit, AI 15 req/menit, Auth 20 req/menit) ditambah penguncian 5x gagal PIN selama 15 menit. | `lib/rate-limit.ts`, `proxy.ts`, `app/api/auth/route.ts` |
+| **2** | **Authentication Middleware** | Gateway `proxy.ts` memverifikasi sesi cookie `sik_session` bertanda tangan Web Crypto HMAC-SHA256 untuk seluruh endpoint terlindungi. | `proxy.ts`, `lib/edge-auth.ts` |
+| **3** | **CSRF Protection** | Validasi header `Sec-Fetch-Site` (menolak `cross-site`) dan verifikasi `Origin`/`Referer` pada setiap metode mutasi (`POST`, `PUT`, `DELETE`, `PATCH`). | `proxy.ts` |
+| **4** | **Input Validation** | Skema validasi terpusat berbasis library `zod` untuk sanitasi tipe, format, dan batasan panjang seluruh input payload. | `lib/validations/index.ts` |
+| **5** | **API-Level Auth + Role Checks** | Pemeriksaan hak akses peran ganda: otentikasi di level proxy dilanjutkan otorisasi peran spesifik via `authorizeMutation` dan `getSessionUser`. Dewan Pengawas (Read-Only) diblokir dari seluruh mutasi. | `lib/auth-session.ts`, seluruh handler `app/api/*` |
+| **6** | **CORS Restrictions** | Pembatasan asal domain eksplisit; hanya mengizinkan host resmi dan localhost untuk request lintas domain (preflight `OPTIONS` ditangani secara aman). | `proxy.ts` |
+| **7** | **Secure Headers (Helmet)** | Konfigurasi HTTP Security Headers lengkap: CSP, `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS. | `next.config.ts` |
+| **8** | **Body & Query Size Limits** | Pembatasan query URL maksimal 2048 karakter (HTTP 414) dan Content-Length maksimal 1MB untuk JSON umum serta 10MB untuk upload file (HTTP 413). | `proxy.ts`, `app/api/upload/route.ts` |
+
+---
+
+## 5. Pelaporan Celah Keamanan (Vulnerability Disclosure)
 
 Jika Anda menemukan celah keamanan atau potensi kebocoran data pada sistem SIK-MBH:
 1. Hubungi Tim Administrator / Ketua Umum DKM Masjid Babul Khaer secara langsung.

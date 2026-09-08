@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
 import { FinanceCategory, TransactionType, PaymentMethod } from '@/types/finance';
 import { authorizeMutation } from '@/lib/auth-session';
+import { financeTransactionSchema, validateRequestBody } from '@/lib/validations';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,26 +38,25 @@ export async function POST(request: NextRequest) {
       return authResult;
     }
 
-    const body = await request.json();
-
-    if (!body.description || !body.amount || !body.category || !body.type) {
-      return NextResponse.json(
-        { success: false, error: 'Uraian, nominal, kategori pos dana, dan tipe kas wajib diisi' },
-        { status: 400 }
-      );
+    const rawBody = await request.json().catch(() => ({}));
+    const validation = validateRequestBody(financeTransactionSchema, rawBody);
+    if (!validation.success) {
+      return validation.response;
     }
 
+    const validData = validation.data;
+
     const newTrx = await store.addTransaction({
-      date: body.date || new Date().toISOString().split('T')[0],
-      type: body.type as TransactionType,
-      category: body.category as FinanceCategory,
-      description: body.description.trim(),
-      amount: Number(body.amount),
-      receiptNumber: body.receiptNumber ? body.receiptNumber.trim() : `BK-${Date.now().toString().slice(-6)}`,
-      payerOrPayee: body.payerOrPayee ? body.payerOrPayee.trim() : '-',
-      paymentMethod: (body.paymentMethod as PaymentMethod) || 'TUNAI',
-      notes: body.notes ? body.notes.trim() : '',
-      programKerjaId: body.programKerjaId ? body.programKerjaId.trim() : undefined,
+      date: validData.date || new Date().toISOString().split('T')[0],
+      type: validData.type as TransactionType,
+      category: validData.category as FinanceCategory,
+      description: validData.description.trim(),
+      amount: validData.amount,
+      receiptNumber: validData.receiptNumber || `BK-${Date.now().toString().slice(-6)}`,
+      payerOrPayee: validData.payerOrPayee || '-',
+      paymentMethod: (validData.paymentMethod as PaymentMethod) || 'TUNAI',
+      notes: validData.notes || '',
+      programKerjaId: validData.programKerjaId || undefined,
     });
 
     const summary = await store.getFinanceSummary();

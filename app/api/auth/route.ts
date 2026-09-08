@@ -5,6 +5,7 @@ import { store } from '@/lib/store';
 import { UserRole, SafeUser } from '@/types/auth';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/lib/rate-limit';
 import { createSessionToken, setSessionCookie } from '@/lib/auth-session';
+import { authLoginSchema, validateRequestBody } from '@/lib/validations';
 
 /**
  * GET /api/auth
@@ -50,28 +51,21 @@ export async function GET() {
  */
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const { userId, role, pin, action } = body as {
-      userId?: string;
-      role?: UserRole;
-      pin?: string;
-      action?: 'LOGIN' | 'SWITCH_ROLE';
-    };
+    const rawBody = await req.json().catch(() => ({}));
+    
+    // Validasi Zod schema: userId & pin 6 digit angka
+    const validation = validateRequestBody(authLoginSchema, {
+      userId: rawBody.userId || rawBody.role,
+      pin: rawBody.pin,
+    });
 
-    // 1. Validasi keberadaan input
-    if (!pin || typeof pin !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'PIN 6 digit wajib diisi untuk otentikasi.' },
-        { status: 400 }
-      );
+    if (!validation.success) {
+      return validation.response;
     }
 
-    if (!userId && !role) {
-      return NextResponse.json(
-        { success: false, error: 'Identitas akun pengurus (userId atau role) wajib disertakan.' },
-        { status: 400 }
-      );
-    }
+    const { userId, pin } = validation.data;
+    const role = rawBody.role as UserRole | undefined;
+    const action = rawBody.action as 'LOGIN' | 'SWITCH_ROLE' | undefined;
 
     // Cari target akun dari daftar aktif persistent di database
     const activeList = await store.getUsers();

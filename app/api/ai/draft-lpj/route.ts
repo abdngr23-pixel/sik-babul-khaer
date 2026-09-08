@@ -1,28 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateLPJExecutiveSummary } from '@/lib/gemini';
+import { getSessionUser } from '@/lib/auth-session';
+import { aiLpjSchema, validateRequestBody } from '@/lib/validations';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // 1. Otorisasi Sesi Pengurus (API-Level Auth)
+    const user = await getSessionUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Akses ditolak: Fitur Narasi LPJ AI hanya dapat diakses oleh pengurus DKM yang sedang login.' },
+        { status: 401 }
+      );
+    }
+
+    // 2. Validasi Input Zod
+    const rawBody = await request.json().catch(() => ({}));
+    const validation = validateRequestBody(aiLpjSchema, rawBody);
+    if (!validation.success) {
+      return validation.response;
+    }
+
     const {
-      period = 'Tahun Anggaran 2026',
-      divisionScope = 'ALL',
-      authorRole = 'Sekretaris Umum',
-      authorName = '',
-      totalLetters = 15,
-      totalJamaah = 350,
-      totalIncome = 125000000,
-      totalExpense = 98000000,
-      netBalance = 45000000,
-      phbiBalance = 15000000,
-      totalAssetsCount = 8,
-      maintenanceCompliancePercent = 88,
-      userPrompt = '',
-    } = body;
+      period,
+      divisionScope,
+      authorRole,
+      authorName,
+      totalLetters,
+      totalJamaah,
+      totalIncome,
+      totalExpense,
+      netBalance,
+      phbiBalance,
+      totalAssetsCount,
+      maintenanceCompliancePercent,
+      userPrompt,
+    } = validation.data;
 
     const result = await generateLPJExecutiveSummary({
       period,
-      divisionScope,
+      divisionScope: divisionScope as any,
       authorRole,
       authorName,
       totalLetters,

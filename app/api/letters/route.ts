@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
 import { LetterStatus } from '@/types/letter';
 import { authorizeMutation } from '@/lib/auth-session';
+import { letterSchema, validateRequestBody } from '@/lib/validations';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,41 +36,40 @@ export async function POST(request: NextRequest) {
       return authResult;
     }
 
-    const body = await request.json();
-
-    if (!body.category || !body.recipientName || !body.subject || !body.content) {
-      return NextResponse.json(
-        { success: false, error: 'Data surat tidak lengkap' },
-        { status: 400 }
-      );
+    const rawBody = await request.json().catch(() => ({}));
+    const validation = validateRequestBody(letterSchema, rawBody);
+    if (!validation.success) {
+      return validation.response;
     }
 
+    const validData = validation.data;
+
     const newLetter = await store.addLetter({
-      category: body.category,
-      department: body.department,
-      recipientName: body.recipientName,
-      recipientTitle: body.recipientTitle || '',
-      recipientAddress: body.recipientAddress || '',
-      subject: body.subject,
-      letterDate: body.letterDate || new Date().toISOString().split('T')[0],
-      attachmentCount: body.attachmentCount || '-',
-      eventDate: body.eventDate,
-      eventTime: body.eventTime,
-      eventLocation: body.eventLocation,
-      content: body.content,
-      status: (body.status as LetterStatus) || 'DRAFT',
-      signatory1: body.signatory1 || {
+      category: validData.category as any,
+      department: validData.department as any,
+      recipientName: validData.recipientName,
+      recipientTitle: validData.recipientTitle || '',
+      recipientAddress: validData.recipientAddress || '',
+      subject: validData.subject,
+      letterDate: validData.letterDate || new Date().toISOString().split('T')[0],
+      attachmentCount: validData.attachmentCount || '-',
+      eventDate: validData.eventDate,
+      eventTime: validData.eventTime,
+      eventLocation: validData.eventLocation,
+      content: validData.content,
+      status: (validData.status as LetterStatus) || 'DRAFT',
+      signatory1: rawBody.signatory1 || {
         name: 'Drs. H. Muhammad Arifin, M.Pd.I',
         role: 'Ketua Umum DKM',
       },
-      signatory2: body.signatory2 || {
+      signatory2: rawBody.signatory2 || {
         name: 'Ahmad Fauzi, S.Kom',
         role: 'Sekretaris Umum',
       },
-      customNumber: body.customNumber,
-      verificationCode: body.verificationCode,
-      physicalArchiveLocation: body.physicalArchiveLocation || body.physicalLocation,
-      letterDetails: body.letterDetails,
+      customNumber: rawBody.customNumber,
+      verificationCode: rawBody.verificationCode,
+      physicalArchiveLocation: rawBody.physicalArchiveLocation || rawBody.physicalLocation,
+      letterDetails: rawBody.letterDetails,
     });
 
     return NextResponse.json({

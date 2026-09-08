@@ -110,3 +110,101 @@ export function recordFailedAttempt(key: string): {
 export function resetRateLimit(key: string): void {
   attemptsMap.delete(key);
 }
+
+// -----------------------------------------------------------------------------
+// Global IP-Based Rate Limiting (Pencegahan Spam & DDoS Per-IP)
+// -----------------------------------------------------------------------------
+
+export type RateLimitTier = 'GENERAL' | 'AI' | 'AUTH';
+
+interface TierConfig {
+  limit: number;
+  windowMs: number;
+}
+
+const TIER_CONFIGS: Record<RateLimitTier, TierConfig> = {
+  GENERAL: { limit: 120, windowMs: 60 * 1000 }, // 120 req / menit
+  AI: { limit: 15, windowMs: 60 * 1000 },       // 15 req / menit (melindungi kuota Gemini)
+  AUTH: { limit: 20, windowMs: 60 * 1000 },     // 20 req / menit
+};
+
+interface IpBucketRecord {
+  count: number;
+  resetAt: number;
+}
+
+const ipGlobalKey = Symbol.for('sik_ip_rate_limit_cache');
+const ipBucketsMap: Map<string, IpBucketRecord> =
+  (globalThis as unknown as Record<symbol, Map<string, IpBucketRecord>>)[ipGlobalKey] ||
+  new Map<string, IpBucketRecord>();
+
+(globalThis as unknown as Record<symbol, Map<string, IpBucketRecord>>)[ipGlobalKey] = ipBucketsMap;
+
+/**
+ * Mengekstrak IP klien dari header request proxy/Vercel/Cloudflare.
+ */
+export function getClientIp(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
+  const cfIp = req.headers.get('cf-connecting-ip');
+  if (cfIp) return cfIp.trim();
+  return '127.0.0.1';
+}
+
+/**
+ * Memeriksa kuota rate limit berbasis IP untuk tier tertentu.
+ */
+export function checkIpRateLimit(
+  ip: string,
+  tier: RateLimitTier = 'GENERAL'
+): {
+  allowed: boolean;
+  limit: number;
+  remaining: number;
+  resetInSeconds: number;
+} {
+  const config = TIER_CONFIGS[tier];
+  const now = Date.now();
+  const bucketKey = `${tier}::${ip}`;
+  let bucket = ipBucketsMap.get(bucketKey);
+
+  if (!bucket || bucket.resetAt <= now) {
+    bucket = {
+      count: 1,
+      resetAt: now + config.windowMs,
+    };
+    ipBucketsMap.set(bucketKey, bucket);
+    return {
+      allowed: true,
+      limit: config.limit,
+      remaining: config.limit - 1,
+      resetInSeconds: Math.ceil(config.windowMs / 1000),
+    };
+  }
+
+  bucket.count += 1;
+  ipBucketsMap.set(bucketKey, bucket);
+
+  const resetInSeconds = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+  const remaining = Math.max(0, config.limit - bucket.count);
+
+  if (bucket.count > config.limit) {
+    return {
+      allowed: false,
+      limit: config.limit,
+      remaining: 0,
+      resetInSeconds,
+    };
+  }
+
+  return {
+    allowed: true,
+    limit: config.limit,
+    remaining,
+    resetInSeconds,
+  };
+}
