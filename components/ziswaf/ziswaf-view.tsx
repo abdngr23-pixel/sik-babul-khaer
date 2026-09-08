@@ -810,7 +810,7 @@ export default function ZiswafView({ jamaahList = [] }: ZiswafViewProps) {
                       </span>
                     </div>
 
-                    {!isReadOnly && (
+                    {canMutate && (
                       <button
                         onClick={() => {
                           setIsCreateAidOpen(true);

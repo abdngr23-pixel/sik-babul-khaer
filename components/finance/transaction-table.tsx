@@ -16,6 +16,7 @@ import {
 import * as XLSX from 'xlsx';
 import FridayReportModal from './friday-report-modal';
 import Pagination from '@/components/ui/pagination';
+import { useAuth } from '@/lib/auth-context';
 
 interface TransactionTableProps {
   transactions: FinanceTransaction[];
@@ -42,6 +43,9 @@ export default function TransactionTable({
   isReadOnly = false,
   externalSearchTerm = '',
 }: TransactionTableProps) {
+  const { canMutateTab, isReadOnly: authReadOnly } = useAuth();
+  const canMutate = !isReadOnly && !authReadOnly && canMutateTab('finance');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [internalSelectedType, setInternalSelectedType] = useState('ALL');
   const [isFridayReportOpen, setIsFridayReportOpen] = useState(false);
@@ -217,7 +221,7 @@ export default function TransactionTable({
           </button>
 
           {/* Add Transaction Button */}
-          {!isReadOnly && (
+          {canMutate && (
             <button
               onClick={onOpenCreate}
               className="flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all cursor-pointer"
@@ -241,7 +245,7 @@ export default function TransactionTable({
                 <th className="py-3 px-4">Pihak / Sumber</th>
                 <th className="py-3 px-4 text-right">Nominal Kas</th>
                 <th className="py-3 px-4 text-right">Saldo Berjalan</th>
-                {!isReadOnly && (onEdit || onDelete) && (
+                {canMutate && (onEdit || onDelete) && (
                   <th className="py-3 px-4 text-center">Aksi</th>
                 )}
               </tr>
@@ -249,7 +253,7 @@ export default function TransactionTable({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={!isReadOnly && (onEdit || onDelete) ? 7 : 6} className="py-12 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={canMutate && (onEdit || onDelete) ? 7 : 6} className="py-12 text-center text-slate-400 dark:text-slate-500">
                     Belum ada transaksi kas yang sesuai dengan kriteria filter.
                   </td>
                 </tr>
@@ -310,7 +314,7 @@ export default function TransactionTable({
                       </td>
 
                       {/* Aksi */}
-                      {!isReadOnly && (onEdit || onDelete) && (
+                      {canMutate && (onEdit || onDelete) && (
                         <td className="py-3 px-4 text-center whitespace-nowrap">
                           <div className="flex items-center justify-center gap-1">
                             {onEdit && (

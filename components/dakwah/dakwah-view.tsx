@@ -58,8 +58,8 @@ import {
 } from '@/lib/dakwah-excel-helper';
 
 export default function DakwahView() {
-  const { isReadOnly, permissions } = useAuth();
-  const canMutate = !isReadOnly && Boolean(permissions.canMutateDakwah);
+  const { isReadOnly, canMutateTab } = useAuth();
+  const canMutate = !isReadOnly && canMutateTab('dakwah');
   const [activeSubTab, setActiveSubTab] = useState<'asatidz' | 'khatib' | 'rawatib' | 'kajian' | 'ramadhan'>('khatib');
 
   // Periode Tahun Terpilih (Default 2026)
@@ -378,7 +378,7 @@ export default function DakwahView() {
 
   // Handler update status konfirmasi Jumat
   const handleToggleStatus = async (id: string, newStatus: FridayConfirmationStatus) => {
-    if (isReadOnly) return;
+    if (!canMutate) return;
     setFridaySchedules((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
     );
@@ -1075,7 +1075,7 @@ export default function DakwahView() {
                   <Download className="w-3.5 h-3.5" />
                   <span>Unduh Template Excel {selectedYear}</span>
                 </button>
-                {!isReadOnly && (
+                {canMutate && (
                   <button
                     type="button"
                     onClick={() => setUploadModalState({ isOpen: true, type: 'FRIDAY' })}
@@ -1611,7 +1611,7 @@ export default function DakwahView() {
                   <Download className="w-3.5 h-3.5" />
                   <span>Unduh Template 30 Malam</span>
                 </button>
-                {!isReadOnly && (
+                {canMutate && (
                   <button
                     type="button"
                     onClick={() => setUploadModalState({ isOpen: true, type: 'RAMADHAN' })}

@@ -21,7 +21,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/lib/toast-context';
 
 export function AdhocCommitteeView() {
-  const { currentUser, isReadOnly } = useAuth();
+  const { isReadOnly, canMutateTab } = useAuth();
   const { toast } = useToast();
   const [committees, setCommittees] = useState<AdhocCommittee[]>(INITIAL_ADHOC_COMMITTEES);
   const [expandedId, setExpandedId] = useState<string | null>('adhoc-001');
@@ -45,7 +45,7 @@ export function AdhocCommitteeView() {
     { name: 'Seksi Perlengkapan & Logistik', coordinator: '', members: [''] }
   ]);
 
-  const canManage = (currentUser.role === 'KETUA_UMUM' || currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'SEKRETARIS') && !isReadOnly;
+  const canManage = !isReadOnly && canMutateTab('adhoc');
 
 
   const handleAddSection = () => {

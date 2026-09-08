@@ -16,8 +16,8 @@ import { useToast } from '@/lib/toast-context';
 import ImageUploader from '@/components/shared/image-uploader';
 
 export default function PhysicalProjectsTracker() {
-  const { isReadOnly, permissions } = useAuth();
-  const canMutate = !isReadOnly && Boolean(permissions.canMutateProjects);
+  const { isReadOnly, canMutateTab } = useAuth();
+  const canMutate = !isReadOnly && canMutateTab('assets');
   const { toast } = useToast();
   const [projects, setProjects] = useState<PhysicalProjectItem[]>(INITIAL_PHYSICAL_PROJECTS);
   const [filterStatus, setFilterStatus] = useState<string>('ALL');

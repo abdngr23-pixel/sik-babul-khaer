@@ -39,9 +39,9 @@ export default function SarprasView({
   isReadOnly = false,
   externalSearchTerm = '',
 }: SarprasViewProps) {
-  const { permissions } = useAuth();
+  const { canMutateTab } = useAuth();
   const [activeSubTab, setActiveSubTab] = useState<'projects' | 'inventory' | 'maintenance'>('projects');
-  const isInventoryReadOnly = isReadOnly || !permissions.canMutateAssets;
+  const isInventoryReadOnly = isReadOnly || !canMutateTab('assets');
 
   return (
     <div className="space-y-6">

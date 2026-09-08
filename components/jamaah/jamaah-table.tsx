@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { downloadJamaahTemplate } from '@/lib/excel-helper';
 import Pagination from '@/components/ui/pagination';
+import { useAuth } from '@/lib/auth-context';
 
 interface JamaahTableProps {
   jamaahList: Jamaah[];
@@ -46,6 +47,9 @@ export default function JamaahTable({
   isReadOnly = false,
   externalSearchTerm = '',
 }: JamaahTableProps) {
+  const { canMutateTab, isReadOnly: authReadOnly } = useAuth();
+  const canMutate = !isReadOnly && !authReadOnly && canMutateTab('jamaah');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedResidency, setSelectedResidency] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
@@ -247,7 +251,7 @@ export default function JamaahTable({
               <span>Download Template</span>
             </button>
 
-            {!isReadOnly && (
+            {canMutate && (
               <>
                 <button
                   type="button"
@@ -408,7 +412,7 @@ export default function JamaahTable({
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        {!isReadOnly && (
+                        {canMutate && (
                           <button
                             onClick={() => onEdit(j)}
                             className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors cursor-pointer"

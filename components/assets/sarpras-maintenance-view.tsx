@@ -81,12 +81,13 @@ const INITIAL_MAINTENANCE_TASKS: MaintenanceTask[] = [
 ];
 
 export default function SarprasMaintenanceView() {
-  const { isReadOnly, logAction } = useAuth();
+  const { isReadOnly, canMutateTab, logAction } = useAuth();
+  const canMutate = !isReadOnly && canMutateTab('assets');
   const [tasks, setTasks] = useState<MaintenanceTask[]>(INITIAL_MAINTENANCE_TASKS);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   const handleMarkServiced = async (taskId: string) => {
-    if (isReadOnly) return;
+    if (!canMutate) return;
     const now = new Date().toISOString().split('T')[0];
 
     setTasks((prev) =>
@@ -169,7 +170,7 @@ export default function SarprasMaintenanceView() {
                 <th className="px-4 py-3">Jadwal Berikutnya</th>
                 <th className="px-4 py-3">Petugas Pelaksana</th>
                 <th className="px-4 py-3 text-center">Status</th>
-                {!isReadOnly && <th className="px-4 py-3 text-right">Aksi</th>}
+                {canMutate && <th className="px-4 py-3 text-right">Aksi</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -205,7 +206,7 @@ export default function SarprasMaintenanceView() {
                       {task.status}
                     </span>
                   </td>
-                  {!isReadOnly && (
+                  {canMutate && (
                     <td className="px-4 py-3.5 text-right">
                       <button
                         onClick={() => handleMarkServiced(task.id)}

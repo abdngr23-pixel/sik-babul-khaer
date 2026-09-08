@@ -85,32 +85,32 @@ export function ModuleHeaderBanner({
       return {
         title: 'Buku Kas Satu Pintu',
         subtitle: 'Kas Operasional & PHBI',
-        actionLabel: 'Kas',
-        onAction: onOpenCreateTransaction,
+        actionLabel: canMutateTab('finance') ? 'Kas' : null,
+        onAction: canMutateTab('finance') ? onOpenCreateTransaction : undefined,
       };
     }
     if (isDonorsTab) {
       return {
         title: 'Donatur Rutin',
         subtitle: 'Infaq Rutin Warga',
-        actionLabel: 'Donatur',
-        onAction: onOpenCreateDonor,
+        actionLabel: canMutateTab('donors') ? 'Donatur' : null,
+        onAction: canMutateTab('donors') ? onOpenCreateDonor : undefined,
       };
     }
     if (isJamaahTab) {
       return {
         title: activeTab === 'mustahiq' ? 'Mustahiq ZISWAF' : 'Basis Data Warga',
         subtitle: 'Sensus Jamaah RT 01–05',
-        actionLabel: 'Warga',
-        onAction: onOpenCreateJamaah,
+        actionLabel: canMutateTab(activeTab) ? 'Warga' : null,
+        onAction: canMutateTab(activeTab) ? onOpenCreateJamaah : undefined,
       };
     }
     if (isAssetTab) {
       return {
         title: 'Sarana & Prasarana',
         subtitle: 'Inventaris & Servis',
-        actionLabel: 'Aset',
-        onAction: onOpenCreateAsset,
+        actionLabel: canMutateTab('assets') ? 'Aset' : null,
+        onAction: canMutateTab('assets') ? onOpenCreateAsset : undefined,
       };
     }
     if (isDakwahTab) {
@@ -340,13 +340,15 @@ export function ModuleHeaderBanner({
             </>
           ) : isFinanceTab ? (
             <>
-              <button
-                onClick={onOpenCreateTransaction}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Catat Mutasi Kas Baru</span>
-              </button>
+              {canMutateTab('finance') && (
+                <button
+                  onClick={onOpenCreateTransaction}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Catat Mutasi Kas Baru</span>
+                </button>
+              )}
               <button
                 onClick={onOpenFridayReport}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition-all cursor-pointer"
@@ -356,23 +358,27 @@ export function ModuleHeaderBanner({
             </>
           ) : isDonorsTab ? (
             <>
-              <button
-                onClick={onOpenCreateDonor}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Daftarkan Donatur Tetap</span>
-              </button>
+              {canMutateTab('donors') && (
+                <button
+                  onClick={onOpenCreateDonor}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Daftarkan Donatur Tetap</span>
+                </button>
+              )}
             </>
           ) : isAssetTab ? (
             <>
-              <button
-                onClick={onOpenCreateAsset}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Daftarkan Aset Baru</span>
-              </button>
+              {canMutateTab('assets') && (
+                <button
+                  onClick={onOpenCreateAsset}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Daftarkan Aset Baru</span>
+                </button>
+              )}
               <button
                 onClick={onFilterAssetOnlyDue}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition-all cursor-pointer"
@@ -383,13 +389,15 @@ export function ModuleHeaderBanner({
             </>
           ) : isJamaahTab ? (
             <>
-              <button
-                onClick={onOpenCreateJamaah}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-teal-900 hover:bg-teal-50 font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Registrasi Warga Baru</span>
-              </button>
+              {canMutateTab(activeTab) && (
+                <button
+                  onClick={onOpenCreateJamaah}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-teal-900 hover:bg-teal-50 font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Registrasi Warga Baru</span>
+                </button>
+              )}
               <button
                 onClick={onOpenMustahiq}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-800/80 hover:bg-teal-700/80 text-white border border-teal-600/50 font-semibold text-xs transition-all cursor-pointer"
@@ -400,27 +408,33 @@ export function ModuleHeaderBanner({
             </>
           ) : (
             <>
-              <button
-                onClick={onOpenCreateLetter}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4 text-emerald-700" />
-                <span>Buat Surat Resmi Baru</span>
-              </button>
-              <button
-                onClick={onOpenArchiveLetterModal}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-              >
-                <Archive className="w-4 h-4" />
-                <span>Catat Arsip Keluar</span>
-              </button>
-              <button
-                onClick={onOpenMinutes}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-800/80 hover:bg-emerald-700/80 text-white border border-emerald-600/50 font-semibold text-xs transition-all cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>Ekstraksi Notulensi AI</span>
-              </button>
+              {canMutateTab('archive') && (
+                <button
+                  onClick={onOpenCreateLetter}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-emerald-700" />
+                  <span>Buat Surat Resmi Baru</span>
+                </button>
+              )}
+              {canMutateTab('archive') && (
+                <button
+                  onClick={onOpenArchiveLetterModal}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Archive className="w-4 h-4" />
+                  <span>Catat Arsip Keluar</span>
+                </button>
+              )}
+              {canMutateTab('minutes') && (
+                <button
+                  onClick={onOpenMinutes}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-800/80 hover:bg-emerald-700/80 text-white border border-emerald-600/50 font-semibold text-xs transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>Ekstraksi Notulensi AI</span>
+                </button>
+              )}
             </>
           )}
         </div>

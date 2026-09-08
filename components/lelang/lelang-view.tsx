@@ -23,7 +23,8 @@ import ImageUploader from '@/components/shared/image-uploader';
 import { openWhatsApp, WhatsAppTemplates } from '@/lib/whatsapp-service';
 
 export default function LelangView() {
-  const { isReadOnly } = useAuth();
+  const { isReadOnly, canMutateTab } = useAuth();
+  const canMutate = !isReadOnly && canMutateTab('lelang');
   const { toast } = useToast();
 
   const [items, setItems] = useState<LelangItem[]>(INITIAL_LELANG_ITEMS);
@@ -230,7 +231,7 @@ export default function LelangView() {
 
   // Cancel Lelang Handler
   const handleCancelLelang = async (item: LelangItem) => {
-    if (isReadOnly) return;
+    if (!canMutate) return;
     const confirmCancel = window.confirm(
       `Apakah Anda yakin ingin membatalkan lelang "${item.itemName}"? Status akan menjadi DIBATALKAN.`
     );
@@ -274,7 +275,7 @@ export default function LelangView() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          {!isReadOnly && (
+          {canMutate && (
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
@@ -472,7 +473,7 @@ export default function LelangView() {
                     </button>
 
                     {/* Tombol Catat Tawaran Baru (Internal Panitia) */}
-                    {!isReadOnly && isOngoing && (
+                    {canMutate && isOngoing && (
                       <button
                         type="button"
                         onClick={() => {
@@ -491,7 +492,7 @@ export default function LelangView() {
                   </div>
 
                   {/* Selesaikan / Batalkan (Hanya untuk Koordinator/Pengurus) */}
-                  {!isReadOnly && isOngoing && (
+                  {canMutate && isOngoing && (
                     <div className="flex items-center justify-between gap-2 pt-1">
                       <button
                         type="button"

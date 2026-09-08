@@ -22,7 +22,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/lib/toast-context';
 
 export function MuzakkiView() {
-  const { currentUser, isReadOnly } = useAuth();
+  const { isReadOnly, canMutateTab } = useAuth();
   const { toast } = useToast();
 
   const [muzakkiList, setMuzakkiList] = useState<MuzakkiItem[]>(INITIAL_MUZAKKI_LIST);
@@ -44,7 +44,7 @@ export function MuzakkiView() {
   const [newOfficer, setNewOfficer] = useState('Amil UPZ Babul Khaer');
   const [newNotes, setNewNotes] = useState('');
 
-  const canManage = (currentUser.role === 'KETUA_UMUM' || currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'BENDAHARA' || currentUser.role === 'SEKRETARIS') && !isReadOnly;
+  const canManage = !isReadOnly && canMutateTab('mustahiq');
 
   const filteredMuzakki = muzakkiList.filter(m => {
     const matchSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -301,18 +301,31 @@ export function MuzakkiView() {
                     </td>
 
                     <td className="p-3">
-                      <button
-                        onClick={() => handleToggleReportBaznas(m.id)}
-                        disabled={!canManage}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors ${
-                          m.reportedToBaznas
-                            ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-800'
-                            : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
-                        }`}
-                      >
-                        {m.reportedToBaznas ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                        <span>{m.reportedToBaznas ? 'Tersinkron' : 'Belum Lapor'}</span>
-                      </button>
+                      {canManage ? (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleReportBaznas(m.id)}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer ${
+                            m.reportedToBaznas
+                              ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-800'
+                              : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                          }`}
+                        >
+                          {m.reportedToBaznas ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                          <span>{m.reportedToBaznas ? 'Tersinkron' : 'Belum Lapor'}</span>
+                        </button>
+                      ) : (
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold items-center gap-1 ${
+                            m.reportedToBaznas
+                              ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-800'
+                              : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                          }`}
+                        >
+                          {m.reportedToBaznas ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                          <span>{m.reportedToBaznas ? 'Tersinkron' : 'Belum Lapor'}</span>
+                        </span>
+                      )}
                     </td>
 
                     <td className="p-3 text-right">

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Pagination from '@/components/ui/pagination';
+import { useAuth } from '@/lib/auth-context';
 
 interface AssetTableProps {
   assets: AssetItem[];
@@ -49,6 +50,9 @@ export default function AssetTable({
   isReadOnly = false,
   externalSearchTerm = '',
 }: AssetTableProps) {
+  const { canMutateTab, isReadOnly: authReadOnly } = useAuth();
+  const canMutate = !isReadOnly && !authReadOnly && canMutateTab('assets');
+
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -227,7 +231,7 @@ export default function AssetTable({
               <span>Ekspor Excel</span>
             </button>
 
-            {!isReadOnly && (
+            {canMutate && (
               <button
                 onClick={onOpenCreate}
                 className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs transition-all cursor-pointer"
@@ -423,7 +427,7 @@ export default function AssetTable({
                     {/* Aksi Operasional */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
-                        {!isReadOnly ? (
+                        {canMutate ? (
                           <>
                             {/* Tombol 1-Klik Catat Servis Selesai */}
                             <button

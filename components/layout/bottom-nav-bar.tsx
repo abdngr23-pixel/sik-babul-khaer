@@ -62,12 +62,13 @@ export default function BottomNavBar({
   onOpenCreateLetter,
   onOpenCreateJamaah,
   onOpenCreateTransaction,
+  onOpenCreateAsset,
   onOpenSwitchRole,
   onOpenAuditLogs,
   onOpenBackupModal,
   pendingApprovalsCount = 0,
 }: BottomNavBarProps) {
-  const { currentUser, isReadOnly, canAccessTab, logout } = useAuth();
+  const { currentUser, isReadOnly, canAccessTab, canMutateTab, logout } = useAuth();
   const { theme, toggleTheme, isLargeText, toggleTextSize } = useTheme();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
@@ -158,6 +159,72 @@ export default function BottomNavBar({
     if (isJamaahGroup && primaryIds.includes('jamaah')) return false;
     return true;
   }, [navSlots, activeTab, isSuratGroup, isKasGroup, isJamaahGroup]);
+
+  // Quick Actions available according to user role permissions
+  const quickActions = useMemo(() => {
+    if (isReadOnly) return [];
+    const list: Array<{
+      id: string;
+      label: string;
+      bgClass: string;
+      iconColor: string;
+      onClick: () => void;
+    }> = [];
+
+    if (canMutateTab('finance') && onOpenCreateTransaction) {
+      list.push({
+        id: 'finance',
+        label: 'Catat Kas',
+        bgClass: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200/70',
+        iconColor: 'text-emerald-700',
+        onClick: () => {
+          setIsMoreOpen(false);
+          onOpenCreateTransaction();
+        },
+      });
+    }
+
+    if (canMutateTab('archive') && onOpenCreateLetter) {
+      list.push({
+        id: 'archive',
+        label: 'Buat Surat',
+        bgClass: 'bg-teal-50 hover:bg-teal-100 text-teal-900 border-teal-200/70',
+        iconColor: 'text-teal-700',
+        onClick: () => {
+          setIsMoreOpen(false);
+          onOpenCreateLetter();
+        },
+      });
+    }
+
+    if (canMutateTab('jamaah') && onOpenCreateJamaah) {
+      list.push({
+        id: 'jamaah',
+        label: 'Data Warga',
+        bgClass: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200',
+        iconColor: 'text-slate-700',
+        onClick: () => {
+          setIsMoreOpen(false);
+          onOpenCreateJamaah();
+        },
+      });
+    }
+
+    if (canMutateTab('assets') && onOpenCreateAsset) {
+      list.push({
+        id: 'assets',
+        label: 'Tambah Aset',
+        bgClass: 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200/70',
+        iconColor: 'text-amber-700',
+        onClick: () => {
+          setIsMoreOpen(false);
+          onOpenCreateAsset();
+        },
+      });
+    }
+
+    return list;
+  }, [isReadOnly, canMutateTab, onOpenCreateTransaction, onOpenCreateLetter, onOpenCreateJamaah, onOpenCreateAsset]);
 
   const handleSelectTab = (tab: AppNavTab) => {
     setActiveTab(tab);
@@ -711,53 +778,33 @@ export default function BottomNavBar({
               </div>
 
               {/* Quick Actions Bar */}
-              {!isReadOnly && (
+              {quickActions.length > 0 && (
                 <div>
                   <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1 mb-2">
                     Aksi Cepat
                   </h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    {onOpenCreateTransaction && (
+                  <div
+                    className={`grid gap-2 ${
+                      quickActions.length === 1
+                        ? 'grid-cols-1'
+                        : quickActions.length === 2
+                        ? 'grid-cols-2'
+                        : quickActions.length === 3
+                        ? 'grid-cols-3'
+                        : 'grid-cols-2 sm:grid-cols-4'
+                    }`}
+                  >
+                    {quickActions.map((action) => (
                       <button
+                        key={action.id}
                         type="button"
-                        onClick={() => {
-                          setIsMoreOpen(false);
-                          onOpenCreateTransaction();
-                        }}
-                        className="min-h-[44px] p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-[11px] font-bold flex flex-col items-center justify-center text-center border border-emerald-200/70 transition-all cursor-pointer"
+                        onClick={action.onClick}
+                        className={`min-h-[44px] p-2 rounded-xl ${action.bgClass} text-[11px] font-bold flex flex-col items-center justify-center text-center border transition-all cursor-pointer`}
                       >
-                        <Plus className="w-4 h-4 text-emerald-700 mb-0.5" />
-                        <span>Catat Kas</span>
+                        <Plus className={`w-4 h-4 ${action.iconColor} mb-0.5`} />
+                        <span>{action.label}</span>
                       </button>
-                    )}
-
-                    {onOpenCreateLetter && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMoreOpen(false);
-                          onOpenCreateLetter();
-                        }}
-                        className="min-h-[44px] p-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-900 text-[11px] font-bold flex flex-col items-center justify-center text-center border border-teal-200/70 transition-all cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4 text-teal-700 mb-0.5" />
-                        <span>Buat Surat</span>
-                      </button>
-                    )}
-
-                    {onOpenCreateJamaah && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMoreOpen(false);
-                          onOpenCreateJamaah();
-                        }}
-                        className="min-h-[44px] p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold flex flex-col items-center justify-center text-center border border-slate-200 transition-all cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4 text-slate-700 mb-0.5" />
-                        <span>Data Warga</span>
-                      </button>
-                    )}
+                    ))}
                   </div>
                 </div>
               )}

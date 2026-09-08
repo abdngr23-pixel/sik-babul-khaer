@@ -32,7 +32,7 @@ interface ProgramKerjaViewProps {
 }
 
 export default function ProgramKerjaView({ transactions = [] }: ProgramKerjaViewProps) {
-  const { currentUser, isReadOnly } = useAuth();
+  const { currentUser, isReadOnly, canMutateTab } = useAuth();
   const { toast } = useToast();
 
   const [programs, setPrograms] = useState<ProgramKerjaItem[]>(OFFICIAL_PROGRAM_KERJA);
@@ -51,7 +51,7 @@ export default function ProgramKerjaView({ transactions = [] }: ProgramKerjaView
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
   const [nowTimestamp] = useState(() => Date.now());
 
-  const canEdit = currentUser.role === 'KETUA_UMUM' || (!isReadOnly && currentUser.role !== 'DEWAN_PENGAWAS');
+  const canEdit = !isReadOnly && canMutateTab('program-kerja');
 
   // Compute real-time spending for each program based on linked budgetProgramId
   const programsWithRealDisbursed = useMemo(() => {

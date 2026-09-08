@@ -403,7 +403,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return p.canMutateAssets || p.canMutateProjects;
 
         case 'program-kerja':
-          return false;
+          return currentUser.role === 'SEKRETARIS' || currentUser.role === 'WAKIL_SEKRETARIS';
 
         case 'approvals':
           return p.canExecuteDispositions;

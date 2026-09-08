@@ -25,6 +25,7 @@ import {
   Download,
 } from 'lucide-react';
 import Pagination from '@/components/ui/pagination';
+import { useAuth } from '@/lib/auth-context';
 
 interface LetterArchiveTableProps {
   letters: OfficialLetter[];
@@ -43,6 +44,9 @@ export default function LetterArchiveTable({
   isReadOnly = false,
   externalSearchTerm = '',
 }: LetterArchiveTableProps) {
+  const { canMutateTab, isReadOnly: authReadOnly } = useAuth();
+  const canMutate = !isReadOnly && !authReadOnly && canMutateTab('archive');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedDepartment, setSelectedDepartment] = useState<LetterDepartment | 'ALL'>('ALL');
@@ -256,7 +260,7 @@ export default function LetterArchiveTable({
           </button>
 
           {/* Catat Arsip Surat Lampau */}
-          {onOpenArchiveModal && !isReadOnly && (
+          {onOpenArchiveModal && canMutate && (
             <button
               onClick={onOpenArchiveModal}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-semibold text-xs border border-amber-300 dark:border-amber-700 transition-colors cursor-pointer shrink-0"
@@ -359,7 +363,7 @@ export default function LetterArchiveTable({
                         {getStatusBadge(letter.status)}
 
                         {/* Fast Status Change Actions */}
-                        {!isReadOnly && (
+                        {canMutate && (
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                             {letter.status === 'DRAFT' && (
                               <button

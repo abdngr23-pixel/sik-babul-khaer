@@ -18,7 +18,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/lib/toast-context';
 
 export default function IntegratedMeetingModule() {
-  const { currentUser, isReadOnly } = useAuth();
+  const { currentUser, isReadOnly, canMutateTab } = useAuth();
   const { toast } = useToast();
 
   const [meetings, setMeetings] = useState<IntegratedMeeting[]>(INITIAL_INTEGRATED_MEETINGS);
@@ -58,7 +58,7 @@ export default function IntegratedMeetingModule() {
     return names.join(', ');
   }, [activeMeeting]);
 
-  const canEdit = currentUser.role === 'SEKRETARIS' || currentUser.role === 'KETUA_UMUM' || (!isReadOnly && currentUser.role === 'SUPER_ADMIN');
+  const canEdit = !isReadOnly && canMutateTab('minutes');
 
   // Toggle attendance status
   const handleToggleAttendance = (inviteeId: string, nextStatus: AttendanceStatus) => {

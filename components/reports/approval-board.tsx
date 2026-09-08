@@ -38,7 +38,8 @@ export default function ApprovalBoard({
   onSubmitNewApproval,
 }: ApprovalBoardProps) {
   const { currentUser, isReadOnly } = useAuth();
-  const canExecute = (currentUser.role === 'KETUA_UMUM' || currentUser.role === 'SUPER_ADMIN') && !isReadOnly;
+  const canExecute = !isReadOnly && (currentUser.role === 'KETUA_UMUM' || currentUser.role === 'SUPER_ADMIN');
+  const canSubmit = !isReadOnly && currentUser.role !== 'DEWAN_PENGAWAS';
 
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -186,7 +187,7 @@ export default function ApprovalBoard({
           </div>
         </div>
 
-        {!isReadOnly && (
+        {canSubmit && (
           <button
             onClick={() => setIsSubmitModalOpen(true)}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0 self-end md:self-center"

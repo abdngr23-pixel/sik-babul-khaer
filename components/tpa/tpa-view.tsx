@@ -23,7 +23,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/lib/toast-context';
 
 export function TpaView() {
-  const { isReadOnly, permissions } = useAuth();
+  const { isReadOnly, canMutateTab } = useAuth();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<'santri' | 'teachers' | 'hafalan'>('santri');
@@ -46,7 +46,7 @@ export function TpaView() {
   const [newSppStatus, setNewSppStatus] = useState<SppStatus>('LUNAS');
   const [newTeacherId, setNewTeacherId] = useState(teachers[0]?.id || '');
 
-  const canManage = !isReadOnly && Boolean(permissions.canMutateTPA);
+  const canManage = !isReadOnly && canMutateTab('tpa');
 
   const filteredSantri = santriList.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -331,21 +331,35 @@ export function TpaView() {
                       </td>
 
                       <td className="p-3">
-                        <button
-                          onClick={() => handleToggleSppStatus(s.id, s.sppStatus)}
-                          disabled={!canManage || s.sppStatus === 'BEASISWA_DKM'}
-                          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 transition-all ${
-                            s.sppStatus === 'LUNAS'
-                              ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-800'
-                              : s.sppStatus === 'BEASISWA_DKM'
-                              ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 cursor-default'
-                              : 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse'
-                          }`}
-                        >
-                          {s.sppStatus === 'LUNAS' && <CheckCircle2 className="w-3 h-3" />}
-                          {s.sppStatus === 'MENUNGGAK' && <AlertCircle className="w-3 h-3" />}
-                          <span>{s.sppStatus.replace('_', ' ')}</span>
-                        </button>
+                        {canManage && s.sppStatus !== 'BEASISWA_DKM' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleSppStatus(s.id, s.sppStatus)}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                              s.sppStatus === 'LUNAS'
+                                ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-800'
+                                : 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse'
+                            }`}
+                          >
+                            {s.sppStatus === 'LUNAS' && <CheckCircle2 className="w-3 h-3" />}
+                            {s.sppStatus === 'MENUNGGAK' && <AlertCircle className="w-3 h-3" />}
+                            <span>{s.sppStatus.replace('_', ' ')}</span>
+                          </button>
+                        ) : (
+                          <span
+                            className={`inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold items-center gap-1.5 ${
+                              s.sppStatus === 'LUNAS'
+                                ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-800'
+                                : s.sppStatus === 'BEASISWA_DKM'
+                                ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800'
+                                : 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                            }`}
+                          >
+                            {s.sppStatus === 'LUNAS' && <CheckCircle2 className="w-3 h-3" />}
+                            {s.sppStatus === 'MENUNGGAK' && <AlertCircle className="w-3 h-3" />}
+                            <span>{s.sppStatus.replace('_', ' ')}</span>
+                          </span>
+                        )}
                       </td>
 
                       <td className="p-3 text-right">

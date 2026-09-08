@@ -20,7 +20,8 @@ import { useModalBackHandler } from '@/lib/back-button-handler';
 import ImageUploader from '@/components/shared/image-uploader';
 
 export default function GalleryView() {
-  const { isReadOnly, currentUser } = useAuth();
+  const { isReadOnly, currentUser, canMutateTab } = useAuth();
+  const canManage = !isReadOnly && canMutateTab('gallery');
   const { toast } = useToast();
 
   const [items, setItems] = useState<GalleryItem[]>(INITIAL_GALLERY_ITEMS);
@@ -135,7 +136,7 @@ export default function GalleryView() {
   };
 
   const handleDeletePhoto = async (item: GalleryItem) => {
-    if (isReadOnly) return;
+    if (!canManage) return;
     const confirmDelete = window.confirm(`Hapus foto "${item.title}" dari galeri kegiatan?`);
     if (!confirmDelete) return;
 
@@ -178,7 +179,7 @@ export default function GalleryView() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          {!isReadOnly && (
+          {canManage && (
             <button
               type="button"
               onClick={() => setIsUploadOpen(true)}
@@ -303,7 +304,7 @@ export default function GalleryView() {
               {/* Footer / Meta */}
               <div className="p-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span className="truncate">Oleh: <strong>{item.uploadedBy}</strong></span>
-                {!isReadOnly && (
+                {canManage && (
                   <button
                     type="button"
                     onClick={() => handleDeletePhoto(item)}

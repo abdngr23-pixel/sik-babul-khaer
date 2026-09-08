@@ -21,6 +21,7 @@ import DonorModal from './donor-modal';
 import DonorPaymentModal from './donor-payment-modal';
 import { useConfirm } from '@/lib/confirm-context';
 import Pagination from '@/components/ui/pagination';
+import { useAuth } from '@/lib/auth-context';
 
 interface DonorTableProps {
   donors: DonorItem[];
@@ -45,6 +46,9 @@ export default function DonorTable({
   isExternalCreateOpen = false,
   onCloseExternalCreate,
 }: DonorTableProps) {
+  const { canMutateTab, isReadOnly: authReadOnly } = useAuth();
+  const canMutate = !isReadOnly && !authReadOnly && canMutateTab('donors');
+
   const { confirm } = useConfirm();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -290,7 +294,7 @@ export default function DonorTable({
           </select>
 
           {/* Add Donor Button */}
-          {!isReadOnly && (
+          {canMutate && (
             <button
               onClick={() => {
                 setEditingDonor(null);
@@ -414,7 +418,7 @@ export default function DonorTable({
                       <td className="py-3.5 px-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {/* Fast 1-Click Payment Button */}
-                          {!isReadOnly && !isPaidThisMonth && (
+                          {canMutate && !isPaidThisMonth && (
                             <button
                               onClick={() => handleOpenPayment(donor)}
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition-all cursor-pointer"
@@ -444,7 +448,7 @@ export default function DonorTable({
                           )}
 
                           {/* Edit */}
-                          {!isReadOnly && (
+                          {canMutate && (
                             <button
                               onClick={() => handleOpenEdit(donor)}
                               className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
@@ -455,7 +459,7 @@ export default function DonorTable({
                           )}
 
                           {/* Delete */}
-                          {!isReadOnly && (
+                          {canMutate && (
                             <button
                               onClick={async () => {
                                 const ok = await confirm({
